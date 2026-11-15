@@ -1,0 +1,25 @@
+{
+  "schema_version": "2.0",
+  "id": "radial-cluster",
+  "title": "Распределяй и властвуй: Радиальное распределение скопления",
+  "kind": "generated",
+  "version": "1.1.0",
+  "tags": {
+    "class": [
+      9,
+      10,
+      11
+    ],
+    "topic": "звёздные скопления",
+    "skills": [
+      "гистограммы",
+      "радиальные профили",
+      "поверхностная плотность"
+    ],
+    "category": "Урок 1",
+    "category_order": 11
+  },
+  "max_score": 5.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

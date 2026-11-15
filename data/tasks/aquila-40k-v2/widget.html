@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Орёл 40-тысячелетия</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --dark: #0f172a;
+      --muted: #64748b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --success: #16a34a;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: var(--dark);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    #widget-root {
+      padding: 16px 16px 28px 16px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .header-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .step-badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 8px;
+    }
+    h2 { margin: 0 0 8px 0; font-size: 18px; }
+    h3 { margin: 0 0 10px 0; font-size: 15px; }
+    p { margin: 0 0 10px 0; font-size: 13.5px; color: #334155; }
+    .step-box {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .step-box.active { display: block; }
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 10px 0;
+    }
+    table.data-table th, table.data-table td {
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      text-align: center;
+    }
+    table.data-table th { background: #f1f5f9; font-weight: 600; }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-success { background: var(--success); }
+    .btn-success:hover { background: #15803d; }
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .field-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .field-card label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+    .field-card input {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      font-size: 14px;
+      font-family: monospace;
+    }
+    .map-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px;
+      margin: 10px 0;
+    }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .tool-btn {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+      padding: 5px 12px;
+      border-radius: 5px;
+      font-size: 12.5px;
+      cursor: pointer;
+    }
+    .tool-btn.active {
+      background: var(--accent);
+      border-color: #60a5fa;
+      color: #fff;
+    }
+    .readout {
+      margin-left: auto;
+      font-family: monospace;
+      font-size: 12.5px;
+      color: #38bdf8;
+      background: #020617;
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+    .session-banner {
+      display: none;
+      margin-top: 16px;
+      background: #f0fdf4;
+      border: 2px solid #86efac;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .grade-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px dashed #bbf7d0;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+<div id="widget-root">
+  <div class="header-card">
+    <h2>Праководство 1.2.1 (S.1.3): Орёл 40-тысячелетия</h2>
+    <p id="statement-box">
+      В таблице приведены координаты и собственные движения ярких звёзд созвездия Орла на текущий момент.
+      Позиционный угол γ отсчитывается от направления на Северный полюс мира против часовой стрелки (к востоку).
+      Исследуйте смещение звёзд за 40 000 лет в прошлое и найдите угловое расстояние между α и β Орла в эпоху неандертальцев.
+    </p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Звезда</th>
+          <th>Прямое восхождение α</th>
+          <th>Склонение δ</th>
+          <th>Собств. движение μ, 10⁻³ ''/год</th>
+          <th>Позиционный угол γ, °</th>
+        </tr>
+      </thead>
+      <tbody id="stars-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- ШАГ 1: Вычисление смещений -->
+  <div class="step-box active" id="step-1">
+    <span class="step-badge">Шаг 1 из 2</span>
+    <h3>Расчёт компонентов смещения звёзд α и β за 40 000 лет назад</h3>
+    <p>
+      Вблизи небесного экватора проекции смещения звезды за время <i>Δt = -40 000</i> лет вычисляются по формулам:
+      <br><b>Δα·cos δ = −μ · sin(γ) · t</b>, &nbsp; <b>Δδ = −μ · cos(γ) · t</b>.
+      <br>Выразите смещения для Альтаира (α) и Альшаина (β) в <b>угловых минутах (')</b> с учётом знака (назад во времени):
+    </p>
+    <div class="input-grid">
+      <div class="field-card">
+        <label>Смещение α Орла по Δα·cos δ ('):</label>
+        <input type="number" step="0.1" id="inp-alpha-dra" placeholder="напр. -21.2" oninput="syncServer()">
+      </div>
+      <div class="field-card">
+        <label>Смещение α Орла по Δδ ('):</label>
+        <input type="number" step="0.1" id="inp-alpha-ddec" placeholder="напр. -15.7" oninput="syncServer()">
+      </div>
+      <div class="field-card">
+        <label>Смещение β Орла по Δδ ('):</label>
+        <input type="number" step="0.1" id="inp-beta-ddec" placeholder="напр. +32.2" oninput="syncServer()">
+      </div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+      <button class="btn" onclick="goToStep(2)">Перейти к карте созвездия и измерению →</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 2: Карта и финальный ответ -->
+  <div class="step-box" id="step-2">
+    <span class="step-badge">Шаг 2 из 2</span>
+    <h3>Построение карты созвездия Орла и измерение углового расстояния</h3>
+    <p>
+      На карте ниже кружками (•) показаны современные положения звёзд, а крестиками (+) — их положения 40 000 лет назад.
+      Используйте инструмент <b>«Линейка углов»</b> (кликните последовательно по крестикам α и β), чтобы измерить угловое расстояние между ними 40 000 лет назад с точностью до 0.1°.
+    </p>
+
+    <div class="map-box">
+      <div class="toolbar">
+        <button class="tool-btn active" id="btn-grid" onclick="toggleGrid()">Сетка координат</button>
+        <button class="tool-btn active" id="btn-vec" onclick="toggleVec()">Векторы смещения</button>
+        <button class="tool-btn" id="btn-ruler" onclick="toggleRuler()">📏 Линейка углов (клик по 2 точкам)</button>
+        <span class="readout" id="map-readout">Курсор: наведите на карту</span>
+      </div>
+      <svg id="sky-svg" viewBox="0 0 860 440" style="width:100%; height:auto; background:#090d16; border-radius:6px; cursor:crosshair;"></svg>
+    </div>
+
+    <div class="input-grid">
+      <div class="field-card" style="border-color:#93c5fd; background:#eff6ff;">
+        <label style="color:#1e3a8a; font-size:13px;">Угловое расстояние между α и β Орла 40 000 лет назад (°):</label>
+        <input type="number" step="0.1" id="inp-dist-ab" placeholder="напр. 2.5" oninput="syncServer()">
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+      <button class="btn btn-secondary" id="btn-back-1" onclick="goToStep(1)">← Назад к шагу 1</button>
+      <button class="btn btn-success" id="btn-final-submit" onclick="submitFinal()">Зафиксировать параметры и сдать решение</button>
+    </div>
+
+    <div class="session-banner" id="session-banner">
+      <div id="session-score-title" style="font-size:15px; font-weight:700; color:#166534; margin-bottom:8px;"></div>
+      <div id="session-grading-details" style="margin-bottom:10px; background:#fff; padding:10px; border-radius:6px; border:1px solid #bbf7d0; display:none;"></div>
+      <div style="font-size:13px; color:#14532d; margin-bottom:6px;">Скопируйте 32-значный код сессии для отчёта:</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="text" id="session-code-val" readonly style="font-family:monospace; font-size:13px; padding:6px 10px; width:320px; border:1px solid #86efac; border-radius:4px; background:#fff;">
+        <button class="btn btn-secondary" id="btn-copy-code" onclick="copyCode()">Скопировать код</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let starsData = [];
+  let currentStep = 1;
+  let showGrid = true;
+  let showVec = true;
+  let rulerActive = false;
+  let rulerPts = [];
+  let userSessionCode = '';
+
+  const DEFAULT_STARS = [
+    {"id": "alpha",  "name": "α (Альтаир)", "ra_h": 19, "ra_m": 50.8, "dec_str": "+08° 52'", "ra_deg": 297.700, "dec_deg": 8.8667,  "mu": 660, "gamma": 53.7,  "past_ra_deg": 297.342, "past_dec_deg": 8.606},
+    {"id": "beta",   "name": "β (Альшаин)", "ra_h": 19, "ra_m": 55.3, "dec_str": "+06° 24'", "ra_deg": 298.825, "dec_deg": 6.4000,  "mu": 485, "gamma": 175.4, "past_ra_deg": 298.799, "past_dec_deg": 6.937},
+    {"id": "delta",  "name": "δ Орла",      "ra_h": 19, "ra_m": 25.5, "dec_str": "+03° 07'", "ra_deg": 291.375, "dec_deg": 3.1167,  "mu": 268, "gamma": 72.1,  "past_ra_deg": 291.092, "past_dec_deg": 3.025},
+    {"id": "zeta",   "name": "ζ Орла",      "ra_h": 19, "ra_m": 5.4,  "dec_str": "+13° 52'", "ra_deg": 286.350, "dec_deg": 13.8667, "mu": 88,  "gamma": 183.0, "past_ra_deg": 286.355, "past_dec_deg": 13.964},
+    {"id": "theta",  "name": "θ Орла",      "ra_h": 20, "ra_m": 11.3, "dec_str": "-00° 49'", "ra_deg": 302.825, "dec_deg": -0.8167, "mu": 40,  "gamma": 81.4,  "past_ra_deg": 302.781, "past_dec_deg": -0.823},
+    {"id": "lambda", "name": "λ Орла",      "ra_h": 19, "ra_m": 6.2,  "dec_str": "-04° 53'", "ra_deg": 286.550, "dec_deg": -4.8833, "mu": 91,  "gamma": 191.9, "past_ra_deg": 286.571, "past_dec_deg": -4.784}
+  ];
+
+  function escHtml(val) {
+    return String(val ?? '—')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function init(data, sessionCode, draft) {
+    if (sessionCode) userSessionCode = sessionCode;
+    starsData = (data && data.stars && data.stars.length) ? data.stars : DEFAULT_STARS;
+    if (data && data.statement) {
+      document.getElementById('statement-box').textContent = data.statement;
+    }
+
+    renderTable();
+
+    if (draft && typeof draft === 'object') {
+      if (draft.alpha_dra !== undefined) document.getElementById('inp-alpha-dra').value = draft.alpha_dra;
+      if (draft.alpha_ddec !== undefined) document.getElementById('inp-alpha-ddec').value = draft.alpha_ddec;
+      if (draft.beta_ddec !== undefined) document.getElementById('inp-beta-ddec').value = draft.beta_ddec;
+      if (draft.dist_ab !== undefined) document.getElementById('inp-dist-ab').value = draft.dist_ab;
+      if (draft.current_step) goToStep(draft.current_step, false);
+    }
+
+    drawMap();
+    reportHeight();
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('stars-tbody');
+    tbody.innerHTML = starsData.map(s => `
+      <tr>
+        <td><b>${escHtml(s.name)}</b></td>
+        <td>${s.ra_h}<sup>h</sup> ${s.ra_m.toFixed(1)}<sup>m</sup></td>
+        <td>${escHtml(s.dec_str)}</td>
+        <td>${s.mu}</td>
+        <td>${s.gamma.toFixed(1)}°</td>
+      </tr>
+    `).join('');
+  }
+
+  function goToStep(step, doSync = true) {
+    currentStep = step;
+    document.getElementById('step-1').classList.toggle('active', step === 1);
+    document.getElementById('step-2').classList.toggle('active', step === 2);
+    if (step === 2) drawMap();
+    if (doSync) syncServer();
+    reportHeight();
+  }
+
+  function toggleGrid() {
+    showGrid = !showGrid;
+    document.getElementById('btn-grid').classList.toggle('active', showGrid);
+    drawMap();
+  }
+
+  function toggleVec() {
+    showVec = !showVec;
+    document.getElementById('btn-vec').classList.toggle('active', showVec);
+    drawMap();
+  }
+
+  function toggleRuler() {
+    rulerActive = !rulerActive;
+    rulerPts = [];
+    document.getElementById('btn-ruler').classList.toggle('active', rulerActive);
+    drawMap();
+  }
+
+  function drawMap() {
+    const svg = document.getElementById('sky-svg');
+    const w = 860, h = 440;
+    const ra0 = 294.5, dec0 = 4.5;
+    const scale = 18.0; // пикс на градус
+
+    const mapX = (ra, dec) => w / 2 + (ra0 - ra) * Math.cos(dec * Math.PI / 180) * scale;
+    const mapY = (dec) => h / 2 - (dec - dec0) * scale;
+    const invRaDec = (x, y) => {
+      const dec = dec0 + (h / 2 - y) / scale;
+      const ra = ra0 - (x - w / 2) / (scale * Math.cos(dec * Math.PI / 180));
+      return { ra, dec };
+    };
+
+    let html = '';
+
+    if (showGrid) {
+      for (let r = 285; r <= 305; r += 2.5) {
+        const x1 = mapX(r, -7), y1 = mapY(-7);
+        const x2 = mapX(r, 16), y2 = mapY(16);
+        html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#1e293b" stroke-dasharray="3,3"/>`;
+        const rh = Math.floor(r / 15);
+        const rm = Math.round((r / 15 - rh) * 60);
+        html += `<text x="${mapX(r, -6.5).toFixed(1)}" y="${(h - 8)}" fill="#64748b" font-size="10" text-anchor="middle">${rh}h${rm < 10 ? '0'+rm : rm}m</text>`;
+      }
+      for (let d = -5; d <= 15; d += 5) {
+        const x1 = mapX(305, d), y1 = mapY(d);
+        const x2 = mapX(285, d), y2 = mapY(d);
+        html += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#1e293b" stroke-dasharray="3,3"/>`;
+        html += `<text x="12" y="${(y1 - 4).toFixed(1)}" fill="#64748b" font-size="10">${d >= 0 ? '+' : ''}${d}°</text>`;
+      }
+    }
+
+    starsData.forEach(s => {
+      const xNow = mapX(s.ra_deg, s.dec_deg);
+      const yNow = mapY(s.dec_deg);
+      const xPast = mapX(s.past_ra_deg, s.past_dec_deg);
+      const yPast = mapY(s.past_dec_deg);
+
+      if (showVec) {
+        html += `<line x1="${xNow.toFixed(1)}" y1="${yNow.toFixed(1)}" x2="${xPast.toFixed(1)}" y2="${yPast.toFixed(1)}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="2,2"/>`;
+      }
+
+      // Текущее положение (кружок •, подпись справа)
+      html += `<circle cx="${xNow.toFixed(1)}" cy="${yNow.toFixed(1)}" r="4.5" fill="#38bdf8" stroke="#fff" stroke-width="1.2"/>`;
+      html += `<text x="${(xNow + 7).toFixed(1)}" y="${(yNow + 4).toFixed(1)}" fill="#e2e8f0" font-size="11.5" font-weight="600">${escHtml(s.name)}</text>`;
+
+      // Прошлое положение (крестик +, подпись слева)
+      const c = 4.5;
+      html += `<line x1="${(xPast - c).toFixed(1)}" y1="${yPast.toFixed(1)}" x2="${(xPast + c).toFixed(1)}" y2="${yPast.toFixed(1)}" stroke="#f87171" stroke-width="2"/>`;
+      html += `<line x1="${xPast.toFixed(1)}" y1="${(yPast - c).toFixed(1)}" x2="${xPast.toFixed(1)}" y2="${(yPast + c).toFixed(1)}" stroke="#f87171" stroke-width="2"/>`;
+      html += `<text x="${(xPast - 7).toFixed(1)}" y="${(yPast - 4).toFixed(1)}" fill="#fca5a5" font-size="11" text-anchor="end">${escHtml(s.name.split(' ')[0])} (-40к)</text>`;
+    });
+
+    if (rulerPts.length > 0) {
+      rulerPts.forEach(p => {
+        html += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#c084fc" stroke="#fff"/>`;
+      });
+      if (rulerPts.length === 2) {
+        const p1 = rulerPts[0], p2 = rulerPts[1];
+        const dra = (p1.ra - p2.ra) * Math.PI / 180;
+        const d1 = p1.dec * Math.PI / 180, d2 = p2.dec * Math.PI / 180;
+        const cosT = Math.sin(d1)*Math.sin(d2) + Math.cos(d1)*Math.cos(d2)*Math.cos(dra);
+        const deg = Math.acos(Math.max(-1, Math.min(1, cosT))) * 180 / Math.PI;
+
+        html += `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="#c084fc" stroke-width="2"/>`;
+        const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+        html += `<rect x="${(mx - 32).toFixed(1)}" y="${(my - 20).toFixed(1)}" width="64" height="18" rx="4" fill="#1e1b4b" stroke="#c084fc"/>`;
+        html += `<text x="${mx.toFixed(1)}" y="${(my - 7).toFixed(1)}" fill="#f3e8ff" font-size="11" font-weight="bold" text-anchor="middle">${deg.toFixed(2)}°</text>`;
+      }
+    }
+
+    svg.innerHTML = html;
+
+    svg.onclick = (e) => {
+      if (!rulerActive) return;
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX; pt.y = e.clientY;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return;
+      const sp = pt.matrixTransform(ctm.inverse());
+      const rd = invRaDec(sp.x, sp.y);
+      if (rulerPts.length >= 2) rulerPts = [];
+      rulerPts.push({ x: sp.x, y: sp.y, ra: rd.ra, dec: rd.dec });
+      drawMap();
+    };
+
+    svg.onmousemove = (e) => {
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX; pt.y = e.clientY;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return;
+      const sp = pt.matrixTransform(ctm.inverse());
+      const { ra, dec } = invRaDec(sp.x, sp.y);
+      const rh = Math.floor(ra / 15);
+      const rm = ((ra / 15 - rh) * 60).toFixed(1);
+      document.getElementById('map-readout').textContent = `α = ${rh}h ${rm}m | δ = ${dec >= 0 ? '+' : ''}${dec.toFixed(2)}°`;
+    };
+  }
+
+  function getAnswersPayload() {
+    return {
+      current_step: currentStep,
+      alpha_dra: document.getElementById('inp-alpha-dra').value,
+      alpha_ddec: document.getElementById('inp-alpha-ddec').value,
+      beta_ddec: document.getElementById('inp-beta-ddec').value,
+      dist_ab: document.getElementById('inp-dist-ab').value
+    };
+  }
+
+  function syncServer() {
+    window.parent.postMessage({
+      type: 'ASTROSITE_ANSWER_CHANGE',
+      answers: getAnswersPayload()
+    }, '*');
+  }
+
+  function submitFinal() {
+    const submitBtn = document.getElementById('btn-final-submit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Отправка...';
+    window.parent.postMessage({
+      type: 'ASTROSITE_SUBMIT_ATTEMPT',
+      answers: getAnswersPayload()
+    }, '*');
+  }
+
+  function lockSubmittedUI(gradingInfo) {
+    goToStep(2, false);
+    ['inp-alpha-dra', 'inp-alpha-ddec', 'inp-beta-ddec', 'inp-dist-ab'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = true;
+    });
+    const submitBtn = document.getElementById('btn-final-submit');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Работа сдана';
+    }
+    const backBtn = document.getElementById('btn-back-1');
+    if (backBtn) backBtn.style.display = 'none';
+
+    const banner = document.getElementById('session-banner');
+    const scoreTitle = document.getElementById('session-score-title');
+    const detailsBox = document.getElementById('session-grading-details');
+
+    const finalScore = (gradingInfo && gradingInfo.score !== undefined) ? gradingInfo.score : null;
+    const maxScore = (gradingInfo && gradingInfo.max_score !== undefined) ? gradingInfo.max_score : 5.0;
+
+    if (finalScore !== null) {
+      scoreTitle.innerHTML = `Результат проверки: <strong style="color:${finalScore >= 3.5 ? '#16a34a' : '#d97706'}">${finalScore} из ${maxScore} баллов</strong>`;
+    } else {
+      scoreTitle.innerHTML = `✓ Задание успешно сдано и зафиксировано в системе!`;
+    }
+
+    if (gradingInfo && gradingInfo.details) {
+      const d = gradingInfo.details;
+      const labels = {
+        alpha_dra: "1. Смещение α по Δα·cos δ (')",
+        alpha_ddec: "2. Смещение α по Δδ (')",
+        beta_ddec: "3. Смещение β по Δδ (')",
+        dist_ab: "4. Расстояние между α и β 40 тыс. лет назад (°)"
+      };
+      let html = '';
+      for (const [k, label] of Object.entries(labels)) {
+        if (d[k]) {
+          html += `
+            <div class="grade-row">
+              <span>${label}: <strong>${escHtml(d[k].user)}</strong> (эталон: ${d[k].truth} ± ${d[k].tol})</span>
+              <span style="font-weight:700; color:${d[k].ok ? '#16a34a' : '#dc2626'}">${d[k].score} / ${d[k].max} б.</span>
+            </div>
+          `;
+        }
+      }
+      detailsBox.innerHTML = html;
+      detailsBox.style.display = 'block';
+    }
+
+    document.getElementById('session-code-val').value = userSessionCode;
+    banner.style.display = 'block';
+    setTimeout(reportHeight, 50);
+    setTimeout(reportHeight, 300);
+  }
+
+  function copyCode() {
+    const el = document.getElementById('session-code-val');
+    el.select();
+    navigator.clipboard.writeText(el.value);
+    const btn = document.getElementById('btn-copy-code');
+    btn.textContent = 'Скопировано!';
+    setTimeout(() => { btn.textContent = 'Скопировать код'; }, 2000);
+  }
+
+  function reportHeight() {
+    const root = document.getElementById('widget-root');
+    const contentH = root ? Math.ceil(root.getBoundingClientRect().height) : document.body.offsetHeight;
+    window.parent.postMessage({
+      type: 'ASTROSITE_FRAME_RESIZE',
+      height: contentH + 24
+    }, '*');
+  }
+
+  window.addEventListener('message', (e) => {
+    if (!e.data) return;
+    if (e.data.type === 'ASTROSITE_INIT_DATA') {
+      init(e.data.data, e.data.session_code, e.data.draft);
+      if (e.data.is_submitted) {
+        lockSubmittedUI(e.data.grading);
+      }
+    }
+    if (e.data.type === 'ASTROSITE_SUBMIT_SUCCESS') {
+      const grading = e.data.grading || (e.data.score !== undefined ? { score: e.data.score, max_score: e.data.max_score } : null);
+      lockSubmittedUI(grading);
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    init({ stars: DEFAULT_STARS }, '', null);
+    window.addEventListener('resize', reportHeight);
+  });
+</script>
+</body>
+</html>

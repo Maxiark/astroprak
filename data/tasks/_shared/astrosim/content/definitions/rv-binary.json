@@ -1,0 +1,213 @@
+{
+  "schema_version": "1.0",
+  "id": "rv-binary",
+  "version": 1,
+  "kind": "generated",
+  "title": "кривые лучевых скоростей → параметры орбиты",
+  "language": "ru",
+  "model": {
+    "id": "rv-binary",
+    "version": "0.1.0"
+  },
+  "sources": [
+    {
+      "id": "validation",
+      "title": "Модель и валидация rv-binary",
+      "locator": "packages/astrosim/docs/validation/binary_rv.md",
+      "role": "validation",
+      "rights": "Материал проекта"
+    }
+  ],
+  "statement_template": {
+    "title": "{designation}",
+    "text": "Звезда {designation} — спектрально-двойная: период обращения P = {fmt_period_5} сут, орбиты круговые, угол между плоскостью орбиты и картинной плоскостью i = {incl}°, параллакс π = {fmt_parallax_2}″. Ниже даны кривые лучевых скоростей обеих компонент в зависимости от фазы — доли периода. Кружки — компонент A, кольца — компонент B.",
+    "asks": [
+      "Определите полуамплитуды лучевых скоростей K_A и K_B.",
+      "Найдите большую полуось относительной орбиты в астрономических единицах.",
+      "Найдите сумму масс компонент в массах Солнца.",
+      "Оцените максимальное угловое расстояние между компонентами и его погрешность. Можно ли разрешить пару в телескоп диаметром {fmt_aperture_2} м при качестве изображений {fmt_seeing_2}″?"
+    ],
+    "note": "Измерения отмечайте на графике. Ответы — с двумя значащими цифрами, единицы — как указано на бланке."
+  },
+  "answers": [
+    {
+      "id": "k_a",
+      "label": "K_A",
+      "unit": "км/с",
+      "kind": "number",
+      "hint": ""
+    },
+    {
+      "id": "k_b",
+      "label": "K_B",
+      "unit": "км/с",
+      "kind": "number",
+      "hint": ""
+    },
+    {
+      "id": "a_au",
+      "label": "a",
+      "unit": "а. е.",
+      "kind": "number",
+      "hint": "большая полуось относительной орбиты"
+    },
+    {
+      "id": "mass_sum",
+      "label": "M_A + M_B",
+      "unit": "M_☉",
+      "kind": "number",
+      "hint": ""
+    },
+    {
+      "id": "theta_max",
+      "label": "θ_max",
+      "unit": "″",
+      "kind": "number_with_error",
+      "hint": "с погрешностью: 0,056 ± 0,002"
+    },
+    {
+      "id": "resolvable",
+      "label": "Разрешима?",
+      "unit": "",
+      "kind": "yesno",
+      "hint": "да / нет"
+    }
+  ],
+  "parts": [
+    {
+      "id": "part-1",
+      "answer_ids": [
+        "k_a",
+        "k_b"
+      ]
+    },
+    {
+      "id": "part-2",
+      "answer_ids": [
+        "a_au"
+      ]
+    },
+    {
+      "id": "part-3",
+      "answer_ids": [
+        "mass_sum"
+      ]
+    },
+    {
+      "id": "part-4",
+      "answer_ids": [
+        "theta_max",
+        "resolvable"
+      ]
+    }
+  ],
+  "tools": [
+    "cursor",
+    "loupe",
+    "extremum",
+    "segment"
+  ],
+  "solution_template": {
+    "title": "Разбор задачи",
+    "steps": [
+      {
+        "id": "step-1",
+        "title": "K_A / K_B",
+        "text": "Полуамплитуды — по экстремумам кривых: K_A = (v_max − v_min)/2 ≈ {fmt_system_k_a} км/с, K_B ≈ {fmt_system_k_b} км/с; γ = (v_max + v_min)/2 ≈ {fmt_system_gamma} км/с. Подгонка синусоид к этим точкам даёт K_A = {fmt_fit_a_amplitude_3} ± {fmt_fit_a_amplitude_sigma_1}, K_B = {fmt_fit_b_amplitude_3} ± {fmt_fit_b_amplitude_sigma_1} км/с — точнее по глазу не получится.",
+        "answer_ids": [
+          "k_a",
+          "k_b"
+        ],
+        "part_ids": [
+          "part-1"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-2",
+        "title": "a",
+        "text": "Орбиты круговые: a sin i = (K_A + K_B) P / 2π = {fmt_system_a_sin_i_m_1000_0_3} км; a = a sin i / sin {incl}° = {fmt_system_a_m_1000_0_3} км = {fmt_system_a_au} а. е.",
+        "answer_ids": [
+          "a_au"
+        ],
+        "part_ids": [
+          "part-2"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-3",
+        "title": "M_A + M_B",
+        "text": "Третий закон Кеплера: M_A + M_B = 4π² a³ / (G P²) = {fmt_system_mass_sum_kg_3} кг = {fmt_system_mass_sum_msun} M☉; q = M_B/M_A = K_A/K_B = {fmt_system_mass_ratio}, откуда M_A ≈ {fmt_system_mass_a_msun}, M_B ≈ {fmt_system_mass_b_msun} M☉.",
+        "answer_ids": [
+          "mass_sum"
+        ],
+        "part_ids": [
+          "part-3"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-4",
+        "title": "θ_max",
+        "text": "Максимальное угловое расстояние (в квадратуре, от наклона не зависит): θ_max = a[а. е.] · π[″] = {fmt_system_a_au} · {fmt_parallax_2} = {fmt_system_theta_max_arcsec}″. Погрешность — из чтения полуамплитуд: δθ/θ = δ(K_A+K_B)/(K_A+K_B) ≈ {fmt_rel_2}, то есть ±{fmt_tol_theta_2_1}″.",
+        "answer_ids": [
+          "theta_max"
+        ],
+        "part_ids": [
+          "part-4"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-5",
+        "title": "Разрешима?",
+        "text": "Предел разрешения: дифракционный 1,22λ/D = {fmt_diffraction}″ при λ = 550 нм, качество изображений {fmt_seeing_2}″ — работает большее, {fmt_limit}″. θ_max = {fmt_system_theta_max_arcsec}″ {if_resolvable_else} {fmt_limit}″ — пара {if_resolvable_else24}.",
+        "answer_ids": [
+          "resolvable"
+        ],
+        "part_ids": [
+          "part-4"
+        ],
+        "depends_on": []
+      }
+    ]
+  },
+  "bindings": {
+    "statement": [
+      "designation",
+      "fmt_period_5",
+      "incl",
+      "fmt_parallax_2",
+      "fmt_aperture_2",
+      "fmt_seeing_2"
+    ],
+    "solution": [
+      "fmt_system_k_a",
+      "fmt_system_k_b",
+      "fmt_system_gamma",
+      "fmt_fit_a_amplitude_3",
+      "fmt_fit_a_amplitude_sigma_1",
+      "fmt_fit_b_amplitude_3",
+      "fmt_fit_b_amplitude_sigma_1",
+      "fmt_system_a_sin_i_m_1000_0_3",
+      "incl",
+      "fmt_system_a_m_1000_0_3",
+      "fmt_system_a_au",
+      "fmt_system_mass_sum_kg_3",
+      "fmt_system_mass_sum_msun",
+      "fmt_system_mass_ratio",
+      "fmt_system_mass_a_msun",
+      "fmt_system_mass_b_msun",
+      "fmt_parallax_2",
+      "fmt_system_theta_max_arcsec",
+      "fmt_rel_2",
+      "fmt_tol_theta_2_1",
+      "fmt_diffraction",
+      "fmt_seeing_2",
+      "fmt_limit",
+      "if_resolvable_else",
+      "if_resolvable_else24"
+    ]
+  }
+}

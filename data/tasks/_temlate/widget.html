@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Task Widget</title>
+  <style>
+    :root {
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #0284c7;
+    }
+    body {
+      font-family: var(--font-family);
+      margin: 0;
+      padding: 16px;
+      background: var(--bg);
+      color: var(--text);
+      box-sizing: border-box;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .field-row {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    input[type=range] {
+      flex: 1;
+    }
+    select, input[type=text] {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h3 style="margin-top:0;">Интерактивная область задачи</h3>
+    <p style="color:var(--muted); font-size:14px;">
+      Взаимодействуйте с элементами управления для подбора параметров.
+    </p>
+
+    <!-- Пример элемента управления 1 -->
+    <div class="field-row">
+      <label for="select-profile"><strong>Профиль:</strong></label>
+      <select id="select-profile">
+        <option value="Вариант A">Вариант A</option>
+        <option value="Вариант B">Вариант B</option>
+        <option value="Вариант C">Вариант C</option>
+      </select>
+    </div>
+
+    <!-- Пример элемента управления 2 -->
+    <div class="field-row">
+      <label for="slider-param"><strong>Параметр:</strong></label>
+      <input type="range" id="slider-param" min="10" max="50" step="0.5" value="25">
+      <span id="slider-val" style="font-family:monospace; min-width:40px;">25.0</span>
+    </div>
+  </div>
+
+  <script>
+    const selectProfile = document.getElementById('select-profile');
+    const sliderParam = document.getElementById('slider-param');
+    const sliderVal = document.getElementById('slider-val');
+
+    // 1. Отправка изменений в родительский React-бланк
+    function syncAnswers() {
+      window.parent.postMessage({
+        type: 'ASTROSITE_ANSWER_CHANGE',
+        answers: {
+          profile_type: selectProfile.value,
+          param_val: sliderParam.value
+        }
+      }, '*');
+    }
+
+    sliderParam.addEventListener('input', (e) => {
+      sliderVal.textContent = Number(e.target.value).toFixed(1);
+      syncAnswers();
+    });
+
+    selectProfile.addEventListener('change', () => {
+      syncAnswers();
+    });
+
+    // 2. Получение данных и черновика от родительской платформы
+    window.addEventListener('message', (event) => {
+      if (!event.data || event.data.type !== 'ASTROSITE_INIT_DATA') return;
+
+      const payload = event.data.data;
+      const draft = event.data.draft;
+
+      // Инициализация графиков или расчетов входными данными...
+      if (payload) {
+        console.log("Получены исходные данные варианта:", payload);
+      }
+
+      // Восстановление состояния из черновика
+      if (draft) {
+        if (draft.param_val !== undefined) {
+          sliderParam.value = draft.param_val;
+          sliderVal.textContent = Number(draft.param_val).toFixed(1);
+        }
+        if (draft.profile_type !== undefined) {
+          selectProfile.value = draft.profile_type;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

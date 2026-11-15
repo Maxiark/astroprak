@@ -1,0 +1,23 @@
+{
+  "schema_version": "2.0",
+  "id": "galaxy-redshift",
+  "title": "спектр галактики → красное смещение → расстояние",
+  "kind": "generated",
+  "version": "1.0.0",
+  "hidden": false,
+  "tags": {
+    "class": [
+      10,
+      11
+    ],
+    "topic": "спектроскопия и космология",
+    "skills": [
+      "отождествление спектральных линий",
+      "красное смещение",
+      "закон Хаббла"
+    ]
+  },
+  "max_score": 25.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

@@ -1,0 +1,78 @@
+name: astroprak
+
+services:
+  db:
+    restart: unless-stopped
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: astrosite_v2
+      POSTGRES_USER: astrosite_v2
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-astrosite}
+    volumes:
+      - pgdata_v2:/var/lib/postgresql/data
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U astrosite_v2 -d astrosite_v2"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  core:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: services/core/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://astrosite_v2:${POSTGRES_PASSWORD:-astrosite}@db:5432/astrosite_v2
+      COOKIE_SECURE: ${COOKIE_SECURE:-0}
+      CORS_ORIGINS: ""
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-dev-admin}
+    volumes:
+      - ../data/tasks:/app/data/tasks
+      - ../docs:/app/docs:ro
+    networks:
+      default:
+        aliases:
+          - core
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    restart: unless-stopped
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile
+    networks:
+      - default
+    depends_on:
+      - core
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - default
+      - default2
+    depends_on:
+      - web
+
+networks:
+  default:
+    driver: bridge
+  default2:
+    name: testprak_default
+    external: true
+
+volumes:
+  pgdata_v2:
+  caddy_config:
+  caddy_data:

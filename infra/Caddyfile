@@ -1,0 +1,9 @@
+#try.astro.arkphys.ru {
+#    reverse_proxy web:80
+#}
+astro.arkphys.ru {
+    reverse_proxy web2:80
+}
+prak.mosastro.ru {
+    reverse_proxy web:80
+}

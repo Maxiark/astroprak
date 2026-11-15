@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1",
+  "solution_id": "2023-F-11-7.v2.worked",
+  "revision": 1,
+  "task_ref": {
+    "task_id": "2023-F-11-7.v2",
+    "revision": 1
+  },
+  "status": "reviewed",
+  "title": "Решение",
+  "language": "ru",
+  "assets": [
+    {
+      "id": "solution-003",
+      "path": "assets/solution/solution-003.webp",
+      "access": "solution",
+      "sha256": "4de02e9c831e38c1581dc5d478b2491d40df6436a9dcae314cabe82d794d5023",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-004",
+      "path": "assets/solution/solution-004.webp",
+      "access": "solution",
+      "sha256": "4707545a8e57fba3cc836cfddc5d2e2e3dccd3ee3f5e9adb4ecdb8d58e2a1207",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-005",
+      "path": "assets/solution/solution-005.webp",
+      "access": "solution",
+      "sha256": "7174b2ed5f00a8195c5cecefe1d8278599b3d46fe4c155361085dc617a95a47c",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-006",
+      "path": "assets/solution/solution-006.webp",
+      "access": "solution",
+      "sha256": "155d980900f1455acefbb6fecb81cb86d76278e6c8e13350faa3f7ce3e1a5130",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-007",
+      "path": "assets/solution/solution-007.webp",
+      "access": "solution",
+      "sha256": "d54b0081ab4010cdd29e7dc5db89562ab01fa70974ee455224d66efc11f834ec",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-008",
+      "path": "assets/solution/solution-008.webp",
+      "access": "solution",
+      "sha256": "1072b99d0b65710ea44a3f7db559aa72e1112954b095e11c3484e3285789beb1",
+      "media_type": "image/webp"
+    }
+  ],
+  "methods": [
+    {
+      "id": "standard",
+      "title": "Решение",
+      "steps": [
+        {
+          "id": "official",
+          "title": "Полный официальный разбор и критерии",
+          "body": [
+            {
+              "type": "figure",
+              "asset_id": "solution-003",
+              "alt": "Официальное решение и критерии, страница 1",
+              "caption": "Оригинал, стр. 1."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-004",
+              "alt": "Официальное решение и критерии, страница 2",
+              "caption": "Оригинал, стр. 2."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-005",
+              "alt": "Официальное решение и критерии, страница 3",
+              "caption": "Оригинал, стр. 3."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-006",
+              "alt": "Официальное решение и критерии, страница 4",
+              "caption": "Оригинал, стр. 4."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-007",
+              "alt": "Официальное решение и критерии, страница 5",
+              "caption": "Оригинал, стр. 5."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-008",
+              "alt": "Официальное решение и критерии, страница 6",
+              "caption": "Оригинал, стр. 6."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [],
+          "depends_on": []
+        }
+      ],
+      "results": []
+    }
+  ]
+}

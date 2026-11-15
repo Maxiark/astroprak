@@ -1,0 +1,66 @@
+{
+  "task_id": "2023-R-9-6",
+  "render_scale": 2.2,
+  "regions": [
+    {
+      "asset_id": "public-001",
+      "source_id": "original",
+      "page": 2,
+      "crop_pt": [
+        22,
+        161.61,
+        573.22,
+        804.0
+      ],
+      "width": 1214,
+      "height": 1414,
+      "sha256": "f02cce6d19b1d4fd40e695e2f39ecbb3c46f81a4883daba530186a4c332dfd35",
+      "source_sha256": "3dfbcc2d0c7856d4bbe245e88c2427e6bc1621ab842c1261f10986081aaa503a"
+    },
+    {
+      "asset_id": "solution-002",
+      "source_id": "official-solution",
+      "page": 7,
+      "crop_pt": [
+        22,
+        446.21,
+        573.3,
+        803.89
+      ],
+      "width": 1214,
+      "height": 788,
+      "sha256": "29095c09dff198407a0863917dc8659454d7e4fde3ec6143ac222ad537bc3b73",
+      "source_sha256": "4fee191b86f8c38dfcc3ee38191a8fdabd6d866dc004e3905109fd8575a0b787"
+    },
+    {
+      "asset_id": "solution-003",
+      "source_id": "official-solution",
+      "page": 8,
+      "crop_pt": [
+        22,
+        42,
+        573.3,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "af9935670ee89d77c862f7d2124afec9679d6f7dd20bf98ac6e9d39a3f9bd2e7",
+      "source_sha256": "4fee191b86f8c38dfcc3ee38191a8fdabd6d866dc004e3905109fd8575a0b787"
+    },
+    {
+      "asset_id": "solution-004",
+      "source_id": "official-solution",
+      "page": 9,
+      "crop_pt": [
+        22,
+        42,
+        573.3,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "c97feaeafbff7e1aa3f3152ce72b4fba5258e7dd65f7edf9796fe4e04bd4779b",
+      "source_sha256": "4fee191b86f8c38dfcc3ee38191a8fdabd6d866dc004e3905109fd8575a0b787"
+    }
+  ]
+}

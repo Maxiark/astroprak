@@ -1,0 +1,20 @@
+{
+  "schema_version": "2.0",
+  "id": "theory-1d",
+  "title": "Тема 1: Гистограммы и одномерный анализ",
+  "kind": "theory",
+  "version": "1.0.0",
+  "hidden": false,
+  "tags": {
+    "class": [
+      9,
+      10,
+      11
+    ],
+    "category": "Урок 1",
+    "topic": "теория и методы",
+    "category_order": 100
+  },
+  "max_score": 0.0,
+  "entry_point": "widget.html"
+}

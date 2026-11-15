@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0",
+  "id": "jet-superluminal",
+  "version": 1,
+  "kind": "generated",
+  "title": "узлы джета по эпохам → сверхсветовое движение → скорость джета",
+  "language": "ru",
+  "model": {
+    "id": "jet-superluminal",
+    "version": "0.1.0"
+  },
+  "sources": [
+    {
+      "id": "validation",
+      "title": "Модель и валидация jet-superluminal",
+      "locator": "packages/astrosim/docs/validation/jet_superluminal.md",
+      "role": "validation",
+      "rights": "Материал проекта"
+    }
+  ],
+  "statement_template": {
+    "title": "Джет {designation}",
+    "text": "На РСДБ-картах активного ядра галактики {designation} (частота 22 ГГц) в течение {fmt_span_2} года прослеживались два узла джета — A и B. Ниже показано их угловое расстояние от ядра в зависимости от эпохи наблюдений (в годах от первой карты). Красное смещение галактики z = {fmt_z_3}, угол между направлением выброса джета и лучом зрения θ = {theta}°. Постоянную Хаббла примите H = 70 км/(с·Мпк); z ≪ 1.",
+    "asks": [
+      "Определите угловую скорость удаления узлов от ядра, используя оба узла.",
+      "Найдите расстояние до галактики.",
+      "Найдите видимую скорость движения узлов в картинной плоскости в долях скорости света.",
+      "Постройте модель явления и определите, на сколько скорость джета отличается от скорости света, — величину 1 − v/c."
+    ],
+    "note": "Наклон — по отрезку между точками ряда: «Отрезок» показывает Δt и Δs. Ответы — с двумя значащими цифрами."
+  },
+  "answers": [
+    {
+      "id": "mu",
+      "label": "μ",
+      "unit": "мсд/год",
+      "kind": "number",
+      "hint": "угловая скорость узлов, миллисекунд дуги в год"
+    },
+    {
+      "id": "distance",
+      "label": "r",
+      "unit": "Мпк",
+      "kind": "number",
+      "hint": ""
+    },
+    {
+      "id": "apparent",
+      "label": "u",
+      "unit": "c",
+      "kind": "number",
+      "hint": "видимая скорость в картинной плоскости, в долях c"
+    },
+    {
+      "id": "one_minus_beta",
+      "label": "1 − v/c",
+      "unit": "",
+      "kind": "number",
+      "hint": "например 0,014"
+    }
+  ],
+  "parts": [
+    {
+      "id": "part-1",
+      "answer_ids": [
+        "mu"
+      ]
+    },
+    {
+      "id": "part-2",
+      "answer_ids": [
+        "distance"
+      ]
+    },
+    {
+      "id": "part-3",
+      "answer_ids": [
+        "apparent"
+      ]
+    },
+    {
+      "id": "part-4",
+      "answer_ids": [
+        "one_minus_beta"
+      ]
+    }
+  ],
+  "tools": [
+    "cursor",
+    "loupe",
+    "segment"
+  ],
+  "solution_template": {
+    "title": "Разбор задачи",
+    "steps": [
+      {
+        "id": "step-1",
+        "title": "μ",
+        "text": "Каждый узел удаляется от ядра равномерно. По отрезку между первой и последней точкой ряда A наклон Δs/Δt ≈ {fmt_slope_a_3} мсд/год, ряда B — {fmt_slope_b_3} мсд/год; среднее μ ≈ {fmt_mu} мсд/год. Разброс точек около прямой σ ≈ {fmt_sigma_2} мсд, поэтому по одному узлу ошибка наклона вдвое больше, чем по двум.",
+        "answer_ids": [
+          "mu"
+        ],
+        "part_ids": [
+          "part-1"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-2",
+        "title": "r",
+        "text": "При z ≪ 1 расстояние r = cz/H = 2,998·10⁵ · {fmt_z_3} / 70 = {fmt_r_mpc} Мпк.",
+        "answer_ids": [
+          "distance"
+        ],
+        "part_ids": [
+          "part-2"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-3",
+        "title": "u",
+        "text": "Угловая скорость 1″/год на расстоянии 1 пк — это 1 а. е./год = {fmt_KM_S_PER_ARCSEC_YR_PC_3} км/с. Видимая скорость u = μ r = {fmt_mu_0_001_3}″/год · {fmt_r_mpc_1000000_0_3} пк · 4,74 км/с = {fmt_u_kms_3} км/с = {fmt_u} c — больше скорости света.",
+        "answer_ids": [
+          "apparent"
+        ],
+        "part_ids": [
+          "part-3"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-4",
+        "title": "1 − v/c",
+        "text": "Пусть узел вылетел из ядра в момент t̃ = 0 со скоростью v под углом θ к лучу зрения. К моменту t̃ он прошёл vt̃, а свет от него доходит до наблюдателя на vt̃ cos θ / c раньше, чем свет, вышедший из ядра в тот же момент: наблюдаемое время t = t̃ (1 − (v/c) cos θ), угловое смещение φ = vt̃ sin θ / r. Отсюда u = v sin θ / (1 − (v/c) cos θ): «сверхсветовая» скорость получается без всякой теории относительности. Обратно: v/c = u / (sin θ + u cos θ) = {fmt_u} / ({fmt_math_sin_th_3} + {fmt_u} · {fmt_math_cos_th_3}) = {fmt_beta_4}, 1 − v/c = {fmt_one_minus_beta}.",
+        "answer_ids": [
+          "one_minus_beta"
+        ],
+        "part_ids": [
+          "part-4"
+        ],
+        "depends_on": []
+      }
+    ]
+  },
+  "bindings": {
+    "statement": [
+      "designation",
+      "fmt_span_2",
+      "fmt_z_3",
+      "theta"
+    ],
+    "solution": [
+      "fmt_slope_a_3",
+      "fmt_slope_b_3",
+      "fmt_mu",
+      "fmt_sigma_2",
+      "fmt_z_3",
+      "fmt_r_mpc",
+      "fmt_KM_S_PER_ARCSEC_YR_PC_3",
+      "fmt_mu_0_001_3",
+      "fmt_r_mpc_1000000_0_3",
+      "fmt_u_kms_3",
+      "fmt_u",
+      "fmt_math_sin_th_3",
+      "fmt_math_cos_th_3",
+      "fmt_beta_4",
+      "fmt_one_minus_beta"
+    ]
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0",
+  "id": "transit-depth",
+  "version": 1,
+  "kind": "generated",
+  "title": "кривая блеска транзита → радиус планеты и температура",
+  "language": "ru",
+  "model": {
+    "id": "transit-depth",
+    "version": "0.1.0"
+  },
+  "sources": [
+    {
+      "id": "validation",
+      "title": "Модель и валидация transit-depth",
+      "locator": "packages/astrosim/docs/validation/transit_depth.md",
+      "role": "validation",
+      "rights": "Материал проекта"
+    }
+  ],
+  "statement_template": {
+    "title": "{designation}",
+    "text": "У звезды {designation} транзитным методом обнаружена планета. Радиус звезды R_* = {fmt_r_star_2} R_☉, масса M_* = {fmt_m_star_2} M_☉, эффективная температура T_* = {t_star} К; орбитальный период планеты P = {fmt_period_3} сут, орбита круговая, планета проходит через центр диска звезды. Ниже дана кривая блеска: относительный поток в зависимости от времени в часах от середины транзита. Потемнением диска к краю пренебречь.",
+    "asks": [
+      "Определите глубину транзита δ (в долях потока вне транзита).",
+      "Найдите радиус планеты в радиусах Земли (R_⊕ = 6378 км).",
+      "Найдите большую полуось орбиты планеты в астрономических единицах.",
+      "Оцените равновесную температуру планеты, считая её альбедо нулевым, а тепло — переносящимся по всей поверхности."
+    ],
+    "note": "Измерения отмечайте на графике. Ответы — с двумя значащими цифрами, единицы — как указано на бланке."
+  },
+  "answers": [
+    {
+      "id": "depth",
+      "label": "δ",
+      "unit": "",
+      "kind": "number",
+      "hint": "глубина транзита в долях потока, например 0,0092"
+    },
+    {
+      "id": "radius",
+      "label": "R_p",
+      "unit": "R_⊕",
+      "kind": "number",
+      "hint": ""
+    },
+    {
+      "id": "a_au",
+      "label": "a",
+      "unit": "а. е.",
+      "kind": "number",
+      "hint": ""
+    },
+    {
+      "id": "t_eq",
+      "label": "T_eq",
+      "unit": "К",
+      "kind": "number",
+      "hint": "альбедо 0, тепло переносится по всей поверхности"
+    }
+  ],
+  "parts": [
+    {
+      "id": "part-1",
+      "answer_ids": [
+        "depth"
+      ]
+    },
+    {
+      "id": "part-2",
+      "answer_ids": [
+        "radius"
+      ]
+    },
+    {
+      "id": "part-3",
+      "answer_ids": [
+        "a_au"
+      ]
+    },
+    {
+      "id": "part-4",
+      "answer_ids": [
+        "t_eq"
+      ]
+    }
+  ],
+  "tools": [
+    "cursor",
+    "loupe",
+    "extremum",
+    "segment"
+  ],
+  "solution_template": {
+    "title": "Разбор задачи",
+    "steps": [
+      {
+        "id": "step-1",
+        "title": "δ",
+        "text": "Глубина транзита — разность потоков вне транзита и на плоском дне: δ ≈ {fmt_depth} (полная длительность T14 ≈ {fmt_t14_h} ч, плоское дно T23 ≈ {fmt_t23_h} ч).",
+        "answer_ids": [
+          "depth"
+        ],
+        "part_ids": [
+          "part-1"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-2",
+        "title": "R_p",
+        "text": "Диск планеты закрывает долю δ диска звезды: (R_p/R_*)² = δ, R_p = R_* √δ = {fmt_r_star_2} · {fmt_R_SUN_1000_0_3} км · {fmt_math_sqrt_depth} = {fmt_r_p_m_1000_0_3} км = {fmt_r_p_earth} R_⊕.",
+        "answer_ids": [
+          "radius"
+        ],
+        "part_ids": [
+          "part-2"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-3",
+        "title": "a",
+        "text": "Третий закон Кеплера (масса планеты мала): a = (G M_* P² / 4π²)^(1/3) = {fmt_a_m_1000_0_3} км = {fmt_a_au} а. е.",
+        "answer_ids": [
+          "a_au"
+        ],
+        "part_ids": [
+          "part-3"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-4",
+        "title": "T_eq",
+        "text": "Баланс энергии при нулевом альбедо и полном переносе тепла: T_eq = T_* √(R_*/2a) = {t_star} · √({fmt_r_star_m_1000_0_3} / (2 · {fmt_a_m_1000_0_3})) = {fmt_t_eq} К.",
+        "answer_ids": [
+          "t_eq"
+        ],
+        "part_ids": [
+          "part-4"
+        ],
+        "depends_on": []
+      }
+    ]
+  },
+  "bindings": {
+    "statement": [
+      "designation",
+      "fmt_r_star_2",
+      "fmt_m_star_2",
+      "t_star",
+      "fmt_period_3"
+    ],
+    "solution": [
+      "fmt_depth",
+      "fmt_t14_h",
+      "fmt_t23_h",
+      "fmt_r_star_2",
+      "fmt_R_SUN_1000_0_3",
+      "fmt_math_sqrt_depth",
+      "fmt_r_p_m_1000_0_3",
+      "fmt_r_p_earth",
+      "fmt_a_m_1000_0_3",
+      "fmt_a_au",
+      "t_star",
+      "fmt_r_star_m_1000_0_3",
+      "fmt_t_eq"
+    ]
+  }
+}

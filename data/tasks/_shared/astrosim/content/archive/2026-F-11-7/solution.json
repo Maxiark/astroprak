@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1",
+  "solution_id": "2026-F-11-7.v2.worked",
+  "revision": 1,
+  "task_ref": {
+    "task_id": "2026-F-11-7.v2",
+    "revision": 1
+  },
+  "status": "reviewed",
+  "title": "Решение",
+  "language": "ru",
+  "assets": [
+    {
+      "id": "solution-002",
+      "path": "assets/solution/solution-002.webp",
+      "access": "solution",
+      "sha256": "366e637ad2e2bbf6ea9fb3b593be5bc0ddf5e51df573b908c410ca7486fc624c",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-003",
+      "path": "assets/solution/solution-003.webp",
+      "access": "solution",
+      "sha256": "495acbc7ff6abb01fdb11caa3b36710397088c0a78734c6144ed19f3b2f9d39e",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-004",
+      "path": "assets/solution/solution-004.webp",
+      "access": "solution",
+      "sha256": "873e19015fbceb1533f0b630d141a7a92764dcd48525e20c6c81339531cecfd2",
+      "media_type": "image/webp"
+    }
+  ],
+  "methods": [
+    {
+      "id": "standard",
+      "title": "Решение",
+      "steps": [
+        {
+          "id": "official",
+          "title": "Полный официальный разбор и критерии",
+          "body": [
+            {
+              "type": "figure",
+              "asset_id": "solution-002",
+              "alt": "Официальное решение и критерии, страница 2",
+              "caption": "Оригинал, стр. 2."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-003",
+              "alt": "Официальное решение и критерии, страница 3",
+              "caption": "Оригинал, стр. 3."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-004",
+              "alt": "Официальное решение и критерии, страница 4",
+              "caption": "Оригинал, стр. 4."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [],
+          "depends_on": []
+        }
+      ],
+      "results": []
+    }
+  ]
+}

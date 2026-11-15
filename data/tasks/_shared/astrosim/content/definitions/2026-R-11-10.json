@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.0",
+  "id": "2026-R-11-10",
+  "version": 2,
+  "kind": "archive",
+  "title": "Сверхновая задача",
+  "language": "ru",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2026, условия, 11 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-reg-prob-day2-11.pdf",
+      "role": "original",
+      "pages": [
+        2
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2026, решения и критерии, 11 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-reg-sol-day2-11.pdf",
+      "role": "reference",
+      "pages": [
+        11
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "statement_template": {
+    "title": "Сверхновая задача",
+    "text": "DM(t) повторяющегося FRB за ~3 года с линией наилучшей линейной модели.",
+    "asks": [
+      "Определить: скорость изменения DM, возраст остатка, скорость расширения, радиус."
+    ],
+    "note": "Условие, исходные данные и бланк доступны в задании. Решение раскрывается после сдачи."
+  },
+  "answers": [
+    {
+      "id": "answer",
+      "kind": "text",
+      "label": "Ответ",
+      "unit": "",
+      "hint": "Запишите результаты с единицами, выводы и требуемые в условии ответы."
+    },
+    {
+      "id": "reasoning",
+      "kind": "text",
+      "label": "Ход решения",
+      "unit": "",
+      "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+    },
+    {
+      "id": "measurements",
+      "kind": "points",
+      "label": "Измерения на рисунках",
+      "unit": "",
+      "hint": ""
+    }
+  ],
+  "parts": [
+    {
+      "id": "original-task",
+      "answer_ids": [
+        "answer",
+        "reasoning",
+        "measurements"
+      ]
+    }
+  ],
+  "tools": [
+    "image-zoom",
+    "image-ruler"
+  ],
+  "solution_template": {
+    "title": "Официальное решение",
+    "steps": [
+      {
+        "id": "official",
+        "title": "Решение и критерии оценивания",
+        "blocks": [
+          {
+            "type": "source_excerpt",
+            "source_id": "official-solution",
+            "pages": [
+              11
+            ],
+            "note": "Официальное решение и критерии задания 10. Начало разбора на странице 11 PDF."
+          }
+        ],
+        "part_ids": [
+          "original-task"
+        ],
+        "answer_ids": [],
+        "depends_on": []
+      }
+    ]
+  },
+  "archive": {
+    "year": 2026,
+    "grade": 11,
+    "stage": "regional",
+    "number": 10,
+    "points": 20,
+    "authors": [
+      "М. В. Костина"
+    ],
+    "domain": "radio",
+    "condition_source_id": "original",
+    "condition_pages": [
+      2
+    ]
+  },
+  "package_path": "archive/2026-R-11-10/task.json"
+}

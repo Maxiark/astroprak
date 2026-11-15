@@ -1,0 +1,120 @@
+{
+  "schema_version": "0.1",
+  "solution_id": "2026-R-11-5.v2.worked",
+  "revision": 1,
+  "task_ref": {
+    "task_id": "2026-R-11-5.v2",
+    "revision": 1
+  },
+  "status": "reviewed",
+  "title": "Решение",
+  "language": "ru",
+  "assets": [
+    {
+      "id": "solution-003",
+      "path": "assets/solution/solution-003.webp",
+      "access": "solution",
+      "sha256": "e54fe94cf9e3b0e4c4659eed32502dec558284bd9ad193aeb6988f1ca6e8972b",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-004",
+      "path": "assets/solution/solution-004.webp",
+      "access": "solution",
+      "sha256": "f352d05b021cecc5286d9acfc3f175efa1cb5c22f4d3ac1c69c63a66623de2af",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-005",
+      "path": "assets/solution/solution-005.webp",
+      "access": "solution",
+      "sha256": "d1a732c72f438e96bda5ad943a21951e867323c398326395cf65cd1ee8521dd9",
+      "media_type": "image/webp"
+    }
+  ],
+  "methods": [
+    {
+      "id": "standard",
+      "title": "Решение",
+      "steps": [
+        {
+          "id": "spectrum",
+          "title": "Скорость вращения и расстояние",
+          "body": [
+            {
+              "type": "markdown",
+              "text": "По спектрам $\\lambda_1\\approx5030\\,\\text{Å}$, $\\lambda_2\\approx5047\\,\\text{Å}$. Отделяем вращение от общей скорости галактики:\n\n$$v=c\\frac{\\lambda_2-\\lambda_1}{\\lambda_1+\\lambda_2}\\approx106\\,\\text{а.е./год}.$$\n\nСредняя длина волны $\\bar\\lambda=5038{,}5\\,\\text{Å}$, лабораторная — $\\lambda_0=5007\\,\\text{Å}$. Тогда $z=(\\bar\\lambda-\\lambda_0)/\\lambda_0\\approx0{,}0063$ и $d=cz/H_0\\approx27\\,\\text{Мпк}$."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [],
+          "depends_on": []
+        },
+        {
+          "id": "mass",
+          "title": "Радиус диска и центральная масса",
+          "body": [
+            {
+              "type": "markdown",
+              "text": "Из отношения размеров на снимке получаем угловой радиус $\\theta\\approx0{,}33''$. По определению парсека $R[\\text{а.е.}]=\\theta['']d[\\text{пк}]\\approx8{,}9\\cdot10^6\\,\\text{а.е.}$.\n\n$$M=\\frac{v^2R}{G}\\approx2{,}5\\cdot10^9 M_\\odot.$$\n\nВ единицах а.е., год и солнечная масса $G=4\\pi^2$. В СИ результат получается тем же после перевода единиц."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [
+            "mass"
+          ],
+          "depends_on": [
+            "spectrum"
+          ]
+        },
+        {
+          "id": "official",
+          "title": "Полный официальный разбор и критерии",
+          "body": [
+            {
+              "type": "figure",
+              "asset_id": "solution-003",
+              "alt": "Официальное решение и критерии, страница 10",
+              "caption": "Оригинал, стр. 10."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-004",
+              "alt": "Официальное решение и критерии, страница 11",
+              "caption": "Оригинал, стр. 11."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-005",
+              "alt": "Официальное решение и критерии, страница 12",
+              "caption": "Оригинал, стр. 12."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [],
+          "depends_on": []
+        }
+      ],
+      "results": [
+        {
+          "answer_id": "mass",
+          "body": [
+            {
+              "type": "markdown",
+              "text": "$\\boxed{M\\approx2{,}5\\cdot10^9 M_\\odot}$ — в бланке: $2{,}5$."
+            }
+          ],
+          "step_ids": [
+            "mass"
+          ]
+        }
+      ]
+    }
+  ]
+}

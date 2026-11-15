@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2026-F-10-7.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2026, условия, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-final-prob-P-10.pdf",
+      "role": "original",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2026, решения и критерии, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-final-sol-P-10.pdf",
+      "role": "reference",
+      "pages": [
+        2
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "6f3c5ce0804175ec8817e8d59ffe15468749152640354d214d9f44b19fcb264d",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-002",
+      "path": "assets/public/public-002.webp",
+      "access": "public",
+      "sha256": "e017976f4d824b223ab6ed19d38b070531240bf1266864436fe15fbf2ea288b3",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "Орлиный глаз",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 1",
+        "caption": "Оригинал, стр. 1."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-002",
+        "alt": "Условие и исходные данные, страница 2",
+        "caption": "Оригинал, стр. 2."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: высота Солнца над горизонтом."
+          }
+        ],
+        "answer_ids": [
+          "answer",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "answer",
+        "kind": "text",
+        "label": "Ответ",
+        "unit": "",
+        "hint": "Запишите результаты с единицами, выводы и требуемые в условии ответы."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": []
+  }
+}

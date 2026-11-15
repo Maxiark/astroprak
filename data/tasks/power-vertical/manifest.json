@@ -1,0 +1,24 @@
+{
+  "schema_version": "2.0",
+  "id": "power-vertical",
+  "title": "Power Vertical: Статистика вертикального диска",
+  "kind": "generated",
+  "version": "2.2.0",
+  "tags": {
+    "class": [
+      9,
+      10,
+      11
+    ],
+    "topic": "галактики",
+    "skills": [
+      "гистограммы",
+      "анализ распределений"
+    ],
+    "category": "Урок 1",
+    "category_order": 11
+  },
+  "max_score": 5.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

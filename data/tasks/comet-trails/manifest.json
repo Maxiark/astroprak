@@ -1,0 +1,24 @@
+{
+  "schema_version": "2.0",
+  "id": "comet-trails",
+  "title": "следы звёзд на снимке → скорость кометы",
+  "kind": "generated",
+  "version": "1.0.0",
+  "hidden": false,
+  "tags": {
+    "class": [
+      9,
+      10,
+      11
+    ],
+    "topic": "малые тела Солнечной системы и астрометрия",
+    "skills": [
+      "измерение треков на снимке",
+      "сферическая сетка cos δ",
+      "параболическая скорость"
+    ]
+  },
+  "max_score": 25.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

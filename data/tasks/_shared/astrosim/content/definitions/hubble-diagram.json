@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0",
+  "id": "hubble-diagram",
+  "version": 1,
+  "kind": "generated",
+  "title": "диаграмма Хаббла → темп и характерное время расширения",
+  "language": "ru",
+  "model": {
+    "id": "hubble-diagram",
+    "version": "0.1.0"
+  },
+  "sources": [
+    {
+      "id": "nasa-hubble",
+      "title": "NASA: What Does Hubble’s Law Mean?",
+      "locator": "https://imagine.gsfc.nasa.gov/features/yba/M31_velocity/hubble_law/hubble_meaning.html",
+      "role": "reference",
+      "rights": "Ссылка на источник; данные задания синтетические."
+    },
+    {
+      "id": "validation",
+      "title": "Валидация модели",
+      "locator": "packages/astrosim/docs/validation/hubble_diagram.md",
+      "role": "validation",
+      "rights": "Ссылка на источник; данные задания синтетические."
+    }
+  ],
+  "statement_template": {
+    "title": "{designation}",
+    "text": "В выборке {designation} расстояния до галактик определены независимо от красного смещения. На графике даны их скорости удаления. Используйте линейный закон $v = H_0 d$; разброс скоростей относительно него имеет σ = {sigma} км/с. Ошибками расстояний пренебречь. У отдельной галактики скорость удаления {query_velocity} км/с; её пекулярную скорость считайте нулевой.",
+    "asks": [
+      "Оцените постоянную Хаббла H₀ по графику.",
+      "Найдите характерное время расширения t_H = 1/H₀.",
+      "Найдите расстояние до отдельной галактики из условия."
+    ],
+    "note": "Снимайте значения курсором. Точность ответа согласуйте с шумом наблюдений; используйте две–три значащие цифры."
+  },
+  "answers": [
+    {
+      "id": "hubble",
+      "label": "H₀",
+      "unit": "км/(с·Мпк)",
+      "kind": "number",
+      "hint": "Наклон зависимости v(d); используйте несколько далёких точек."
+    },
+    {
+      "id": "time",
+      "label": "t_H",
+      "unit": "млрд лет",
+      "kind": "number",
+      "hint": "Хаббловское время 1/H₀, не точный возраст Вселенной."
+    },
+    {
+      "id": "distance",
+      "label": "d",
+      "unit": "Мпк",
+      "kind": "number",
+      "hint": "Для галактики со скоростью из условия."
+    }
+  ],
+  "parts": [
+    {
+      "id": "part-1",
+      "answer_ids": [
+        "hubble"
+      ]
+    },
+    {
+      "id": "part-2",
+      "answer_ids": [
+        "time"
+      ]
+    },
+    {
+      "id": "part-3",
+      "answer_ids": [
+        "distance"
+      ]
+    }
+  ],
+  "tools": [
+    "cursor",
+    "loupe",
+    "segment"
+  ],
+  "solution_template": {
+    "title": "Разбор задачи",
+    "steps": [
+      {
+        "id": "step-1",
+        "title": "H₀",
+        "text": "Прямая проходит через начало координат. Её наклон H₀ = v/d ≈ {hubble} км/(с·Мпк); усреднение по нескольким дальним галактикам уменьшает влияние случайного разброса.",
+        "answer_ids": [
+          "hubble"
+        ],
+        "part_ids": [
+          "part-1"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-2",
+        "title": "t_H",
+        "text": "Переводя 1 Мпк в километры, получаем t_H = 1/H₀ ≈ {time} млрд лет. Это характерный масштаб времени, а не определение точного возраста Вселенной.",
+        "answer_ids": [
+          "time"
+        ],
+        "part_ids": [
+          "part-2"
+        ],
+        "depends_on": [
+          "step-1"
+        ]
+      },
+      {
+        "id": "step-3",
+        "title": "d",
+        "text": "Для галактики без пекулярной скорости d = v/H₀ = {query_velocity}/H₀ ≈ {distance} Мпк.",
+        "answer_ids": [
+          "distance"
+        ],
+        "part_ids": [
+          "part-3"
+        ],
+        "depends_on": [
+          "step-1"
+        ]
+      }
+    ]
+  },
+  "bindings": {
+    "statement": [
+      "designation",
+      "query_velocity",
+      "sigma"
+    ],
+    "solution": [
+      "distance",
+      "hubble",
+      "query_velocity",
+      "time"
+    ]
+  }
+}

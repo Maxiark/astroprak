@@ -1,0 +1,9 @@
+infra/.env
+data/backups/
+data/tasks/_backups/
+data/tasks/categories.json
+**/__pycache__/
+*.pyc
+*.save*
+node_modules/
+apps/web/dist/

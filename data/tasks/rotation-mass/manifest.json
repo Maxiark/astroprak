@@ -1,0 +1,23 @@
+{
+  "schema_version": "2.0",
+  "id": "rotation-mass",
+  "title": "вращение газового диска → масса центрального объекта",
+  "kind": "generated",
+  "version": "1.0.0",
+  "hidden": false,
+  "tags": {
+    "class": [
+      10,
+      11
+    ],
+    "topic": "динамика галактик",
+    "skills": [
+      "кривая вращения диска",
+      "кеплеровская скорость",
+      "масса центрального тела"
+    ]
+  },
+  "max_score": 25.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

@@ -1,0 +1,81 @@
+{
+  "task_id": "2024-R-10-6",
+  "render_scale": 2.2,
+  "regions": [
+    {
+      "asset_id": "public-001",
+      "source_id": "original",
+      "page": 1,
+      "crop_pt": [
+        22,
+        590.61,
+        573.22,
+        804.0
+      ],
+      "width": 1214,
+      "height": 470,
+      "sha256": "2da0a049036e6b58a6cbea895a979efa00ab32b18d274437fdc338797d1c0858",
+      "source_sha256": "256bacf3075e95d6ffbbd3cdd0358913e89ac0f6e05ca4ef40880334022782e2"
+    },
+    {
+      "asset_id": "public-002",
+      "source_id": "original",
+      "page": 2,
+      "crop_pt": [
+        22,
+        42,
+        573.22,
+        804.0
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "a6a75db2e1c735eda729ac35f201f0806098598c99fa0c516ac266e461ed287d",
+      "source_sha256": "256bacf3075e95d6ffbbd3cdd0358913e89ac0f6e05ca4ef40880334022782e2"
+    },
+    {
+      "asset_id": "solution-003",
+      "source_id": "official-solution",
+      "page": 9,
+      "crop_pt": [
+        22,
+        217.65,
+        573.22,
+        804.0
+      ],
+      "width": 1214,
+      "height": 1291,
+      "sha256": "fea8b900250f0e30e9036ad29545752f9728cf8369ac710f1157621c76796d40",
+      "source_sha256": "6c0c3f21b3a3fc68c5581fbc193e5a2055f09034e2c60f8dc40f6d19a0a1da0e"
+    },
+    {
+      "asset_id": "solution-004",
+      "source_id": "official-solution",
+      "page": 10,
+      "crop_pt": [
+        22,
+        42,
+        573.22,
+        804.0
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "a9663bc491352794625afeb158a4d16e1c1a5a2eacfc4a7afa562b587023dfdf",
+      "source_sha256": "6c0c3f21b3a3fc68c5581fbc193e5a2055f09034e2c60f8dc40f6d19a0a1da0e"
+    },
+    {
+      "asset_id": "solution-005",
+      "source_id": "official-solution",
+      "page": 11,
+      "crop_pt": [
+        22,
+        42,
+        573.22,
+        804.0
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "f3dce156a7d5d2b2b89ea3d4d3ebaca57e44924e5a72b9997ec6f699742a77bc",
+      "source_sha256": "6c0c3f21b3a3fc68c5581fbc193e5a2055f09034e2c60f8dc40f6d19a0a1da0e"
+    }
+  ]
+}

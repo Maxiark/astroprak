@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Power Vertical</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card-bg: #f8fafc;
+      --border: #cbd5e1;
+      --dark: #0f172a;
+      --muted: #64748b;
+      --accent: #d3261f;
+      --primary: #2563eb;
+      --success: #16a34a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 16px;
+      color: var(--dark);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    .statement-box {
+      background: var(--card-bg);
+      border-left: 4px solid var(--primary);
+      padding: 12px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      margin-bottom: 16px;
+      color: #334155;
+    }
+    .statement-box h3 {
+      font-size: 14px;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+    .stage-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 16px;
+    }
+    .stage-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
+    }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--dark);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: #e2e8f0; }
+    .btn-green { background: var(--success); }
+
+    .data-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: monospace;
+      font-size: 11px;
+      background: #ffffff;
+      margin: 10px 0;
+    }
+    .data-matrix td {
+      border: 1px solid #e2e8f0;
+      padding: 5px 6px;
+      text-align: center;
+    }
+    .data-matrix tr:nth-child(even) { background: #f8fafc; }
+
+    .summary-badge {
+      display: inline-flex;
+      gap: 16px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #1e3a8a;
+      margin-bottom: 12px;
+    }
+
+    .counts-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+    .counts-table th, .counts-table td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .counts-table th { background: #f1f5f9; font-weight: 600; }
+    .input-count {
+      width: 50px;
+      padding: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    details {
+      margin-bottom: 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--primary); }
+    .points-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 8px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .pt-chip {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .model-card {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: var(--card-bg);
+      padding: 10px 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .model-card.active {
+      border-color: var(--accent);
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(211, 38, 31, 0.15);
+    }
+    .model-title { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+    .model-formula { font-family: monospace; font-size: 11px; color: var(--primary); margin-top: 4px; }
+
+    .slider-row { margin-bottom: 12px; }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .session-banner {
+      background: #f0fdf4;
+      border: 2px solid #86efac;
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 16px;
+      display: none;
+    }
+    .grade-detail-box {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #ffffff;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .grade-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+    .grade-row:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <div id="widget-root">
+
+    <div class="statement-box">
+      <h3>Условие задачи (S.1.1 Power Vertical)</h3>
+      <div id="statement-text">
+        Вам даны значения z-координат («высот» над диском в кпк) модельных объектов плоской подсистемы Галактики (N = 100 объектов).
+        Проведите исследование пространственного распределения: проведите разбиение набора на группы, определите форму профиля n(z) и оцените его физические параметры. n(z) - концентрация объектов на данной высоте.
+      </div>
+    </div>
+
+    <div class="stage-bar">
+      <span class="stage-title" id="stage-badge">Этап 0 из 5: Первичный осмотр данных</span>
+      <span style="font-size: 12px; color: var(--muted);" id="points-total-badge">N = 100 точек</span>
+    </div>
+
+    <!-- ЭТАП 0: Выбор M -->
+    <div id="step-0">
+      <div class="summary-badge" id="data-stats-bar">
+        <span>Загрузка данных...</span>
+      </div>
+
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+        Экспериментальная выборка измеренных высот $z$ (кпк):
+      </div>
+      
+      <div style="max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 16px;">
+        <table class="data-matrix" id="points-matrix"></table>
+      </div>
+
+      <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 14px;">
+        <div style="font-size: 13px; margin-bottom: 8px;">
+          Оцените границы выборки и предложите, на сколько равных интервалов (групп) вы хотите разбить диапазон высот:
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="font-size: 13px; font-weight: 600;">Число групп (M):</label>
+          <input type="number" id="init-m-input" min="4" max="50" value="10"
+                 style="width: 70px; padding: 6px; font-size: 14px; border: 1px solid var(--border); border-radius: 4px; text-align: center;">
+          <span style="font-size: 12px; color: var(--muted);">(Рекомендуется правило Брукса-Каррузера $M \approx 10$)</span>
+        </div>
+      </div>
+
+      <button class="btn" id="btn-to-step-1">Перейти к подсчёту населённости групп →</button>
+    </div>
+
+    <!-- ЭТАП 1: Подсчет точек -->
+    <div id="step-1" style="display: none;">
+      <details open>
+        <summary>Список 100 высот z (кпк) (нажать: свернуть/развернуть)</summary>
+        <div class="points-chips" id="chips-pool"></div>
+      </details>
+
+      <p style="font-size: 13px; margin-bottom: 8px;">
+        Посчитайте по выборке выше и запишите, сколько точек попадает в каждый интервал
+        (левая граница включается, правая — нет):
+      </p>
+
+      <div style="overflow-x: auto;">
+        <table class="counts-table" id="manual-table">
+          <thead>
+            <tr id="table-head-row"></tr>
+            <tr id="table-range-row"></tr>
+          </thead>
+          <tbody>
+            <tr id="table-input-row"></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="btn-back-to-0">←</button>
+        <button class="btn" id="btn-verify-counts">Проверить подсчёт →</button>
+      </div>
+    </div>
+
+    <!-- ЭТАП 2: Проверка подсчета -->
+    <div id="step-2" style="display: none;">
+      <div id="verify-summary" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;"></div>
+      
+      <div style="overflow-x: auto;">
+        <table class="counts-table">
+          <thead>
+            <tr id="vhead-row"></tr>
+          </thead>
+          <tbody>
+            <tr id="vrow-user"></tr>
+            <tr id="vrow-true"></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="btn-back-to-1">←</button>
+        <button class="btn" id="btn-to-step-3">Исследовать влияние ширины бина (M) →</button>
+      </div>
+    </div>
+
+    <!-- ЭТАПЫ 3, 4, 5 -->
+    <div id="step-container" style="display: none;">
+      
+      <div class="slider-row" id="m-slider-container">
+        <div class="slider-header">
+          <span>Число интервалов разбиения (M): <strong id="m-slider-val">10</strong></span>
+          <span style="color: var(--muted);">Правило Брукса–Каррузера: $M = 5\lg(100) = 10$</span>
+        </div>
+        <input type="range" id="m-slider" min="4" max="40" step="1" value="10">
+      </div>
+
+      <div style="border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin-bottom: 14px; background: #fff;">
+        <div id="plot-title" style="font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--muted);">
+          Экспериментальная гистограмма плотности n(z)
+        </div>
+        <svg id="plot-svg" width="100%" height="230" viewBox="0 0 640 230"></svg>
+      </div>
+
+      <div id="panel-step-3">
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="btn-back-to-2">← Вернуться к проверке групп</button>
+          <button class="btn" id="btn-lock-bins">Зафиксировать разбиение и перейти к выбору модели →</button>
+        </div>
+      </div>
+
+      <div id="panel-step-4" style="display: none;">
+        <div style="font-size: 13px; font-weight: 700; margin-bottom: 6px;">
+          Выберите форму теоретического профиля:
+        </div>
+        <div class="cards-grid" id="cards-grid"></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="btn-back-to-3">← Изменить число интервалов M</button>
+          <button class="btn" id="btn-to-step-5">Подобрать параметры выбранной модели →</button>
+        </div>
+      </div>
+
+      <div id="panel-step-5" style="display: none; border-top: 1px solid var(--border); padding-top: 12px;">
+        <div style="background: #f1f5f9; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px;">
+          <span style="font-size: 13px; color: var(--muted);">Текущая модель:</span>
+          <div id="active-formula-display" style="font-size: 15px; font-weight: 700; font-family: monospace; color: var(--primary);">
+            n(z) = n0 · exp(-|z| / h)
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
+          <div>
+            <div class="slider-header">
+              <span>Масштабная высота <strong>h</strong>:</span>
+              <strong id="h-display" style="font-family: monospace;">0.22 кпк</strong>
+            </div>
+            <input type="range" id="param-h" min="0.05" max="0.45" step="0.01" value="0.22">
+          </div>
+          <div>
+            <div class="slider-header">
+              <span>Концентрация в диске <strong>n₀</strong>:</span>
+              <strong id="n0-display" style="font-family: monospace;">200 кпк⁻¹</strong>
+            </div>
+            <input type="range" id="param-n0" min="50" max="400" step="5" value="200">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="btn-back-to-4">← Выбрать другую модель</button>
+          <button class="btn btn-green" id="btn-final-submit">Зафиксировать параметры и сдать решение</button>
+        </div>
+
+        <div class="session-banner" id="session-banner">
+          <div id="session-score-title" style="font-weight: 700; color: #166534; font-size: 15px; margin-bottom: 6px;">
+            ✓ Задание успешно сдано и зафиксировано в системе!
+          </div>
+          <div id="session-grading-details" class="grade-detail-box" style="display: none;"></div>
+          <div style="font-size: 13px; color: #14532d; margin: 10px 0 6px;">
+            Код сессии для отчёта в журнале:
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="session-code-val" readonly
+                   style="font-family: monospace; font-size: 13px; padding: 6px 10px; width: 320px; border: 1px solid #86efac; border-radius: 4px; background: #fff;">
+            <button class="btn" style="padding: 6px 14px;" id="btn-copy-code">Скопировать код</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let observations = [];
+    const zMin = -1.0;
+    const zMax = 1.0;
+
+    let manualM = 10;
+    let currentM = 10;
+    let trueCounts = [];
+
+    let selectedModel = 'exp';
+    let hParam = 0.22;
+    let n0Param = 200;
+    let currentStep = 0;
+    let userSessionCode = 'a1b2c3d4e5f6789012345678abcdef01';
+
+    const MODELS = [
+      {
+        id: 'gauss',
+        title: 'Гауссово',
+        formula: 'n(z) = n₀ · exp(-z² / (2*h²))',
+        nameForSheet: 'Гауссово: n(z) = n0 * exp(-z^2 / (2 h^2))',
+        d: 'M 10,35 Q 40,5 70,35'
+      },
+      {
+        id: 'delta',
+        title: 'Дельта-всплеск',
+        formula: 'n(z) = n₀ · δ(z)',
+        nameForSheet: 'Дельта-всплеск: n(z) = n0 * delta(z)',
+        d: 'M 10,35 L 38,35 L 40,5 L 42,35 L 70,35'
+      },
+      {
+        id: 'uniform',
+        title: 'Равномерное',
+        formula: 'n(z) = n₀ при |z| ≤ h',
+        nameForSheet: 'Равномерное: n(z) = n0 при |z| <= h',
+        d: 'M 10,35 L 25,35 L 25,10 L 55,10 L 55,35 L 70,35'
+      },
+      {
+        id: 'exp',
+        title: 'Экспоненциальное',
+        formula: 'n(z) = n₀ · exp(-|z| / h)',
+        nameForSheet: 'Экспоненциальное: n(z) = n0 * exp(-|z| / h)',
+        d: 'M 10,33 L 40,5 L 70,33'
+      },
+      {
+        id: 'power',
+        title: 'Степенное',
+        formula: 'n(z) = n₀ / (1 + |z|/h)²',
+        nameForSheet: 'Степенное: n(z) = n0 / (1 + |z| / h)^2',
+        d: 'M 10,30 Q 30,25 40,10 Q 50,25 70,30'
+      }
+    ];
+
+    function fallbackData() {
+      const arr = [];
+      for (let i = 0; i < 85; i++) {
+        const u = Math.random();
+        const s = Math.random() > 0.5 ? 1 : -1;
+        arr.push(+(s * (-0.22 * Math.log(1 - u * (1 - Math.exp(-1 / 0.22))))).toFixed(3));
+      }
+      for (let i = 0; i < 15; i++) {
+        arr.push(+(-1 + 2 * Math.random()).toFixed(3));
+      }
+      return arr.sort((a, b) => a - b);
+    }
+
+    function getStorageKey() {
+      if (!observations.length) return 'astrosite_pv_default';
+      return `astrosite_pv_${observations.length}_${observations[0]}_${observations[observations.length - 1]}`;
+    }
+
+    function getUserCountsArray() {
+      const arr = [];
+      for (let i = 0; i < manualM; i++) {
+        const el = document.getElementById(`user-count-${i}`);
+        arr.push(el ? (parseInt(el.value, 10) || 0) : 0);
+      }
+      return arr;
+    }
+
+    function syncServer() {
+      const activeObj = MODELS.find(m => m.id === selectedModel);
+      window.parent.postMessage({
+        type: 'ASTROSITE_ANSWER_CHANGE',
+        answers: {
+          current_step: currentStep, 
+          initial_m: manualM,
+          user_counts: getUserCountsArray(),
+          model_type: activeObj ? activeObj.nameForSheet : selectedModel,
+          h_val: parseFloat(hParam),
+          n0_val: parseFloat(n0Param)
+        }
+      }, '*');
+
+      saveLocal();
+    }
+
+    function saveLocal() {
+      const userCounts = [];
+      for (let i = 0; i < manualM; i++) {
+        const el = document.getElementById(`user-count-${i}`);
+        userCounts.push(el ? el.value : '');
+      }
+
+      const state = {
+        step: currentStep,
+        manualM: manualM,
+        currentM: currentM,
+        userCounts: userCounts,
+        selectedModel: selectedModel,
+        hParam: hParam,
+        n0Param: n0Param,
+        isSubmitted: document.getElementById('btn-final-submit').disabled
+      };
+
+      try {
+        localStorage.setItem(getStorageKey(), JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function hideAllSteps() {
+      document.getElementById('step-0').style.display = 'none';
+      document.getElementById('step-1').style.display = 'none';
+      document.getElementById('step-2').style.display = 'none';
+      document.getElementById('step-container').style.display = 'none';
+    }
+
+    function goToStep0() {
+      currentStep = 0;
+      document.getElementById('stage-badge').textContent = 'Этап 0 из 5: Первичный осмотр данных';
+      hideAllSteps();
+      document.getElementById('step-0').style.display = 'block';
+      saveLocal();
+      reportHeight();
+    }
+
+    function goToStep1() {
+      currentStep = 1;
+      document.getElementById('stage-badge').textContent = `Этап 1 из 5: Подсчёт населённости (M = ${manualM})`;
+      hideAllSteps();
+      document.getElementById('step-1').style.display = 'block';
+      syncServer();
+      reportHeight();
+    }
+
+    function verifyCounts() {
+      let errors = 0;
+      for (let i = 0; i < manualM; i++) {
+        const val = parseInt(document.getElementById(`user-count-${i}`).value, 10) || 0;
+        if (val !== trueCounts[i]) errors++;
+      }
+
+      currentStep = 2;
+      document.getElementById('stage-badge').textContent = 'Этап 2 из 5: Контроль правильности подсчёта';
+      hideAllSteps();
+      document.getElementById('step-2').style.display = 'block';
+
+      const sumDiv = document.getElementById('verify-summary');
+      if (errors === 0) {
+        sumDiv.innerHTML = '<span style="color:var(--success)">Великолепно! Все интервалы подсчитаны абсолютно верно.</span>';
+      } else {
+        sumDiv.innerHTML = `<span style="color:var(--accent)">Найдено несовпадений в группах: ${errors}. Правильные значения приведены в нижней строке.</span>`;
+      }
+
+      buildVerificationTable();
+      saveLocal();
+      reportHeight();
+    }
+
+    function goToStep3() {
+      currentStep = 3;
+      document.getElementById('stage-badge').textContent = 'Этап 3 из 5: Подбор числа интервалов (M)';
+      hideAllSteps();
+      document.getElementById('step-container').style.display = 'block';
+      document.getElementById('m-slider-container').style.display = 'block';
+      document.getElementById('panel-step-3').style.display = 'block';
+      document.getElementById('panel-step-4').style.display = 'none';
+      document.getElementById('panel-step-5').style.display = 'none';
+
+      document.getElementById('m-slider').disabled = false;
+      document.getElementById('m-slider').value = currentM;
+      document.getElementById('m-slider-val').textContent = currentM;
+      draw();
+      saveLocal();
+      reportHeight();
+    }
+
+    function lockBinsToStep4() {
+      currentStep = 4;
+      document.getElementById('stage-badge').textContent = 'Этап 4 из 5: Выбор теоретического распределения';
+      hideAllSteps();
+      document.getElementById('step-container').style.display = 'block';
+      document.getElementById('m-slider-container').style.display = 'block';
+      document.getElementById('panel-step-3').style.display = 'none';
+      document.getElementById('m-slider').disabled = true;
+      renderCards();
+      document.getElementById('panel-step-4').style.display = 'block';
+      document.getElementById('panel-step-5').style.display = 'none';
+      draw();
+      syncServer();
+      reportHeight();
+    }
+
+    function goToStep5() {
+      currentStep = 5;
+      document.getElementById('stage-badge').textContent = 'Этап 5 из 5: Подбор параметров профиля';
+      hideAllSteps();
+      document.getElementById('step-container').style.display = 'block';
+      document.getElementById('m-slider-container').style.display = 'block';
+      document.getElementById('panel-step-3').style.display = 'none';
+      document.getElementById('panel-step-4').style.display = 'none';
+      document.getElementById('panel-step-5').style.display = 'block';
+
+      updateActiveFormula();
+      draw();
+      syncServer();
+      reportHeight();
+    }
+
+    function restoreState(draft) {
+      let targetStep = 0;
+
+      if (draft && typeof draft === 'object' && Object.keys(draft).length > 0) {
+        if (draft.current_step !== undefined) {
+          targetStep = parseInt(draft.current_step, 10) || 0;
+        }
+        if (draft.initial_m) {
+          manualM = parseInt(draft.initial_m, 10) || manualM;
+          document.getElementById('init-m-input').value = manualM;
+        }
+        if (draft.model_type) {
+          const mObj = MODELS.find(m => m.nameForSheet === draft.model_type || m.id === draft.model_type);
+          if (mObj) selectedModel = mObj.id;
+        }
+        if (draft.h_val) {
+          hParam = parseFloat(draft.h_val) || hParam;
+          document.getElementById('param-h').value = hParam;
+          document.getElementById('h-display').textContent = `${hParam.toFixed(2)} кпк`;
+        }
+        if (draft.n0_val) {
+          n0Param = parseFloat(draft.n0_val) || n0Param;
+          document.getElementById('param-n0').value = n0Param;
+          document.getElementById('n0-display').textContent = `${n0Param} кпк⁻¹`;
+        }
+      }
+
+      let s = null;
+      try {
+        const raw = localStorage.getItem(getStorageKey());
+        if (raw) s = JSON.parse(raw);
+      } catch (e) {}
+
+      if (s && typeof s.step === 'number' && s.step > targetStep) {
+        targetStep = s.step;
+      }
+
+      if (targetStep >= 1) {
+        buildManualTable();
+        const countsSource = (draft && Array.isArray(draft.user_counts)) ? draft.user_counts : (s && s.userCounts);
+        if (Array.isArray(countsSource)) {
+          countsSource.forEach((val, i) => {
+            const el = document.getElementById(`user-count-${i}`);
+            if (el) el.value = val;
+          });
+        }
+      }
+
+      if (targetStep === 0) goToStep0();
+      else if (targetStep === 1) goToStep1();
+      else if (targetStep === 2) verifyCounts();
+      else if (targetStep === 3) goToStep3();
+      else if (targetStep === 4) lockBinsToStep4();
+      else if (targetStep === 5) {
+        goToStep5();
+        if (s && s.isSubmitted) lockSubmittedUI();
+      }
+    }
+
+    function init(data, sessionCode, draft) {
+      if (sessionCode) userSessionCode = sessionCode;
+      observations = data && data.observations ? [...data.observations].sort((a,b) => a-b) : fallbackData();
+      if (data && data.statement) {
+        document.getElementById('statement-text').textContent = data.statement;
+      }
+      renderMatrix();
+      renderChips();
+      restoreState(draft);
+    }
+
+    function renderMatrix() {
+      const table = document.getElementById('points-matrix');
+      table.innerHTML = '';
+      
+      const minVal = Math.min(...observations);
+      const maxVal = Math.max(...observations);
+      const span = maxVal - minVal;
+
+      document.getElementById('data-stats-bar').innerHTML = `
+        <span><strong>Число измерений:</strong> N = ${observations.length}</span>
+        <span><strong>Минимум:</strong> ${minVal >= 0 ? '+' : ''}${minVal.toFixed(3)} кпк</span>
+        <span><strong>Максимум:</strong> ${maxVal >= 0 ? '+' : ''}${maxVal.toFixed(3)} кпк</span>
+        <span><strong>Диапазон:</strong> Δz = ${span.toFixed(3)} кпк</span>
+      `;
+
+      const cols = 10;
+      const rows = Math.ceil(observations.length / cols);
+      for (let r = 0; r < rows; r++) {
+        const tr = document.createElement('tr');
+        for (let c = 0; c < cols; c++) {
+          const idx = r * cols + c;
+          const td = document.createElement('td');
+          if (idx < observations.length) {
+            const val = observations[idx];
+            td.textContent = (val >= 0 ? '+' : '') + val.toFixed(3);
+          } else {
+            td.textContent = '—';
+          }
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      }
+    }
+
+    function renderChips() {
+      const pool = document.getElementById('chips-pool');
+      pool.innerHTML = '';
+      observations.forEach(z => {
+        const s = document.createElement('span');
+        s.className = 'pt-chip';
+        s.textContent = (z >= 0 ? '+' : '') + z.toFixed(3);
+        pool.appendChild(s);
+      });
+    }
+
+    document.getElementById('btn-to-step-1').onclick = () => {
+      manualM = parseInt(document.getElementById('init-m-input').value, 10) || 10;
+      if (manualM < 4) manualM = 4;
+      if (manualM > 20) manualM = 20;
+
+      buildManualTable();
+      goToStep1();
+    };
+
+    document.getElementById('btn-back-to-0').onclick = goToStep0;
+
+    function buildManualTable() {
+      const headRow = document.getElementById('table-head-row');
+      const rangeRow = document.getElementById('table-range-row');
+      const inputRow = document.getElementById('table-input-row');
+      headRow.innerHTML = ''; rangeRow.innerHTML = ''; inputRow.innerHTML = '';
+
+      const w = (zMax - zMin) / manualM;
+      trueCounts = new Array(manualM).fill(0);
+
+      observations.forEach(z => {
+        let b = Math.floor((z - zMin) / w);
+        if (b < 0) b = 0;
+        if (b >= manualM) b = manualM - 1;
+        trueCounts[b]++;
+      });
+
+      for (let i = 0; i < manualM; i++) {
+        const th = document.createElement('th');
+        th.textContent = `Гр. ${i + 1}`;
+        headRow.appendChild(th);
+
+        const tdR = document.createElement('td');
+        tdR.style.fontSize = '10px';
+        tdR.style.color = 'var(--muted)';
+        tdR.textContent = `[${(zMin + i * w).toFixed(2)}; ${(zMin + (i + 1) * w).toFixed(2)})`;
+        rangeRow.appendChild(tdR);
+
+        const tdIn = document.createElement('td');
+        const inp = document.createElement('input');
+        inp.type = 'number';
+        inp.className = 'input-count';
+        inp.id = `user-count-${i}`;
+        inp.placeholder = '0';
+        inp.oninput = saveLocal;
+        tdIn.appendChild(inp);
+        inputRow.appendChild(tdIn);
+      }
+    }
+
+    document.getElementById('btn-verify-counts').onclick = verifyCounts;
+    document.getElementById('btn-back-to-1').onclick = goToStep1;
+    document.getElementById('btn-to-step-3').onclick = goToStep3;
+
+    function buildVerificationTable() {
+      const vhead = document.getElementById('vhead-row');
+      const vuser = document.getElementById('vrow-user');
+      const vtrue = document.getElementById('vrow-true');
+      vhead.innerHTML = '<th>Параметр</th>';
+      vuser.innerHTML = '<td><strong>Ваш ввод:</strong></td>';
+      vtrue.innerHTML = '<td><strong>Истинное N:</strong></td>';
+
+      for (let i = 0; i < manualM; i++) {
+        const el = document.getElementById(`user-count-${i}`);
+        const userVal = el ? parseInt(el.value, 10) || 0 : 0;
+        const isOk = userVal === trueCounts[i];
+
+        const th = document.createElement('th');
+        th.textContent = `№${i + 1}`;
+        vhead.appendChild(th);
+
+        const tdU = document.createElement('td');
+        tdU.textContent = userVal;
+        tdU.style.fontWeight = 'bold';
+        tdU.style.color = isOk ? 'var(--success)' : 'var(--accent)';
+        if (!isOk) tdU.style.background = '#fee2e2';
+        vuser.appendChild(tdU);
+
+        const tdT = document.createElement('td');
+        tdT.textContent = trueCounts[i];
+        tdT.style.fontWeight = 'bold';
+        vtrue.appendChild(tdT);
+      }
+    }
+
+    const mSlider = document.getElementById('m-slider');
+    mSlider.oninput = (e) => {
+      currentM = parseInt(e.target.value, 10);
+      document.getElementById('m-slider-val').textContent = currentM;
+      draw();
+      saveLocal();
+    };
+
+    document.getElementById('btn-back-to-2').onclick = verifyCounts;
+    document.getElementById('btn-lock-bins').onclick = lockBinsToStep4;
+
+    function draw() {
+      const svg = document.getElementById('plot-svg');
+      const w = 640, h = 230;
+      const pad = { top: 15, right: 20, bottom: 35, left: 45 };
+      const pw = w - pad.left - pad.right;
+      const ph = h - pad.top - pad.bottom;
+
+      const binW = (zMax - zMin) / currentM;
+      const counts = new Array(currentM).fill(0);
+      observations.forEach(z => {
+        let i = Math.floor((z - zMin) / binW);
+        if (i < 0) i = 0;
+        if (i >= currentM) i = currentM - 1;
+        counts[i]++;
+      });
+
+      const densities = counts.map(c => c / binW);
+      const maxD = Math.max(...densities, n0Param * 1.15, 60);
+
+      const mapX = z => pad.left + ((z - zMin) / (zMax - zMin)) * pw;
+      const mapY = d => pad.top + ph - (d / maxD) * ph;
+
+      let html = '';
+      html += `<line x1="${pad.left}" y1="${mapY(0)}" x2="${pad.left + pw}" y2="${mapY(0)}" stroke="#475569" stroke-width="1.2"/>`;
+      html += `<line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top + ph}" stroke="#475569" stroke-width="1.2"/>`;
+
+      counts.forEach((c, i) => {
+        const d = c / binW;
+        const x1 = mapX(zMin + i * binW);
+        const x2 = mapX(zMin + (i + 1) * binW);
+        const y = mapY(d);
+        html += `<rect x="${x1}" y="${y}" width="${Math.max(x2 - x1 - 1, 1)}" height="${Math.max(mapY(0) - y, 0)}" fill="#f1f5f9" stroke="#cbd5e1"/>`;
+      });
+
+      if (currentStep >= 4) {
+        let path = '';
+        const steps = 140;
+        for (let i = 0; i <= steps; i++) {
+          const z = zMin + (i / steps) * (zMax - zMin);
+          let val = 0;
+          if (selectedModel === 'exp') val = n0Param * Math.exp(-Math.abs(z) / Math.max(hParam, 0.01));
+          else if (selectedModel === 'gauss') val = n0Param * Math.exp(-0.5 * Math.pow(z / Math.max(hParam, 0.01), 2));
+          else if (selectedModel === 'uniform') val = Math.abs(z) <= hParam ? n0Param : 0;
+          else if (selectedModel === 'delta') val = Math.abs(z) <= 0.035 ? n0Param * 1.5 : 0;
+          else if (selectedModel === 'power') val = n0Param / Math.pow(1 + Math.abs(z) / Math.max(hParam, 0.01), 2);
+
+          const x = mapX(z);
+          const y = mapY(val);
+          path += (i === 0 ? 'M' : 'L') + `${x.toFixed(1)},${y.toFixed(1)} `;
+        }
+        html += `<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-dasharray="6,4"/>`;
+      }
+
+      densities.forEach((d, i) => {
+        const zMid = zMin + (i + 0.5) * binW;
+        html += `<circle cx="${mapX(zMid)}" cy="${mapY(d)}" r="3.5" fill="#0f172a" stroke="#fff" stroke-width="1.2"/>`;
+      });
+
+      html += `<text x="${pad.left + pw / 2}" y="${h - 8}" font-size="11" fill="#64748b" text-anchor="middle">Высота над плоскостью z (кпк)</text>`;
+      html += `<text x="14" y="${pad.top + ph / 2}" font-size="11" fill="#64748b" text-anchor="middle" transform="rotate(-90 14 ${pad.top + ph / 2})">Плотность n(z)</text>`;
+
+      svg.innerHTML = html;
+    }
+
+    function renderCards() {
+      const box = document.getElementById('cards-grid');
+      box.innerHTML = '';
+      MODELS.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'model-card' + (m.id === selectedModel ? ' active' : '');
+        div.innerHTML = `
+          <div class="model-title">${m.title}</div>
+          <svg width="100%" height="40" viewBox="0 0 80 40">
+            <line x1="5" y1="35" x2="75" y2="35" stroke="#94a3b8" stroke-width="1"/>
+            <path d="${m.d}" fill="none" stroke="${m.id === selectedModel ? 'var(--accent)' : 'var(--dark)'}" stroke-width="2"/>
+          </svg>
+          <div class="model-formula">${m.formula}</div>
+        `;
+        div.onclick = () => {
+          selectedModel = m.id;
+          renderCards();
+          draw();
+          syncServer();
+        };
+        box.appendChild(div);
+      });
+    }
+
+    document.getElementById('btn-back-to-3').onclick = goToStep3;
+    document.getElementById('btn-to-step-5').onclick = goToStep5;
+
+    function updateActiveFormula() {
+      const m = MODELS.find(x => x.id === selectedModel);
+      let fText = m ? m.formula : '';
+      fText = fText.replace('h', `${hParam.toFixed(2)}`).replace('n₀', `${n0Param}`);
+      document.getElementById('active-formula-display').textContent = fText;
+    }
+
+    const hInp = document.getElementById('param-h');
+    const n0Inp = document.getElementById('param-n0');
+
+    hInp.oninput = (e) => {
+      hParam = parseFloat(e.target.value);
+      document.getElementById('h-display').textContent = `${hParam.toFixed(2)} кпк`;
+      updateActiveFormula();
+      draw();
+      syncServer();
+    };
+
+    n0Inp.oninput = (e) => {
+      n0Param = parseFloat(e.target.value);
+      document.getElementById('n0-display').textContent = `${n0Param} кпк⁻¹`;
+      updateActiveFormula();
+      draw();
+      syncServer();
+    };
+
+    document.getElementById('btn-back-to-4').onclick = lockBinsToStep4;
+
+    document.getElementById('btn-final-submit').onclick = () => {
+      const activeObj = MODELS.find(m => m.id === selectedModel);
+      const submitBtn = document.getElementById('btn-final-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Отправка в систему...';
+
+      window.parent.postMessage({
+        type: 'ASTROSITE_SUBMIT_ATTEMPT',
+        answers: {
+          current_step: 5,
+          initial_m: manualM,
+          user_counts: getUserCountsArray(),
+          model_type: activeObj ? activeObj.nameForSheet : selectedModel,
+          h_val: parseFloat(hParam),
+          n0_val: parseFloat(n0Param)
+        }
+      }, '*');
+
+      saveLocal();
+    };
+
+    function lockSubmittedUI(gradingInfo) {
+      hInp.disabled = true;
+      n0Inp.disabled = true;
+      const submitBtn = document.getElementById('btn-final-submit');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Работа сдана';
+      }
+      const backBtn = document.getElementById('btn-back-to-4');
+      if (backBtn) backBtn.style.display = 'none';
+
+      const banner = document.getElementById('session-banner');
+      const scoreTitle = document.getElementById('session-score-title');
+      const detailsBox = document.getElementById('session-grading-details');
+
+      // 1. Отображение итогового балла
+      const finalScore = (gradingInfo && gradingInfo.score !== undefined) ? gradingInfo.score : null;
+      const maxScore = (gradingInfo && gradingInfo.max_score !== undefined) ? gradingInfo.max_score : 5.0;
+
+      if (finalScore !== null) {
+        scoreTitle.innerHTML = `Результат проверки: <strong style="color: ${finalScore >= 3.5 ? '#16a34a' : '#d97706'}">${finalScore} из ${maxScore} баллов</strong>`;
+      } else {
+        scoreTitle.innerHTML = `✓ Задание успешно сдано и зафиксировано в системе!`;
+      }
+
+      // 2. Отображение построчного протокола ученику
+      if (gradingInfo && gradingInfo.details && Object.keys(gradingInfo.details).length > 0) {
+        const d = gradingInfo.details;
+        let detailsHtml = '';
+
+        if (d.initial_m) {
+          detailsHtml += `
+            <div class="grade-row">
+              <span>1. Число интервалов M: <strong>${d.initial_m.user ?? '—'}</strong> (критерий: 10 ± 1)</span>
+              <span style="font-weight:700; color:${d.initial_m.ok ? '#16a34a' : '#dc2626'};">${d.initial_m.score} / ${d.initial_m.max} б.</span>
+            </div>
+          `;
+        }
+
+        if (d.bin_counts) {
+          detailsHtml += `
+            <div class="grade-row">
+              <span>2. Населённость групп (${d.bin_counts.user}, допуск ≤ 3)</span>
+              <span style="font-weight:700; color:${d.bin_counts.ok ? '#16a34a' : '#dc2626'};">${d.bin_counts.score} / ${d.bin_counts.max} б.</span>
+            </div>
+          `;
+        }
+
+        if (d.model_type) {
+          detailsHtml += `
+            <div class="grade-row">
+              <span>3. Тип профиля: <strong>${d.model_type.user ?? '—'}</strong></span>
+              <span style="font-weight:700; color:${d.model_type.ok ? '#16a34a' : '#dc2626'};">${d.model_type.score} / ${d.model_type.max} б.</span>
+            </div>
+          `;
+        }
+
+        if (d.h_val) {
+          detailsHtml += `
+            <div class="grade-row">
+              <span>4. Высота h = ${d.h_val.user ?? '—'} кпк (эталон: ${d.h_val.truth} ± ${d.h_val.tol})</span>
+              <span style="font-weight:700; color:${d.h_val.ok ? '#16a34a' : '#dc2626'};">${d.h_val.score} / ${d.h_val.max} б.</span>
+            </div>
+          `;
+        }
+
+        if (d.n0_val) {
+          detailsHtml += `
+            <div class="grade-row">
+              <span>5. Концентрация n₀ = ${d.n0_val.user ?? '—'} кпк⁻¹ (эталон: ${d.n0_val.truth} ± ${d.n0_val.tol})</span>
+              <span style="font-weight:700; color:${d.n0_val.ok ? '#16a34a' : '#dc2626'};">${d.n0_val.score} / ${d.n0_val.max} б.</span>
+            </div>
+          `;
+        }
+
+        detailsBox.innerHTML = detailsHtml;
+        detailsBox.style.display = 'block';
+      }
+
+      // 3. Вывод кода сессии и раскрытие плашки
+      document.getElementById('session-code-val').value = userSessionCode;
+      banner.style.display = 'block';
+      banner.scrollIntoView({ behavior: 'smooth' });
+
+      // 4. Принудительный пересчет высоты iframe
+      setTimeout(reportHeight, 50);
+      setTimeout(reportHeight, 300);
+    }
+
+    document.getElementById('btn-copy-code').onclick = () => {
+      const codeInput = document.getElementById('session-code-val');
+      codeInput.select();
+      navigator.clipboard.writeText(codeInput.value);
+      const btn = document.getElementById('btn-copy-code');
+      btn.textContent = 'Скопировано!';
+      setTimeout(() => { btn.textContent = 'Скопировать код'; }, 2000);
+    };
+
+    // Автоматическая подгонка высоты под Workbench без мерцания
+    let lastSentHeight = 0;
+    let resizeTimer = null;
+
+    function reportHeight() {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const root = document.getElementById('widget-root');
+        const contentH = root ? Math.ceil(root.getBoundingClientRect().height) : document.body.offsetHeight;
+        if (Math.abs(contentH - lastSentHeight) > 6) {
+          lastSentHeight = contentH;
+          window.parent.postMessage({
+            type: 'ASTROSITE_FRAME_RESIZE',
+            height: contentH
+          }, '*');
+        }
+      }, 50);
+    }
+
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight);
+
+    if (window.ResizeObserver) {
+      const target = document.getElementById('widget-root') || document.body;
+      new ResizeObserver(() => reportHeight()).observe(target);
+    }
+
+    // Слушатель событий от Workbench платформы
+    window.addEventListener('message', (e) => {
+      if (!e.data) return;
+
+      if (e.data.type === 'ASTROSITE_INIT_DATA') {
+        init(e.data.data, e.data.session_code, e.data.draft);
+        if (e.data.is_submitted) {
+          lockSubmittedUI(e.data.grading);
+        }
+      }
+
+      if (e.data.type === 'ASTROSITE_SUBMIT_SUCCESS') {
+        const grading = e.data.grading || (e.data.score !== undefined ? { score: e.data.score, max_score: e.data.max_score } : null);
+        lockSubmittedUI(grading);
+      }
+    });
+
+    init(null, null, null);
+  </script>
+</body>
+</html>

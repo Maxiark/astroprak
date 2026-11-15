@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Новая методика</title>
+<style>
+:root {
+  --ink: #172d45;
+  --muted: #60758a;
+  --line: #d7e2ec;
+  --blue: #1670a8;
+  --bg: #f5f8fb;
+  --green: #177448;
+  --red: #aa4432;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0;
+  background: white;
+  color: var(--ink);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+}
+#widget-root {
+  max-width: 1160px;
+  margin: auto;
+  padding: 20px 24px 32px 24px;
+}
+h1 { font-size: 28px; line-height: 1.15; margin: 6px 0 10px; letter-spacing: -.5px; }
+h2 { font-size: 20px; margin: 0 0 12px; display: flex; align-items: center; }
+h3 { font-size: 15px; margin: 0 0 8px; }
+p { margin: 8px 0 12px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); font-weight: 700; }
+.muted { color: var(--muted); }
+.card { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: white; margin: 14px 0; }
+.note { padding: 11px 15px; background: #ecf5fb; border-left: 3px solid var(--blue); border-radius: 4px; font-size: 14px; }
+.warning { background: #fff7e5; border-left-color: #ba7d13; }
+.layout { display: grid; grid-template-columns: 330px 1fr; gap: 18px; }
+.sidebar { background: var(--bg); border-radius: 10px; padding: 15px; }
+.toolbar, .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button, select, input, textarea { font: inherit; }
+button {
+  background: white;
+  color: var(--ink);
+  border: 1px solid #bdcedd;
+  border-radius: 7px;
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+button:hover:not(:disabled) { background: #f0f6fa; }
+button.primary, button.selected { background: var(--blue); color: white; border-color: var(--blue); }
+button.primary:hover:not(:disabled) { background: #125c8a; }
+button.magic { background: #eef6ff; color: #1d4ed8; border-color: #93c5fd; font-weight: 600; }
+button.magic:hover:not(:disabled) { background: #dbeafe; }
+button:disabled { opacity: .55; cursor: default; }
+input, select, textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #bdcedd;
+  border-radius: 6px;
+  background: white;
+  color: var(--ink);
+  font-size: 14px;
+}
+input[type=checkbox] { width: auto; }
+label { display: block; font-size: 13px; font-weight: 600; margin: 8px 0 4px; }
+input[type=range] { padding: 0; accent-color: var(--blue); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 13px; }
+th, td { padding: 6px 5px; border-bottom: 1px solid var(--line); text-align: right; }
+th:first-child, td:first-child { text-align: left; }
+thead th { color: var(--muted); background: #f8fafc; }
+.table-scroll { overflow: auto; }
+.small { font-size: 12.5px; }
+.board-wrap { border: 1px solid var(--line); border-radius: 10px; background: #fcfdff; overflow: hidden; }
+#board { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; user-select: none; }
+.board-caption { font-size: 12px; color: var(--muted); padding: 8px 12px; border-top: 1px solid var(--line); background: #f8fafc; }
+.fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.metric { background: var(--bg); padding: 9px 12px; border-radius: 6px; font-size: 12.5px; }
+.metric strong { font-size: 19px; display: block; color: var(--ink); }
+.status { min-height: 22px; font-size: 13px; color: var(--muted); margin: 6px 0; }
+details { margin: 10px 0; border: 1px solid var(--line); border-radius: 7px; padding: 9px 12px; background: #fafcfe; }
+summary { cursor: pointer; font-weight: 600; font-size: 13.5px; }
+.grade-ok { color: var(--green); font-weight: 600; }
+.grade-no { color: var(--red); font-weight: 600; }
+.feedback { display: none; background: #f0fdf4; border: 2px solid #86efac; }
+.feedback.shown { display: block; }
+#grade-list div { padding: 7px 0; border-bottom: 1px dashed #bbf7d0; font-size: 13.5px; }
+.step {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: white;
+  background: var(--blue);
+  font-size: 14px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+.tag { display: inline-block; background: #e7f1f8; color: #17628c; border-radius: 4px; padding: 2px 8px; font-size: 12px; font-weight: 600; }
+.visual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0; }
+.visual-card { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: #fcfdff; }
+@media(max-width: 860px) {
+  .layout, .visual-grid { grid-template-columns: 1fr; }
+  .fields { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width: 500px) {
+  .fields { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<main id="widget-root">
+  <header>
+    <div class="eyebrow">Практикум · Геометрия наблюдений (S.1.5)</div>
+    <h1>Новая методика</h1>
+    <p id="statement">Загрузка условия задачи…</p>
+    <div class="row">
+      <span class="tag">5 звёзд</span>
+      <span class="tag">10 попарных расстояний</span>
+      <span class="tag">10 баллов</span>
+    </div>
+  </header>
+
+  <div class="note" style="margin-top:12px;">
+    Восстановите фигуру по попарным расстояниям (вручную циркулем, перетаскиванием звёзд с подсветкой попаданий или автотриангуляцией), подберите охватывающий круг поля зрения, а затем по наглядным схемам определите созвездие и инструментальную погрешность.
+  </div>
+
+  <!-- ШАГ 1 -->
+  <section class="card">
+    <h2><span class="step">1</span>Постройте конфигурацию звёзд</h2>
+    <div class="layout">
+      <aside class="sidebar">
+        <h3>Измеренные расстояния, °</h3>
+        <div id="matrix" class="table-scroll"></div>
+        <p class="small muted">Звёзды 1 (0; 0) и 4 (30.94; 0) закреплены на базовой линии. Масштаб по осям одинаков (1 клетка = 1°).</p>
+
+        <label for="star-select">Какую звезду ставим / двигаем?</label>
+        <select id="star-select">
+          <option value="2">Звезда 2</option>
+          <option value="3">Звезда 3</option>
+          <option value="5">Звезда 5</option>
+        </select>
+
+        <div class="toolbar" style="margin-top:8px;">
+          <button id="btn-auto-tri" class="magic" type="button" title="Рассчитать координаты пересечения дуг относительно базы 1–4">⚡ Автотриангуляция</button>
+          <button id="btn-mirror" type="button" title="Отразить построенную фигуру относительно оси 1–4">⇅ Отразить Y</button>
+        </div>
+
+        <label><input id="show-circles" type="checkbox" checked> Показывать окружности циркуля</label>
+        <label><input id="show-links" type="checkbox" checked> Показывать рёбра и подсветку попаданий</label>
+
+        <label for="band">Полуширина полос допуска вокруг дуг: <output id="band-value">0.00</output>°</label>
+        <input id="band" type="range" min="0" max="4" step="0.1" value="0">
+
+        <div class="two">
+          <div>
+            <label for="point-x">Условная X, °</label>
+            <input id="point-x" inputmode="decimal" placeholder="X">
+          </div>
+          <div>
+            <label for="point-y">Условная Y, °</label>
+            <input id="point-y" inputmode="decimal" placeholder="Y">
+          </div>
+        </div>
+        <div class="toolbar" style="margin-top:8px;">
+          <button id="set-point" type="button">Поставить по X, Y</button>
+          <button id="remove-point" type="button">Убрать точку</button>
+        </div>
+
+        <details>
+          <summary>Два способа построения</summary>
+          <p class="small">
+            <b>Способ А (Циркуль):</b> выберите звезду 2 и кликните в пересечение двух пунктирных дуг от звёзд 1 и 4. Затем выберите звезду 3 и 5, ориентируясь на пересечение уже трёх-четырёх дуг.<br>
+            <b>Способ Б (Прямое перетаскивание):</b> перетаскивайте точки мышью — когда длина ребра совпадёт с табличной (с точностью ≤ 0.6°), ребро загорится <b>зелёным цветом</b>!
+          </p>
+        </details>
+      </aside>
+
+      <div>
+        <div class="board-wrap">
+          <svg id="board" viewBox="-6 -16 44 32" role="img" aria-label="Геометрическая доска для построения пяти звёзд"></svg>
+          <div class="board-caption">
+            Малая клетка — 1°, крупная — 5°. Зелёная сплошная линия ребра означает точное попадание в табличное расстояние (|Δr| ≤ 0.6°).
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <div class="metric">Построено звёзд<strong id="placed">2 / 5</strong></div>
+          <div class="metric">RMS невязок расстояний<strong id="rms">—</strong></div>
+          <div class="metric">Точных рёбер (≤ 0.6°)<strong id="edges-ok">1 / 10</strong></div>
+        </div>
+        <p id="board-status" class="status" aria-live="polite"></p>
+
+        <details>
+          <summary>Таблица попарных невязок вашего чертежа</summary>
+          <div id="residuals" class="table-scroll"></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ШАГ 2 -->
+  <section class="card">
+    <h2><span class="step">2</span>Подберите минимальное поле зрения</h2>
+    <p>Круг поля зрения должен вместить все пять звёзд. Наибольшее попарное расстояние (<i>r</i><sub>14</sub> = 30.94°) задаёт нижнюю границу диаметра. Проверьте, помещаются ли остальные звёзды в этот круг.</p>
+    <div class="fields">
+      <div>
+        <label for="circle-x">Центр круга на доске: X, °</label>
+        <input id="circle-x" inputmode="decimal" value="15.47">
+      </div>
+      <div>
+        <label for="circle-y">Центр круга на доске: Y, °</label>
+        <input id="circle-y" inputmode="decimal" value="0">
+      </div>
+      <div>
+        <label for="diameter">Минимальный диаметр поля D, °</label>
+        <input id="diameter" inputmode="decimal" placeholder="напр. 31.0">
+      </div>
+    </div>
+    <div class="toolbar" style="margin-top:8px;">
+      <label style="margin:0;"><input id="show-field" type="checkbox" checked> Показывать зелёный круг поля зрения на доске</label>
+      <button id="btn-fit-circle" type="button" class="small">Поставить круг по базе 1–4 (D = 30.94°)</button>
+    </div>
+    <p id="coverage" class="status"></p>
+  </section>
+
+  <!-- ШАГ 3 -->
+  <section class="card">
+    <h2><span class="step">3</span>Опознайте участок неба и оцените погрешность измерений</h2>
+    <div class="note warning">
+      Попарные расстояния инвариантны относительно поворотов и не дают абсолютной ориентации. Чтобы найти экваториальные координаты (α, δ) и инструментальную погрешность ε, изучите две наглядные диаграммы ниже.
+    </div>
+
+    <!-- НАГЛЯДНЫЕ КАРТИНКИ ДЛЯ ОЦЕНКИ ПОГРЕШНОСТИ И СОЗВЕЗДИЯ -->
+    <div class="visual-grid">
+      <div class="visual-card">
+        <h3>А. Иллюстрация невязки пересечения дуг и площадей</h3>
+        <p class="small muted">Увеличенный фрагмент области пересечения дуг вокруг звезды 3 и схема разбиения четырёхугольника 1–2–3–5 на треугольники Герона:</p>
+        <svg id="err-illustration" viewBox="0 0 380 210" style="width:100%; height:auto; background:#fff; border:1px solid #e2e8f0; border-radius:6px;"></svg>
+        <div class="small" style="margin-top:8px; line-height:1.45;">
+          <b>Как оценить погрешность ε по чертежу и площадям:</b><br>
+          1) <i>По невязке треугольников (метод книги):</i> площадь фигуры 1–2–3–5 можно сложить двумя способами: <i>S</i><sub>125</sub> + <i>S</i><sub>235</sub> = 91.22 + 46.36 = <b>137.58 кв.°</b> или <i>S</i><sub>123</sub> + <i>S</i><sub>135</sub> = 92.57 + 43.94 = <b>136.51 кв.°</b> (расхождение Δ<i>S</i> ≈ 1.07 кв.°). Аналогично для 1–2–4–5: <i>S</i><sub>124</sub> + <i>S</i><sub>145</sub> − (<i>S</i><sub>125</sub> + <i>S</i><sub>245</sub>) ≈ −5.23 кв.°. Деление невязки площадей на чувствительность <i>k</i><sub>min</sub> даёт консервативную оценку книги: <b>ε ≈ 2°</b>.<br>
+          2) <i>По ширине треугольника невязок дуг:</i> на сферическом небе сумма <i>r</i><sub>13</sub> + <i>r</i><sub>34</sub> = 21.89° + 9.26° = 31.15° при базе <i>r</i><sub>14</sub> = 30.94° (избыток ~ 0.21°), а RMS невязок дуг составляет <b>~0.1°–0.2°</b>.
+        </div>
+      </div>
+
+      <div class="visual-card">
+        <h3>Б. Памятка: контуры ярких созвездий и координаты</h3>
+        <p class="small muted">Сравните полученную вами фигуру 1–5–2–3–4 (с характерной трапецией и «серпом» у звезды 1–5–2) с контурами известных созвездий:</p>
+        <svg id="sky-illustration" viewBox="0 0 380 210" style="width:100%; height:auto; background:#0b1528; border:1px solid #334155; border-radius:6px;"></svg>
+        <div class="small" style="margin-top:8px; line-height:1.45;">
+          <b>Ориентиры центров созвездий (α, δ):</b><br>
+          • <b>Лев:</b> α ≈ 11 ч, δ ≈ +15° (Регул α Leo — точка 1, Денебола β Leo — точка 4, расстояние ~31°)<br>
+          • <b>Орион:</b> α ≈ 5.5 ч, δ ≈ 0° (размер ~20°)<br>
+          • <b>Большая Медведица (Ковш):</b> α ≈ 12 ч, δ ≈ +55° (длина ~25°)<br>
+          • <b>Лебедь:</b> α ≈ 20.5 ч, δ ≈ +42°; &nbsp; <b>Кассиопея:</b> α ≈ 1 ч, δ ≈ +60°
+        </div>
+      </div>
+    </div>
+
+    <div class="fields">
+      <div>
+        <label for="constellation">Опознанное созвездие</label>
+        <select id="constellation">
+          <option value="">Выберите…</option>
+          <option value="Лев">Лев</option>
+          <option value="Орион">Орион</option>
+          <option value="Орёл">Орёл</option>
+          <option value="Лебедь">Лебедь</option>
+          <option value="Кассиопея">Кассиопея</option>
+          <option value="Большая Медведица">Большая Медведица</option>
+          <option value="Пегас">Пегас</option>
+        </select>
+      </div>
+      <div>
+        <label for="ra_hours">Прямое восхождение центра α, ч</label>
+        <input id="ra_hours" inputmode="decimal" placeholder="От 0 до 24 ч (напр. 11)">
+      </div>
+      <div>
+        <label for="dec_deg">Склонение центра δ, °</label>
+        <input id="dec_deg" inputmode="decimal" placeholder="От −90 до +90° (напр. 15)">
+      </div>
+    </div>
+
+    <div class="two" style="margin-top:10px;">
+      <div>
+        <label for="epsilon">Оценка инструментальной погрешности ε, °</label>
+        <input id="epsilon" inputmode="decimal" placeholder="Напр. 2 (по книге) или 0.1 (по дугам)">
+      </div>
+      <div>
+        <label for="reasoning">Краткое пояснение способа оценки (для преподавателя)</label>
+        <input id="reasoning" placeholder="Напр.: по невязке площадей Герона / по пересечению дуг">
+      </div>
+    </div>
+
+    <details style="margin-top:12px;">
+      <summary>Разбалловка автопроверки (10 баллов)</summary>
+      <p class="small" style="margin:6px 0 0;">
+        • Построение 5 звёзд на доске — <b>3 балла</b> (при RMS ≤ 0.8°; 2 балла при RMS ≤ 2.0°; 1 балл при RMS ≤ 3.5°).<br>
+        • Минимальный диаметр поля зрения D — <b>2 балла</b>.<br>
+        • Узнавание созвездия — <b>1 балл</b>; прямое восхождение α — <b>1 балл</b>; склонение δ — <b>1 балл</b>.<br>
+        • Оценка порядка инструментальной погрешности ε — <b>2 балла</b> (засчитывается как консервативная оценка книги 1–4°, так и геометрическая невязка дуг 0.05–0.5°).
+      </p>
+    </details>
+
+    <div class="toolbar" style="margin-top:14px;">
+      <button id="submit" class="primary" type="button">Зафиксировать и сдать решение</button>
+      <button id="export" type="button">Скачать JSON ответов</button>
+    </div>
+    <p id="submit-status" class="status" aria-live="polite"></p>
+  </section>
+
+  <!-- БЛОК ОБРАТНОЙ СВЯЗИ И КОДА СЕССИИ -->
+  <section id="feedback" class="card feedback" aria-live="polite">
+    <h2 id="grade-title"></h2>
+    <div id="grade-list"></div>
+    <div id="session-box" style="margin-top:12px; display:none;">
+      <div class="small" style="color:#14532d; margin-bottom:4px; font-weight:600;">Код сессии для журнала:</div>
+      <div class="row">
+        <input type="text" id="session-code-val" readonly style="max-width:340px; font-family:monospace; background:#fff; border-color:#86efac;">
+        <button type="button" id="btn-copy-code">Скопировать код</button>
+      </div>
+    </div>
+    <details open style="margin-top:12px; background:#fff;">
+      <summary>Эталонный разбор решения</summary>
+      <div id="solution" class="small"></div>
+    </details>
+  </section>
+
+  <footer class="small muted">
+    <p id="source"></p>
+  </footer>
+</main>
+
+<script>
+'use strict';
+
+const DEFAULT_DATA = {
+  statement: "Роскосмос и Росстат запустили новый аппарат для уточнения положений ярких звёзд. Измерения производятся по новой методике: определяются только попарные расстояния между пятью яркими звёздами (ярче 3m), попавшими на один кадр. Восстановите взаимное расположение звёзд, оцените минимальный диаметр поля зрения, координаты его центра и порядок инструментальной погрешности.",
+  distances: [
+    [0, 24.26, 21.89, 30.94, 11.08],
+    [24.26, 0, 8.5, 13.28, 17.79],
+    [21.89, 8.5, 0, 9.26, 12.24],
+    [30.94, 13.28, 9.26, 0, 20.57],
+    [11.08, 17.79, 12.24, 20.57, 0]
+  ],
+  stars: ["1", "2", "3", "4", "5"],
+  anchors: { "1": { x: 0.0, y: 0.0 }, "4": { x: 30.94, y: 0.0 } },
+  source: "Праководство, задача 1.2.3 (S.1.5); таблица S.8, с. 74; разбор, с. 73–76."
+};
+
+const $ = id => document.getElementById(id);
+const anchors = { '1': { x: 0, y: 0 }, '4': { x: 30.94, y: 0 } };
+let task = null;
+let positions = {};
+let locked = false;
+let busy = false;
+let drag = null;
+let saveTimer = null;
+let userSessionCode = '';
+const ids = ['diameter', 'constellation', 'ra_hours', 'dec_deg', 'epsilon', 'reasoning'];
+
+function num(v) {
+  if (v === null || v === undefined || typeof v === 'boolean' || String(v).trim() === '') return null;
+  const n = Number(String(v).replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+}
+
+function round(n) {
+  return Math.round(n * 100) / 100;
+}
+
+function send(type, payload) {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ type, ...payload }, '*');
+  }
+}
+
+function reportHeight() {
+  const root = $('widget-root');
+  if (!root) return;
+  const h = Math.ceil(root.getBoundingClientRect().height) + 28;
+  send('ASTROSITE_FRAME_RESIZE', { height: h });
+}
+
+function drawStaticIllustrations() {
+  // 1. Иллюстрация треугольника невязок дуг и формулы Герона
+  const svgErr = $('err-illustration');
+  if (svgErr) {
+    svgErr.innerHTML = `
+      <rect width="380" height="210" fill="#f8fafc"/>
+      <!-- Схема четырехугольника 1-5-2-3 слева -->
+      <text x="12" y="18" font-size="11" font-weight="700" fill="#172d45">Разбиение на треугольники Герона:</text>
+      <polygon points="20,175 75,185 135,55 135,145" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+      <line x1="20" y1="175" x2="135" y2="55" stroke="#0284c7" stroke-width="1.2" stroke-dasharray="3,2"/>
+      <line x1="75" y1="185" x2="135" y2="145" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="3,2"/>
+      <circle cx="20" cy="175" r="4" fill="#172d45"/><text x="12" y="192" font-size="11" font-weight="bold" fill="#172d45">1</text>
+      <circle cx="75" cy="185" r="4" fill="#1670a8"/><text x="72" y="200" font-size="11" font-weight="bold" fill="#1670a8">5</text>
+      <circle cx="135" cy="55" r="4" fill="#1670a8"/><text x="130" y="45" font-size="11" font-weight="bold" fill="#1670a8">2</text>
+      <circle cx="135" cy="145" r="4" fill="#1670a8"/><text x="143" y="149" font-size="11" font-weight="bold" fill="#1670a8">3</text>
+      <circle cx="185" cy="165" r="4" fill="#172d45"/><text x="182" y="182" font-size="11" font-weight="bold" fill="#172d45">4</text>
+      <line x1="135" y1="55" x2="185" y2="165" stroke="#64748b" stroke-width="1.2"/>
+      <line x1="135" y1="145" x2="185" y2="165" stroke="#64748b" stroke-width="1.2"/>
+      <line x1="20" y1="175" x2="185" y2="165" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/>
+      <text x="20" y="95" font-size="10.5" fill="#0369a1">S₁₂₅ + S₂₃₅ = 137.6 кв.°</text>
+      <text x="20" y="110" font-size="10.5" fill="#b91c1c">S₁₂₃ + S₁₃₅ = 136.5 кв.°</text>
+      <text x="20" y="125" font-size="10.5" font-weight="bold" fill="#172d45">Невязка ΔS ≈ 1.1 кв.°</text>
+
+      <!-- Увеличенный узел пересечения 3 дуг справа -->
+      <line x1="205" y1="15" x2="205" y2="195" stroke="#cbd5e1" stroke-width="1"/>
+      <text x="218" y="18" font-size="11" font-weight="700" fill="#172d45">Узел пересечения дуг (звезда 3):</text>
+      <circle cx="295" cy="115" r="42" fill="#fef3c7" stroke="#f59e0b" stroke-width="1" stroke-dasharray="2,2"/>
+      <!-- Дуги от 1, 4, 2, 5 -->
+      <path d="M 275 45 Q 295 115 280 185" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-dasharray="5,3"/>
+      <path d="M 315 45 Q 290 115 320 185" fill="none" stroke="#16a34a" stroke-width="1.8" stroke-dasharray="5,3"/>
+      <path d="M 235 95 Q 295 120 355 100" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-dasharray="5,3"/>
+      <path d="M 240 150 Q 295 110 350 75" fill="none" stroke="#9333ea" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <circle cx="293" cy="114" r="4.5" fill="#d97706" stroke="#fff" stroke-width="1.5"/>
+      <text x="220" y="196" font-size="10.5" fill="#475569">Разброс дуг даёт коридор невязки ε</text>
+    `;
+  }
+
+  // 2. Иллюстрация созвездия Льва на небе
+  const svgSky = $('sky-illustration');
+  if (svgSky) {
+    svgSky.innerHTML = `
+      <rect width="380" height="210" fill="#0b1528"/>
+      <!-- Координатная сетка неба (Восток слева) -->
+      <line x1="60" y1="0" x2="60" y2="210" stroke="#1e293b" stroke-dasharray="3,3"/>
+      <line x1="190" y1="0" x2="190" y2="210" stroke="#1e293b" stroke-dasharray="3,3"/>
+      <line x1="320" y1="0" x2="320" y2="210" stroke="#1e293b" stroke-dasharray="3,3"/>
+      <line x1="0" y1="50" x2="380" y2="50" stroke="#1e293b" stroke-dasharray="3,3"/>
+      <line x1="0" y1="125" x2="380" y2="125" stroke="#1e293b" stroke-dasharray="3,3"/>
+      <text x="60" y="202" fill="#64748b" font-size="10" text-anchor="middle">12h</text>
+      <text x="190" y="202" fill="#64748b" font-size="10" text-anchor="middle">11h (Центр)</text>
+      <text x="320" y="202" fill="#64748b" font-size="10" text-anchor="middle">10h</text>
+      <text x="8" y="46" fill="#64748b" font-size="10">+25°</text>
+      <text x="8" y="121" fill="#64748b" font-size="10">+15°</text>
+
+      <!-- Контур созвездия Льва -->
+      <polyline points="295,155 245,95 270,55 310,65 320,85" fill="none" stroke="#38bdf8" stroke-width="1.4" stroke-opacity="0.7"/>
+      <polygon points="295,155 245,95 140,85 80,120" fill="none" stroke="#38bdf8" stroke-width="1.6"/>
+      <line x1="245" y1="95" x2="140" y2="85" stroke="#38bdf8" stroke-width="1.6"/>
+
+      <!-- 5 исследуемых звёзд -->
+      <circle cx="295" cy="155" r="5" fill="#fde047" stroke="#fff" stroke-width="1.2"/>
+      <text x="295" y="173" fill="#fef08a" font-size="11" font-weight="bold" text-anchor="middle">1 (α Регул)</text>
+
+      <circle cx="245" cy="95" r="4.5" fill="#38bdf8" stroke="#fff"/>
+      <text x="235" y="112" fill="#e0f2fe" font-size="10.5" text-anchor="end">2 (γ Альгиеба)</text>
+
+      <circle cx="140" cy="85" r="4.2" fill="#38bdf8" stroke="#fff"/>
+      <text x="140" y="73" fill="#e0f2fe" font-size="10.5" text-anchor="middle">3 (δ Зосма)</text>
+
+      <circle cx="80" cy="120" r="4.8" fill="#fde047" stroke="#fff"/>
+      <text x="75" y="138" fill="#fef08a" font-size="11" font-weight="bold" text-anchor="middle">4 (β Денебола)</text>
+
+      <circle cx="310" cy="65" r="4.2" fill="#38bdf8" stroke="#fff"/>
+      <text x="315" y="53" fill="#e0f2fe" font-size="10.5">5 (ε Альгенуби)</text>
+
+      <!-- Центр поля -->
+      <circle cx="190" cy="115" r="4" fill="none" stroke="#22c55e" stroke-width="1.5"/>
+      <line x1="183" y1="115" x2="197" y2="115" stroke="#22c55e" stroke-width="1.5"/>
+      <line x1="190" y1="108" x2="190" y2="122" stroke="#22c55e" stroke-width="1.5"/>
+      <text x="190" y="132" fill="#4ade80" font-size="10" text-anchor="middle">α ≈ 11h, δ ≈ +15°</text>
+    `;
+  }
+}
+
+function answers() {
+  const diamVal = $('diameter').value;
+  const raVal = $('ra_hours').value;
+  const decVal = $('dec_deg').value;
+  const epsVal = $('epsilon').value;
+  const constVal = $('constellation').value;
+  return {
+    positions: JSON.parse(JSON.stringify(positions)),
+    diameter: diamVal,
+    min_fov: diamVal,
+    constellation: constVal,
+    ra_hours: raVal,
+    center_ra: raVal,
+    dec_deg: decVal,
+    center_dec: decVal,
+    epsilon: epsVal,
+    inst_err: epsVal,
+    reasoning: $('reasoning').value,
+    circle: { x: $('circle-x').value, y: $('circle-y').value },
+    ui: {
+      star: $('star-select').value,
+      band: $('band').value,
+      circles: $('show-circles').checked,
+      links: $('show-links').checked,
+      field: $('show-field').checked
+    }
+  };
+}
+
+function changed() {
+  if (locked) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    send('ASTROSITE_ANSWER_CHANGE', { answers: answers() });
+  }, 180);
+}
+
+function syncPoint() {
+  const p = positions[$('star-select').value];
+  $('point-x').value = p ? p.x : '';
+  $('point-y').value = p ? p.y : '';
+}
+
+function init(data, draft, submitted, grading, session) {
+  task = (data && Array.isArray(data.distances) && data.distances.length === 5) ? data : DEFAULT_DATA;
+  if (session) userSessionCode = session;
+  locked = false;
+  busy = false;
+  positions = JSON.parse(JSON.stringify(anchors));
+  drag = null;
+
+  for (const id of ids) $(id).value = '';
+  $('circle-x').value = '15.47';
+  $('circle-y').value = '0';
+  $('star-select').value = '2';
+  $('band').value = '0';
+  for (const id of ['show-circles', 'show-links', 'show-field']) $(id).checked = true;
+  $('submit').textContent = 'Зафиксировать и сдать решение';
+  $('board-status').textContent = '';
+
+  if (draft && typeof draft === 'object') {
+    for (const id of ['2', '3', '5']) {
+      const p = draft.positions?.[id];
+      if (p && num(p.x) !== null && num(p.y) !== null && Math.abs(num(p.x)) < 100 && Math.abs(num(p.y)) < 100) {
+        positions[id] = { x: num(p.x), y: num(p.y) };
+      }
+    }
+    if (draft.diameter || draft.min_fov) $('diameter').value = draft.diameter ?? draft.min_fov;
+    if (draft.constellation) $('constellation').value = draft.constellation;
+    if (draft.ra_hours || draft.center_ra) $('ra_hours').value = draft.ra_hours ?? draft.center_ra;
+    if (draft.dec_deg || draft.center_dec) $('dec_deg').value = draft.dec_deg ?? draft.center_dec;
+    if (draft.epsilon || draft.inst_err) $('epsilon').value = draft.epsilon ?? draft.inst_err;
+    if (draft.reasoning) $('reasoning').value = draft.reasoning;
+    if (draft.circle) {
+      $('circle-x').value = draft.circle.x ?? 15.47;
+      $('circle-y').value = draft.circle.y ?? 0;
+    }
+    if (draft.ui) {
+      if (['2', '3', '5'].includes(draft.ui.star)) $('star-select').value = draft.ui.star;
+      $('band').value = num(draft.ui.band) ?? 0;
+    }
+  }
+
+  $('statement').textContent = task.statement;
+  $('source').textContent = task.source || '';
+  $('matrix').innerHTML = '<table><thead><tr><th>Звезда</th>' + [1, 2, 3, 4, 5].map(i => `<th>${i}</th>`).join('') + '</tr></thead><tbody>' +
+    task.distances.map((row, i) => `<tr><th>${i + 1}</th>` + row.map((d, j) => `<td>${i === j ? '—' : Number(d).toFixed(2)}</td>`).join('') + '</tr>').join('') +
+    '</tbody></table>';
+
+  document.querySelectorAll('input,select,textarea,button').forEach(e => e.disabled = false);
+  $('feedback').classList.remove('shown');
+  $('submit-status').textContent = '';
+
+  drawStaticIllustrations();
+  syncPoint();
+  render();
+  if (submitted) finish(grading);
+  reportHeight();
+}
+
+function pointAt(e) {
+  const svg = $('board');
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const ctm = svg.getScreenCTM();
+  if (!ctm) return { x: 15, y: 0 };
+  const p = pt.matrixTransform(ctm.inverse());
+  return {
+    x: round(Math.max(-5, Math.min(37, p.x))),
+    y: round(Math.max(-15, Math.min(15, -p.y)))
+  };
+}
+
+function render() {
+  if (!task) return;
+  const star = $('star-select').value;
+  const band = num($('band').value) || 0;
+  $('band-value').textContent = band.toFixed(2);
+
+  let s = `
+    <defs>
+      <pattern id="smallGrid" width="1" height="1" patternUnits="userSpaceOnUse">
+        <path d="M1 0H0V1" fill="none" stroke="#e3ebf2" stroke-width=".03"/>
+      </pattern>
+      <pattern id="bigGrid" width="5" height="5" patternUnits="userSpaceOnUse">
+        <rect width="5" height="5" fill="url(#smallGrid)"/>
+        <path d="M5 0H0V5" fill="none" stroke="#cbd9e5" stroke-width=".07"/>
+      </pattern>
+    </defs>
+    <rect x="-6" y="-16" width="44" height="32" fill="url(#bigGrid)"/>
+    <line x1="-6" y1="0" x2="38" y2="0" stroke="#94a3b8" stroke-width=".08" stroke-dasharray=".3 .2"/>
+  `;
+
+  // Окружности циркуля для выбранной звезды
+  if ($('show-circles').checked) {
+    for (const [id, p] of Object.entries(positions)) {
+      if (id === star) continue;
+      const r = task.distances[+star - 1][+id - 1];
+      if (band > 0) {
+        s += `<circle cx="${p.x}" cy="${-p.y}" r="${r}" fill="none" stroke="#60a5c4" stroke-width="${band * 2}" opacity=".12"/>`;
+      }
+      s += `<circle cx="${p.x}" cy="${-p.y}" r="${r}" fill="none" stroke="#3b82f6" stroke-width=".07" stroke-dasharray=".35 .18"/>`;
+    }
+  }
+
+  // Поле зрения
+  const cx = num($('circle-x').value), cy = num($('circle-y').value), D = num($('diameter').value);
+  let inside = 0;
+  if (cx !== null && cy !== null && D !== null && D > 0 && D < 150 && $('show-field').checked) {
+    s += `<circle cx="${cx}" cy="${-cy}" r="${D / 2}" fill="#2f855a" fill-opacity=".06" stroke="#2f855a" stroke-width=".14"/>`;
+    s += `<path d="M${cx - .4} ${-cy}h.8 M${cx} ${-cy - .4}v.8" stroke="#2f855a" stroke-width=".10"/>`;
+    for (const p of Object.values(positions)) {
+      if (Math.hypot(p.x - cx, p.y - cy) <= D / 2 + 0.05) inside++;
+    }
+    $('coverage').textContent = `Внутри выбранного круга (D = ${D}°): ${inside} из ${Object.keys(positions).length} построенных звёзд.`;
+  } else {
+    $('coverage').textContent = 'Введите диаметр поля зрения D (например, 30.94°), чтобы проверить охват всех 5 звёзд.';
+  }
+
+  // Рёбра с цветовой индикацией точности попадания
+  let rows = [], sum = 0, n = 0, okEdges = 0;
+  for (let i = 1; i <= 5; i++) {
+    for (let j = i + 1; j <= 5; j++) {
+      if (positions[i] && positions[j]) {
+        const obs = task.distances[i - 1][j - 1];
+        const built = Math.hypot(positions[i].x - positions[j].x, positions[i].y - positions[j].y);
+        const diff = built - obs;
+        const isEdgeOk = Math.abs(diff) <= 0.6;
+        if (isEdgeOk) okEdges++;
+        sum += diff * diff;
+        n++;
+
+        if ($('show-links').checked) {
+          const strokeCol = isEdgeOk ? '#16a34a' : '#94a3b8';
+          const strokeW = isEdgeOk ? '.11' : '.07';
+          const dash = isEdgeOk ? 'none' : '.25 .15';
+          s += `<line x1="${positions[i].x}" y1="${-positions[i].y}" x2="${positions[j].x}" y2="${-positions[j].y}" stroke="${strokeCol}" stroke-width="${strokeW}" stroke-dasharray="${dash}"/>`;
+        }
+
+        rows.push(`
+          <tr>
+            <td><b>${i}–${j}</b></td>
+            <td>${obs.toFixed(2)}</td>
+            <td>${built.toFixed(2)}</td>
+            <td style="color:${isEdgeOk ? '#16a34a' : '#aa4432'}; font-weight:600;">${diff >= 0 ? '+' : ''}${diff.toFixed(2)}</td>
+          </tr>
+        `);
+      }
+    }
+  }
+
+  // Вершины звёзд
+  for (const [id, p] of Object.entries(positions)) {
+    const isAnc = Boolean(anchors[id]);
+    const isSel = (id === star);
+    const fillCol = isAnc ? '#475569' : isSel ? '#d97706' : '#1670a8';
+    s += `
+      <g data-star="${id}" style="cursor:${isAnc ? 'default' : 'grab'}">
+        <circle cx="${p.x}" cy="${-p.y}" r=".75" fill="transparent"/>
+        <circle cx="${p.x}" cy="${-p.y}" r="${isSel ? .34 : .26}" fill="${fillCol}" stroke="white" stroke-width=".09"/>
+        <text x="${p.x + .45}" y="${-p.y - .4}" font-size=".75" font-weight="700" fill="#172d45">${id}</text>
+      </g>
+    `;
+  }
+
+  $('board').innerHTML = s;
+  $('placed').textContent = Object.keys(positions).length + ' / 5';
+  $('edges-ok').textContent = `${okEdges} / 10`;
+  $('rms').textContent = n === 10 ? (Math.sqrt(sum / n)).toFixed(2) + '°' : 'Поставьте 5 звёзд';
+  $('residuals').innerHTML = '<table><thead><tr><th>Пара</th><th>Таблица, °</th><th>Чертёж, °</th><th>Невязка, °</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>';
+}
+
+// Автотриангуляция (аналитический расчёт пересечения дуг относительно базы 1-4)
+$('btn-auto-tri').onclick = () => {
+  if (locked || busy || !task) return;
+  const D = task.distances;
+  const d14 = D[0][3]; // 30.94
+  const calcPt = (idx, signY) => {
+    const d1 = D[0][idx - 1];
+    const d4 = D[3][idx - 1];
+    const x = (d1 * d1 - d4 * d4 + d14 * d14) / (2 * d14);
+    const y = signY * Math.sqrt(Math.max(0, d1 * d1 - x * x));
+    return { x: round(x), y: round(y) };
+  };
+  positions['2'] = calcPt(2, 1);  // (22.13, +9.94)
+  positions['3'] = calcPt(3, 1);  // (21.83, +1.65)
+  positions['5'] = calcPt(5, -1); // (10.62, -3.17)
+  syncPoint();
+  $('board-status').textContent = 'Фигура созвездия выстроена по триангуляции (RMS = 0.13°, все 10 рёбер согласованы).';
+  render();
+  changed();
+  reportHeight();
+};
+
+$('btn-mirror').onclick = () => {
+  if (locked || busy) return;
+  for (const id of ['2', '3', '5']) {
+    if (positions[id]) positions[id].y = round(-positions[id].y);
+  }
+  syncPoint();
+  render();
+  changed();
+};
+
+$('btn-fit-circle').onclick = () => {
+  if (locked || busy) return;
+  $('circle-x').value = '15.47';
+  $('circle-y').value = '0';
+  $('diameter').value = '30.94';
+  render();
+  changed();
+};
+
+$('board').addEventListener('pointerdown', e => {
+  if (locked || busy || !task) return;
+  const hit = e.target.closest('[data-star]')?.dataset.star;
+  if (hit && anchors[hit]) return;
+  drag = hit || $('star-select').value;
+  $('star-select').value = drag;
+  positions[drag] = pointAt(e);
+  $('board').setPointerCapture(e.pointerId);
+  syncPoint();
+  render();
+});
+
+$('board').addEventListener('pointermove', e => {
+  if (!drag || locked || busy) return;
+  positions[drag] = pointAt(e);
+  syncPoint();
+  render();
+});
+
+for (const ev of ['pointerup', 'pointercancel']) {
+  $('board').addEventListener(ev, () => {
+    if (drag) {
+      drag = null;
+      changed();
+    }
+  });
+}
+
+$('star-select').addEventListener('change', () => {
+  syncPoint();
+  render();
+  changed();
+});
+
+$('set-point').onclick = () => {
+  if (locked || busy) return;
+  const x = num($('point-x').value), y = num($('point-y').value);
+  if (x === null || y === null || x < -5 || x > 37 || y < -15 || y > 15) {
+    $('board-status').textContent = 'Введите координаты X от −5 до 37°, Y от −15 до 15°.';
+    return;
+  }
+  positions[$('star-select').value] = { x: round(x), y: round(y) };
+  $('board-status').textContent = `Звезда ${$('star-select').value} установлена в (${x}; ${y}).`;
+  render();
+  changed();
+};
+
+$('remove-point').onclick = () => {
+  if (locked || busy) return;
+  delete positions[$('star-select').value];
+  syncPoint();
+  render();
+  changed();
+};
+
+for (const id of ['show-circles', 'show-links', 'show-field', 'band', 'circle-x', 'circle-y', ...ids]) {
+  $(id).addEventListener('input', () => {
+    if (locked || busy) return;
+    render();
+    changed();
+  });
+}
+
+function finish(grading) {
+  locked = true;
+  busy = false;
+  document.querySelectorAll('input,select,textarea,button').forEach(e => e.disabled = true);
+  $('export').disabled = false;
+  if ($('btn-copy-code')) $('btn-copy-code').disabled = false;
+  $('submit-status').textContent = '✓ Решение сдано и зафиксировано.';
+  $('submit').textContent = 'Работа сдана';
+
+  if (grading && grading.grading && !grading.details) {
+    grading = grading.grading;
+  }
+
+  $('feedback').classList.add('shown');
+  const sc = grading?.score ?? '—';
+  const mx = grading?.max_score ?? 10;
+  $('grade-title').textContent = `Результат проверки: ${sc} из ${mx} баллов`;
+
+  const labels = {
+    positions: '1. Построение звёзд (RMS)',
+    diameter: '2. Минимальный диаметр поля D (°)',
+    constellation: '3. Опознанное созвездие',
+    ra_hours: '4. Прямое восхождение центра α (ч)',
+    dec_deg: '5. Склонение центра δ (°)',
+    epsilon: '6. Оценка погрешности аппарата ε (°)'
+  };
+
+  $('grade-list').replaceChildren();
+  for (const [id, d] of Object.entries(grading?.details || {})) {
+    const row = document.createElement('div');
+    row.className = d.ok ? 'grade-ok' : 'grade-no';
+    const userStr = (d.user !== null && d.user !== undefined) ? d.user : '—';
+    const tolStr = (d.tol !== null && d.tol !== undefined && d.tol !== 0) ? ` ± ${d.tol}` : '';
+    row.textContent = `${labels[id] || id}: ${d.score} / ${d.max} б. (Ваш ответ: ${userStr} | Эталон: ${d.truth ?? '—'}${tolStr})${d.message ? ' · ' + d.message : ''}`;
+    $('grade-list').append(row);
+  }
+
+  $('solution').replaceChildren();
+  const solList = Array.isArray(grading?.solution) ? grading.solution : (grading?.solution ? [grading.solution] : []);
+  for (const text of solList) {
+    const p = document.createElement('p');
+    p.textContent = text;
+    $('solution').append(p);
+  }
+
+  if (userSessionCode) {
+    $('session-box').style.display = 'block';
+    $('session-code-val').value = userSessionCode;
+  }
+
+  setTimeout(reportHeight, 60);
+  setTimeout(reportHeight, 300);
+}
+
+$('btn-copy-code').onclick = () => {
+  const el = $('session-code-val');
+  el.select();
+  navigator.clipboard.writeText(el.value);
+  $('btn-copy-code').textContent = 'Скопировано!';
+  setTimeout(() => { $('btn-copy-code').textContent = 'Скопировать код'; }, 2000);
+};
+
+$('submit').onclick = () => {
+  if (locked || busy || !task) return;
+  const missing = Object.keys(positions).length !== 5 || ['diameter', 'constellation', 'ra_hours', 'dec_deg', 'epsilon'].some(id => $(id).value.trim() === '');
+  if (missing) {
+    $('submit-status').textContent = '⚠️ Пожалуйста, разместите все 5 звёзд на доске (или нажмите «⚡ Автотриангуляция») и заполните поля ответов.';
+    return;
+  }
+  const a = answers();
+  busy = true;
+  $('submit').disabled = true;
+  $('submit').textContent = 'Отправка…';
+  send('ASTROSITE_ANSWER_CHANGE', { answers: a });
+  send('ASTROSITE_SUBMIT_ATTEMPT', { answers: a });
+};
+
+$('export').onclick = () => {
+  const blob = new Blob([JSON.stringify(answers(), null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'new-methodology-answers.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+window.addEventListener('message', e => {
+  if (!e.data || typeof e.data !== 'object') return;
+  const m = e.data;
+  if (m.type === 'ASTROSITE_INIT_DATA') {
+    init(m.data, m.draft, m.is_submitted, m.grading, m.session_code);
+  }
+  if (m.type === 'ASTROSITE_SUBMIT_SUCCESS') {
+    finish(m.grading || { score: m.score, max_score: m.max_score });
+  }
+  if (m.type === 'ASTROSITE_SUBMIT_ERROR') {
+    busy = false;
+    $('submit').disabled = false;
+    $('submit').textContent = 'Зафиксировать и сдать решение';
+    $('submit-status').textContent = 'Ошибка сохранения. Повторите отправку.';
+  }
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  init(DEFAULT_DATA, null, false, null, '');
+  new ResizeObserver(reportHeight).observe($('widget-root'));
+  window.addEventListener('resize', reportHeight);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0",
+  "id": "cepheid-pl",
+  "version": 1,
+  "kind": "generated",
+  "title": "кривая блеска цефеиды → период → расстояние",
+  "language": "ru",
+  "model": {
+    "id": "cepheid-pl",
+    "version": "0.1.0"
+  },
+  "sources": [
+    {
+      "id": "validation",
+      "title": "Модель и валидация cepheid-pl",
+      "locator": "packages/astrosim/docs/validation/cepheid_pl.md",
+      "role": "validation",
+      "rights": "Материал проекта"
+    }
+  ],
+  "statement_template": {
+    "title": "{designation}",
+    "text": "Переменная {designation} — классическая цефеида. Ниже приведена её кривая блеска в полосе V: видимая звёздная величина в зависимости от времени в сутках от начала наблюдений. Межзвёздным поглощением пренебречь. Для классических цефеид примите зависимость период–светимость M_V = −4,05 − 2,43 (lg P − 1), где P — период в сутках.",
+    "asks": [
+      "Определите период изменения блеска P.",
+      "Найдите среднюю видимую звёздную величину ⟨m_V⟩ = (m_max + m_min)/2 и амплитуду A = m_max − m_min.",
+      "Найдите абсолютную звёздную величину M_V по зависимости период–светимость.",
+      "Определите расстояние до звезды в парсеках."
+    ],
+    "note": "Измерения отмечайте на графике. Ответы — с двумя значащими цифрами, единицы — как указано на бланке."
+  },
+  "answers": [
+    {
+      "id": "period",
+      "label": "P",
+      "unit": "сут",
+      "kind": "number",
+      "hint": "период по последовательным максимумам"
+    },
+    {
+      "id": "mean_mag",
+      "label": "⟨m_V⟩",
+      "unit": "ᵐ",
+      "kind": "number",
+      "hint": "среднее между максимумом и минимумом блеска"
+    },
+    {
+      "id": "amplitude",
+      "label": "A",
+      "unit": "ᵐ",
+      "kind": "number",
+      "hint": "размах кривой блеска"
+    },
+    {
+      "id": "abs_mag",
+      "label": "M_V",
+      "unit": "ᵐ",
+      "kind": "number",
+      "hint": ""
+    },
+    {
+      "id": "distance",
+      "label": "d",
+      "unit": "пк",
+      "kind": "number",
+      "hint": ""
+    }
+  ],
+  "parts": [
+    {
+      "id": "part-1",
+      "answer_ids": [
+        "period"
+      ]
+    },
+    {
+      "id": "part-2",
+      "answer_ids": [
+        "mean_mag",
+        "amplitude"
+      ]
+    },
+    {
+      "id": "part-3",
+      "answer_ids": [
+        "abs_mag"
+      ]
+    },
+    {
+      "id": "part-4",
+      "answer_ids": [
+        "distance"
+      ]
+    }
+  ],
+  "tools": [
+    "cursor",
+    "loupe",
+    "extremum",
+    "segment"
+  ],
+  "solution_template": {
+    "title": "Разбор задачи",
+    "steps": [
+      {
+        "id": "step-1",
+        "title": "P",
+        "text": "Период — по интервалу между последовательными максимумами блеска (их на графике {int_cycles}–{int_cycles_1}; точнее — поделить интервал между первым и последним максимумом на число циклов): P ≈ {fmt_period_3} сут.",
+        "answer_ids": [
+          "period"
+        ],
+        "part_ids": [
+          "part-1"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-2",
+        "title": "⟨m_V⟩ / A",
+        "text": "Максимум блеска m_max ≈ {fmt_mean_mag_amp_2_3}ᵐ, минимум m_min ≈ {fmt_mean_mag_amp_2_34}ᵐ; ⟨m_V⟩ = (m_max + m_min)/2 ≈ {fmt_mean_mag_3}ᵐ, A = m_max − m_min ≈ {fmt_amp}ᵐ.",
+        "answer_ids": [
+          "mean_mag",
+          "amplitude"
+        ],
+        "part_ids": [
+          "part-2"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-3",
+        "title": "M_V",
+        "text": "По зависимости период–светимость: M_V = −4,05 − 2,43 (lg {fmt_period_3} − 1) = −4,05 − 2,43 · ({fmt_math_log10_period_1}) = {fmt_M_3}ᵐ.",
+        "answer_ids": [
+          "abs_mag"
+        ],
+        "part_ids": [
+          "part-3"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-4",
+        "title": "d",
+        "text": "Модуль расстояния m − M = 5 lg d − 5: lg d = (⟨m_V⟩ − M_V + 5)/5 = ({fmt_mean_mag_3} + {fmt_M_39} + 5)/5 = {fmt_math_log10_d_3}, d ≈ {fmt_d} пк.",
+        "answer_ids": [
+          "distance"
+        ],
+        "part_ids": [
+          "part-4"
+        ],
+        "depends_on": []
+      }
+    ]
+  },
+  "bindings": {
+    "statement": [
+      "designation"
+    ],
+    "solution": [
+      "int_cycles",
+      "int_cycles_1",
+      "fmt_period_3",
+      "fmt_mean_mag_amp_2_3",
+      "fmt_mean_mag_amp_2_34",
+      "fmt_mean_mag_3",
+      "fmt_amp",
+      "fmt_math_log10_period_1",
+      "fmt_M_3",
+      "fmt_M_39",
+      "fmt_math_log10_d_3",
+      "fmt_d"
+    ]
+  }
+}

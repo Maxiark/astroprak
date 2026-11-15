@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Распределяй и властвуй</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card-bg: #f8fafc;
+      --border: #cbd5e1;
+      --dark: #0f172a;
+      --muted: #64748b;
+      --accent: #d3261f;
+      --primary: #2563eb;
+      --success: #16a34a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 16px;
+      color: var(--dark);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    .statement-box {
+      background: var(--card-bg);
+      border-left: 4px solid var(--primary);
+      padding: 12px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 13px;
+      margin-bottom: 16px;
+      color: #334155;
+    }
+    .statement-box h3 {
+      font-size: 14px;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+    .stage-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 16px;
+    }
+    .stage-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: var(--dark);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: #e2e8f0; }
+    .btn-green { background: var(--success); }
+
+    .data-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: monospace;
+      font-size: 11px;
+      background: #ffffff;
+      margin: 10px 0;
+    }
+    .data-matrix td, .data-matrix th {
+      border: 1px solid #e2e8f0;
+      padding: 5px 6px;
+      text-align: center;
+    }
+    .data-matrix th { background: #f8fafc; font-weight: 600; }
+    .data-matrix tr:nth-child(even) { background: #fcfdfe; }
+
+    .summary-badge {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #1e3a8a;
+      margin-bottom: 12px;
+    }
+
+    .ring-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+    .ring-legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .ring-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    .counts-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+    .counts-table th, .counts-table td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .counts-table th { background: #f1f5f9; font-weight: 600; }
+    .input-count {
+      width: 62px;
+      padding: 5px;
+      font-family: monospace;
+      font-size: 13px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    details {
+      margin-bottom: 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--primary); }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin: 14px 0;
+    }
+    .model-card {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: var(--card-bg);
+      padding: 10px 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .model-card.active {
+      border-color: var(--accent);
+      background: #ffffff;
+      box-shadow: 0 2px 8px rgba(211, 38, 31, 0.15);
+    }
+    .model-title { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+    .model-formula { font-family: monospace; font-size: 11px; color: var(--primary); margin-top: 4px; }
+
+    .slider-row { margin-bottom: 12px; }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .session-banner {
+      background: #f0fdf4;
+      border: 2px solid #86efac;
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 16px;
+      display: none;
+    }
+    .grade-detail-box {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #ffffff;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .grade-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+    .grade-row:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+<div id="widget-root">
+  <div class="statement-box">
+    <h3>Условие задачи (S.1.2 Распределяй и властвуй)</h3>
+    <div id="statement-text">
+      В таблице приведены координаты звёзд некоторого рассеянного скопления (N = 150). Определите центр скопления, постройте гистограмму радиального распределения плотности звёзд в концентрических кольцах с шагом 0.03° (с нормировкой на площадку 0.03° × 0.03°), выберите аналитическую модель профиля и оцените параметры распределения скопления.
+    </div>
+  </div>
+
+  <div class="stage-bar">
+    <span class="stage-title" id="stage-badge">Этап 0 из 5: Определение центра скопления</span>
+    <span style="font-size: 12px; color: var(--muted);" id="points-total-badge">N = 150 звёзд</span>
+  </div>
+
+  <!-- ОБЩИЙ БЛОК КАРТЫ СКОПЛЕНИЯ -->
+  <div id="sky-map-wrapper">
+    <div class="summary-badge" id="data-stats-bar">
+      <span>Загрузка данных...</span>
+    </div>
+
+    <div id="sky-map-instruction" style="font-size: 13px; margin-bottom: 8px;">
+      Карта поля в координатах (Δα·cos δ, Δδ). Кликните в область наибольшего сгущения звёзд, чтобы задать центр скопления (α*, δ*):
+    </div>
+
+    <div class="ring-legend" id="step1-ring-legend" style="display: none;">
+      <div class="ring-legend-items">
+        <span><span class="ring-dot" style="background:#dc2626;"></span>Зона №1</span>
+        <span><span class="ring-dot" style="background:#ea580c;"></span>Зона №2</span>
+        <span><span class="ring-dot" style="background:#0284c7;"></span>Зона №3</span>
+        <span><span class="ring-dot" style="background:#16a34a;"></span>Зона №4</span>
+        <span><span class="ring-dot" style="background:#7c3aed;"></span>Зона №5</span>
+        <span id="outside-stars-badge" style="color:#64748b; display:none;"><span class="ring-dot" style="background:#94a3b8;"></span>Вне колец (&ge;0.15°): <strong id="outside-stars-count">0</strong></span>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="color:var(--muted);">Клик по звезде помечает её при счёте (помечено: <strong id="marked-stars-count">0</strong>)</span>
+        <button type="button" class="btn btn-secondary" id="btn-clear-marks" style="padding:3px 8px; font-size:11px;">Сбросить пометки</button>
+      </div>
+    </div>
+
+    <div style="border: 1px solid var(--border); border-radius: 6px; padding: 8px; margin-bottom: 14px; background: #fff; text-align: center;">
+      <svg id="sky-map-svg" width="100%" height="440" viewBox="0 0 640 440" style="cursor: crosshair; max-width: 680px;"></svg>
+      <div id="star-hover-info" style="font-size: 12px; color: var(--muted); min-height: 18px; margin-top: 4px; font-family: monospace;">
+        Наведите курсор на звезду, чтобы увидеть её координаты и угловое расстояние r от выбранного центра
+      </div>
+    </div>
+  </div>
+
+  <!-- ЭТАП 0: Настройка центра -->
+  <div id="step-0">
+    <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 14px;">
+      <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+        <div>
+          <label style="font-size: 13px; font-weight: 600;">Центр скопления α*:</label>
+          <input type="number" step="0.001" id="center-alpha-inp" style="width: 95px; padding: 5px; font-family: monospace;">
+        </div>
+        <div>
+          <label style="font-size: 13px; font-weight: 600;">Центр скопления δ*:</label>
+          <input type="number" step="0.001" id="center-delta-inp" style="width: 95px; padding: 5px; font-family: monospace;">
+        </div>
+        <div id="center-offset-hint" style="font-size: 12px; color: var(--primary); font-weight: 600;">
+          Угловое смещение: Δr = 0.000°
+        </div>
+      </div>
+      <div style="font-size: 11px; color: var(--muted); margin-top: 6px;">
+        Примечание: на склонении δ ≈ −72.2° масштаб прямого восхождения сжат фактором cos δ ≈ 0.306.
+      </div>
+    </div>
+
+    <details>
+      <summary>Таблица координат всех 150 звёзд каталога (нажмите, чтобы развернуть)</summary>
+      <div style="max-height: 200px; overflow-y: auto; margin-top: 8px;">
+        <table class="data-matrix" id="stars-table">
+          <thead><tr><th>№</th><th>α, °</th><th>δ, °</th><th>№</th><th>α, °</th><th>δ, °</th><th>№</th><th>α, °</th><th>δ, °</th></tr></thead>
+          <tbody id="stars-table-body"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <button class="btn" id="btn-to-step-1">Перейти к подсчёту населённости колец →</button>
+  </div>
+
+  <!-- ЭТАП 1: Подсчет звёзд по кольцам -->
+  <div id="step-1" style="display: none;">
+    <p style="font-size: 13px; margin-bottom: 8px;">
+      Используя карту выше с нанесёнными кольцами (для удобства звёзды каждого кольца выделены своим цветом, также по ним можно кликать для пометки), подсчитайте количество звёзд N<sub>k</sub> в каждой концентрической зоне с шагом радиуса Δr = 0.03°:
+    </p>
+
+    <div style="overflow-x: auto;">
+      <table class="counts-table">
+        <thead>
+          <tr>
+            <th>Зона</th>
+            <th><span class="ring-dot" style="background:#dc2626;"></span>№1 (Центральный круг)</th>
+            <th><span class="ring-dot" style="background:#ea580c;"></span>№2</th>
+            <th><span class="ring-dot" style="background:#0284c7;"></span>№3</th>
+            <th><span class="ring-dot" style="background:#16a34a;"></span>№4</th>
+            <th><span class="ring-dot" style="background:#7c3aed;"></span>№5</th>
+            <th>Сумма N<sub>1..5</sub></th>
+          </tr>
+          <tr>
+            <th>Интервал r</th>
+            <td>[0; 0.03°)</td>
+            <td>[0.03°; 0.06°)</td>
+            <td>[0.06°; 0.09°)</td>
+            <td>[0.09°; 0.12°)</td>
+            <td>[0.12°; 0.15°)</td>
+            <td>[0; 0.15°)</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Населённость N<sub>k</sub></th>
+            <td><input type="number" min="0" max="150" class="input-count" id="ring-user-0" placeholder="0"></td>
+            <td><input type="number" min="0" max="150" class="input-count" id="ring-user-1" placeholder="0"></td>
+            <td><input type="number" min="0" max="150" class="input-count" id="ring-user-2" placeholder="0"></td>
+            <td><input type="number" min="0" max="150" class="input-count" id="ring-user-3" placeholder="0"></td>
+            <td><input type="number" min="0" max="150" class="input-count" id="ring-user-4" placeholder="0"></td>
+            <td id="user-counts-sum-cell" style="font-family: monospace; font-weight: 700;">0 / 150</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="btn-back-to-0">← Скорректировать центр</button>
+      <button class="btn" id="btn-verify-counts">Проверить подсчёт колец →</button>
+    </div>
+  </div>
+
+  <!-- ЭТАП 2: Проверка подсчета и расчёт плотности -->
+  <div id="step-2" style="display: none;">
+    <div id="verify-summary" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;"></div>
+    
+    <div style="overflow-x: auto;">
+      <table class="counts-table">
+        <thead>
+          <tr>
+            <th>Зона</th>
+            <th>Радиус r</th>
+            <th>Площадь S<sub>k</sub></th>
+            <th>Ваш ввод N<sub>k</sub></th>
+            <th>Точное N<sub>k</sub> (вокруг α*, δ*)</th>
+            <th>Плотность n<sub>k</sub> на (0.03°)²</th>
+          </tr>
+        </thead>
+        <tbody id="vtable-body"></tbody>
+      </table>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="btn-back-to-1">← Вернуться к ручному подсчёту</button>
+      <button class="btn" id="btn-to-step-3">Исследовать гистограмму распределения →</button>
+    </div>
+  </div>
+
+  <!-- ЭТАПЫ 3, 4, 5 -->
+  <div id="step-container" style="display: none;">
+
+    <div class="slider-row" id="m-slider-container">
+      <div class="slider-header">
+        <span>Число концентрических колец (M): <strong id="m-slider-val">5</strong></span>
+        <span style="color: var(--muted);">Базовый шаг: Δr = 0.15° / M (по условию M = 5, Δr = 0.03°)</span>
+      </div>
+      <input type="range" id="m-slider" min="3" max="10" step="1" value="5">
+    </div>
+
+    <div style="border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin-bottom: 14px; background: #fff;">
+      <div style="font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--muted);">
+        Радиальный профиль поверхностной плотности n(r)
+      </div>
+      <svg id="plot-svg" width="100%" height="240" viewBox="0 0 640 240"></svg>
+    </div>
+
+    <div id="panel-step-3">
+      <div style="font-size: 13px; color: var(--muted); margin-bottom: 8px;">
+        Поварьируйте число колец M. Обратите внимание: при малом M теряется форма ядра скопления, а при большом M возрастают флуктуации (шум) на периферии.
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="btn-back-to-2">← К таблице подсчёта</button>
+        <button class="btn" id="btn-lock-bins">Зафиксировать шаг и перейти к выбору профиля →</button>
+      </div>
+    </div>
+
+    <div id="panel-step-4" style="display: none;">
+      <div style="font-size: 13px; font-weight: 700; margin-bottom: 6px;">
+        Выберите аналитическую модель радиального распределения:
+      </div>
+      <div class="cards-grid" id="cards-grid"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="btn-back-to-3">← Изменить число колец M</button>
+        <button class="btn" id="btn-to-step-5">Подобрать параметры выбранной модели →</button>
+      </div>
+    </div>
+
+    <div id="panel-step-5" style="display: none; border-top: 1px solid var(--border); padding-top: 12px;">
+      <div style="background: #f1f5f9; padding: 10px 14px; border-radius: 6px; margin-bottom: 14px;">
+        <span style="font-size: 13px; color: var(--muted);">Текущая модель:</span>
+        <div id="active-formula-display" style="font-size: 15px; font-weight: 700; font-family: monospace; color: var(--primary);">
+          n(r) = n₀ / (1 + (r / rc)²)
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
+        <div>
+          <div class="slider-header">
+            <span>Радиус ядра <strong>rc</strong>:</span>
+            <strong id="rc-display" style="font-family: monospace;">0.032°</strong>
+          </div>
+          <input type="range" id="param-rc" min="0.010" max="0.080" step="0.001" value="0.032">
+        </div>
+        <div>
+          <div class="slider-header">
+            <span>Центральная плотность <strong>n₀</strong>:</span>
+            <strong id="n0-display" style="font-family: monospace;">13.0 зв/(0.03°)²</strong>
+          </div>
+          <input type="range" id="param-n0" min="2.0" max="30.0" step="0.1" value="13.0">
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="btn-back-to-4">← Выбрать другую модель</button>
+        <button class="btn btn-green" id="btn-final-submit">Зафиксировать параметры и сдать решение</button>
+      </div>
+
+      <!-- Плашка результатов проверки -->
+      <div class="session-banner" id="session-banner">
+        <div id="session-score-title" style="font-weight: 700; color: #166534; font-size: 15px; margin-bottom: 6px;">
+          ✓ Задание успешно сдано и зафиксировано в системе!
+        </div>
+        <div id="session-grading-details" class="grade-detail-box" style="display: none;"></div>
+        <div style="font-size: 13px; color: #14532d; margin: 10px 0 6px;">
+          Код сессии для отчёта в журнале:
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="session-code-val" readonly
+                 style="font-family: monospace; font-size: 13px; padding: 6px 10px; width: 320px; border: 1px solid #86efac; border-radius: 4px; background: #fff;">
+          <button class="btn" style="padding: 6px 14px;" id="btn-copy-code">Скопировать код</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+  <script>
+    let stars = [];
+    let alpha0 = 14.75;
+    let delta0 = -72.19;
+    let centerAlpha = 14.75;
+    let centerDelta = -72.19;
+    let isInitializedFromHost = false;
+
+    const baseDr = 0.03;
+    const maxR = 0.15;
+    const manualRings = 5;
+    let currentM = 5;
+
+    let trueRingCounts = [31, 28, 23, 27, 41];
+    let ringDensities = [9.9, 3.0, 1.5, 1.2, 1.0];
+    let markedStars = new Set();
+
+    const RING_COLORS = ['#dc2626', '#ea580c', '#0284c7', '#16a34a', '#7c3aed'];
+
+    let selectedModel = 'king';
+    let rcParam = 0.032;
+    let n0Param = 13.0;
+    let currentStep = 0;
+    let userSessionCode = 'a1b2c3d4e5f6789012345678abcdef01';
+
+    const MODELS = [
+      {
+        id: 'king',
+        title: 'Профиль Кинга',
+        formula: 'n(r) = n₀ / (1 + (r / rc)²)',
+        nameForSheet: 'Профиль Кинга: n(r) = n0 / (1 + (r / rc)^2)',
+        d: 'M 10,12 Q 35,14 70,35'
+      },
+      {
+        id: 'exp',
+        title: 'Экспоненциальный диск',
+        formula: 'n(r) = n₀ · exp(-r / rc)',
+        nameForSheet: 'Экспоненциальный диск: n(r) = n0 * exp(-r / rc)',
+        d: 'M 10,8 L 40,25 L 70,35'
+      },
+      {
+        id: 'gauss',
+        title: 'Гауссов профиль',
+        formula: 'n(r) = n₀ · exp(-r² / (2*rc²))',
+        nameForSheet: 'Гауссов профиль: n(r) = n0 * exp(-r^2 / (2 rc^2))',
+        d: 'M 10,8 Q 30,8 70,35'
+      },
+      {
+        id: 'uniform',
+        title: 'Равномерное ядро',
+        formula: 'n(r) = n₀ при r ≤ rc',
+        nameForSheet: 'Равномерное ядро: n(r) = n0 при r <= rc',
+        d: 'M 10,10 L 35,10 L 35,35 L 70,35'
+      },
+      {
+        id: 'power',
+        title: 'Степенной спад',
+        formula: 'n(r) = n₀ / (1 + r / rc)³',
+        nameForSheet: 'Степенной спад: n(r) = n0 / (1 + r / rc)^3',
+        d: 'M 10,6 Q 25,28 70,35'
+      }
+    ];
+
+    function fallbackStars() {
+      const arr = [];
+      const cosD = Math.cos(-72.19 * Math.PI / 180.0);
+      for (let i = 0; i < 150; i++) {
+        const r = 0.004 + (i / 150) * 0.142;
+        const th = i * 2.39996;
+        arr.push({
+          alpha: +(14.75 + (r * Math.cos(th)) / cosD).toFixed(3),
+          delta: +(-72.19 + r * Math.sin(th)).toFixed(3)
+        });
+      }
+      return arr;
+    }
+
+    function getStorageKey() {
+      const s0 = stars && stars[0] ? `${stars[0].alpha}_${stars[0].delta}` : "none";
+      return `astrosite_rc_${userSessionCode}_${stars.length}_${alpha0}_${delta0}_${s0}`;
+    }
+
+    function getUserCountsArray() {
+      const arr = [];
+      for (let i = 0; i < manualRings; i++) {
+        const el = document.getElementById(`ring-user-${i}`);
+        arr.push(el ? (parseInt(el.value, 10) || 0) : 0);
+      }
+      return arr;
+    }
+
+    function updateUserCountsSumBadge() {
+      const arr = getUserCountsArray();
+      const sum = arr.reduce((a, b) => a + b, 0);
+      const inRingsTotal = trueRingCounts.reduce((a, b) => a + b, 0);
+      const cell = document.getElementById('user-counts-sum-cell');
+      if (cell) {
+        cell.textContent = `${sum} / ${inRingsTotal}`;
+        cell.style.color = sum === inRingsTotal ? 'var(--success)' : 'var(--dark)';
+      }
+    }
+
+    function syncServer() {
+      if (!isInitializedFromHost) return;
+      const activeObj = MODELS.find(m => m.id === selectedModel);
+      window.parent.postMessage({
+        type: 'ASTROSITE_ANSWER_CHANGE',
+        answers: {
+          current_step: currentStep,
+          center_alpha: parseFloat(centerAlpha),
+          center_delta: parseFloat(centerDelta),
+          user_counts: getUserCountsArray(),
+          current_m: currentM,
+          model_type: activeObj ? activeObj.nameForSheet : selectedModel,
+          rc_val: parseFloat(rcParam),
+          n0_val: parseFloat(n0Param)
+        }
+      }, '*');
+
+      saveLocal();
+    }
+
+    function saveLocal() {
+      if (!isInitializedFromHost) return;
+      const userCounts = [];
+      for (let i = 0; i < manualRings; i++) {
+        const el = document.getElementById(`ring-user-${i}`);
+        userCounts.push(el ? el.value : '');
+      }
+
+      const state = {
+        step: currentStep,
+        centerAlpha: centerAlpha,
+        centerDelta: centerDelta,
+        currentM: currentM,
+        userCounts: userCounts,
+        selectedModel: selectedModel,
+        rcParam: rcParam,
+        n0Param: n0Param,
+        isSubmitted: document.getElementById('btn-final-submit').disabled
+      };
+
+      try {
+        localStorage.setItem(getStorageKey(), JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function hideAllSteps() {
+      document.getElementById('step-0').style.display = 'none';
+      document.getElementById('step-1').style.display = 'none';
+      document.getElementById('step-2').style.display = 'none';
+      document.getElementById('step-container').style.display = 'none';
+    }
+
+    function updateOffsetHint() {
+      const cosD = Math.cos(delta0 * Math.PI / 180.0);
+      const dx = (centerAlpha - alpha0) * cosD;
+      const dy = centerDelta - delta0;
+      const dist = Math.hypot(dx, dy);
+      const hint = document.getElementById('center-offset-hint');
+      if (hint) {
+        hint.textContent = `Угловое смещение от центра поля: Δr = ${dist.toFixed(3)}° (Δα = ${(centerAlpha - alpha0 >= 0 ? '+' : '')}${(centerAlpha - alpha0).toFixed(3)}°, Δδ = ${(centerDelta - delta0 >= 0 ? '+' : '')}${(centerDelta - delta0).toFixed(3)}°)`;
+      }
+    }
+
+    function goToStep0() {
+      currentStep = 0;
+      document.getElementById('stage-badge').textContent = 'Этап 0 из 5: Определение центра скопления';
+      hideAllSteps();
+      document.getElementById('sky-map-wrapper').style.display = 'block';
+      document.getElementById('step1-ring-legend').style.display = 'none';
+      document.getElementById('sky-map-instruction').textContent = 'Карта поля в координатах (Δα·cos δ, Δδ). Кликните в область наибольшего сгущения звёзд, чтобы задать центр скопления (α*, δ*):';
+      document.getElementById('sky-map-svg').style.cursor = 'crosshair';
+      document.getElementById('step-0').style.display = 'block';
+      updateOffsetHint();
+      drawSkyMap();
+      saveLocal();
+      reportHeight();
+    }
+
+    function goToStep1() {
+      currentStep = 1;
+      document.getElementById('stage-badge').textContent = 'Этап 1 из 5: Подсчёт звёзд по кольцам (M = 5)';
+      hideAllSteps();
+      document.getElementById('sky-map-wrapper').style.display = 'block';
+      document.getElementById('step1-ring-legend').style.display = 'flex';
+      document.getElementById('sky-map-instruction').innerHTML = '<strong>Карта с нанесёнными зонами подсчёта:</strong> звёзды каждой зоны выделены своим цветом. Вы можете кликать по звёздам, чтобы помечать уже посчитанные.';
+      document.getElementById('sky-map-svg').style.cursor = 'pointer';
+      document.getElementById('step-1').style.display = 'block';
+      computeCountsForM(manualRings);
+      updateUserCountsSumBadge();
+      drawSkyMap();
+      syncServer();
+      reportHeight();
+    }
+
+    function getRingTolerance(trueCnt) {
+      return Math.max(2, Math.ceil(0.10 * trueCnt));
+    }
+
+    function verifyCounts() {
+      computeCountsForM(manualRings);
+      let errors = 0;
+      let exactMatches = 0;
+      for (let i = 0; i < manualRings; i++) {
+        const val = parseInt(document.getElementById(`ring-user-${i}`).value, 10) || 0;
+        const tol = getRingTolerance(trueRingCounts[i]);
+        if (val === trueRingCounts[i]) exactMatches++;
+        if (Math.abs(val - trueRingCounts[i]) > tol) errors++;
+      }
+
+      currentStep = 2;
+      document.getElementById('stage-badge').textContent = 'Этап 2 из 5: Контроль подсчёта и расчёт плотностей';
+      hideAllSteps();
+      document.getElementById('sky-map-wrapper').style.display = 'none';
+      document.getElementById('step-2').style.display = 'block';
+
+      const sumDiv = document.getElementById('verify-summary');
+      if (errors === 0) {
+        const msg = exactMatches === manualRings
+          ? 'Отлично! Населённость всех концентрических зон подсчитана точно.'
+          : 'Отлично! Подсчёт во всех зонах уложился в допустимый коридор (±10%, мин. ±2 зв.).';
+        sumDiv.innerHTML = `<span style="color:var(--success)">${msg}</span>`;
+      } else {
+        sumDiv.innerHTML = `<span style="color:var(--accent)">Зон за пределами допуска (±10%): ${errors}. Точные значения для выбранного центра (${centerAlpha.toFixed(3)}°, ${centerDelta.toFixed(3)}°) приведены в таблице ниже.</span>`;
+      }
+
+      buildVerificationTable();
+      syncServer();
+      reportHeight();
+    }
+
+    function goToStep3() {
+      currentStep = 3;
+      document.getElementById('stage-badge').textContent = 'Этап 3 из 5: Подбор числа зон разбиения (M)';
+      hideAllSteps();
+      document.getElementById('sky-map-wrapper').style.display = 'none';
+      document.getElementById('step-container').style.display = 'block';
+      document.getElementById('m-slider-container').style.display = 'block';
+      document.getElementById('m-slider').disabled = false;
+      document.getElementById('panel-step-3').style.display = 'block';
+      document.getElementById('panel-step-4').style.display = 'none';
+      document.getElementById('panel-step-5').style.display = 'none';
+
+      document.getElementById('m-slider').value = currentM;
+      document.getElementById('m-slider-val').textContent = currentM;
+      computeCountsForM(currentM);
+      drawPlot();
+      saveLocal();
+      reportHeight();
+    }
+
+    function lockBinsToStep4() {
+      currentStep = 4;
+      document.getElementById('stage-badge').textContent = 'Этап 4 из 5: Выбор аналитической модели';
+      hideAllSteps();
+      document.getElementById('sky-map-wrapper').style.display = 'none';
+      document.getElementById('step-container').style.display = 'block';
+      document.getElementById('m-slider-container').style.display = 'block';
+      document.getElementById('m-slider').disabled = true;
+      document.getElementById('panel-step-3').style.display = 'none';
+      document.getElementById('panel-step-4').style.display = 'block';
+      document.getElementById('panel-step-5').style.display = 'none';
+
+      computeCountsForM(currentM);
+      renderCards();
+      drawPlot();
+      syncServer();
+      reportHeight();
+    }
+
+    function goToStep5() {
+      currentStep = 5;
+      document.getElementById('stage-badge').textContent = 'Этап 5 из 5: Подбор параметров профиля';
+      hideAllSteps();
+      document.getElementById('sky-map-wrapper').style.display = 'none';
+      document.getElementById('step-container').style.display = 'block';
+      document.getElementById('m-slider-container').style.display = 'block';
+      document.getElementById('panel-step-3').style.display = 'none';
+      document.getElementById('panel-step-4').style.display = 'none';
+      document.getElementById('panel-step-5').style.display = 'block';
+
+      computeCountsForM(currentM);
+      updateActiveFormula();
+      drawPlot();
+      syncServer();
+      reportHeight();
+    }
+
+    function getStarRingInfo(s, m = manualRings) {
+      const cosD = Math.cos(delta0 * Math.PI / 180.0);
+      const dr = maxR / m;
+      const dx = (s.alpha - centerAlpha) * cosD;
+      const dy = s.delta - centerDelta;
+      const r = Math.hypot(dx, dy);
+      const idx = Math.floor((r + 1e-9) / dr);
+      return { r, idx: (idx >= 0 && idx < m) ? idx : -1 };
+    }
+
+    function computeCountsForM(m) {
+      const dr = maxR / m;
+      const counts = new Array(m).fill(0);
+      let outsideCount = 0;
+
+      stars.forEach(s => {
+        const info = getStarRingInfo(s, m);
+        if (info.idx >= 0 && info.idx < m) {
+          counts[info.idx]++;
+        } else {
+          outsideCount++;
+        }
+      });
+
+      const areaUnit = 0.03 * 0.03;
+      const densities = counts.map((cnt, k) => {
+        const r1 = k * dr;
+        const r2 = (k + 1) * dr;
+        const sArea = Math.PI * (r2 * r2 - r1 * r1);
+        return +(cnt * (areaUnit / sArea)).toFixed(2);
+      });
+
+      if (m === manualRings) {
+        trueRingCounts = counts;
+        const outBadge = document.getElementById('outside-stars-badge');
+        const outCntEl = document.getElementById('outside-stars-count');
+        if (outBadge && outCntEl) {
+          outCntEl.textContent = String(outsideCount);
+          outBadge.style.display = outsideCount > 0 ? 'inline' : 'none';
+        }
+      }
+      ringDensities = densities;
+      return { counts, densities, dr, outsideCount };
+    }
+
+    function buildVerificationTable() {
+      const tbody = document.getElementById('vtable-body');
+      tbody.innerHTML = '';
+      const dr = maxR / manualRings;
+
+      for (let i = 0; i < manualRings; i++) {
+        const r1 = (i * dr).toFixed(2);
+        const r2 = ((i + 1) * dr).toFixed(2);
+        const sArea = (Math.PI * (Math.pow((i + 1) * dr, 2) - Math.pow(i * dr, 2))).toFixed(5);
+        const uVal = parseInt(document.getElementById(`ring-user-${i}`).value, 10) || 0;
+        const tol = getRingTolerance(trueRingCounts[i]);
+        const isOk = Math.abs(uVal - trueRingCounts[i]) <= tol;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="ring-dot" style="background:${RING_COLORS[i]};"></span>Кольцо ${i + 1}</td>
+          <td>[${r1}°; ${r2}°)</td>
+          <td>${sArea} град²</td>
+          <td style="font-weight:bold; color:${isOk ? 'var(--success)' : 'var(--accent)'}; ${!isOk ? 'background:#fee2e2;' : 'background:#f0fdf4;'}">${uVal}</td>
+          <td style="font-weight:bold;">${trueRingCounts[i]} <span style="font-weight:normal; color:var(--muted); font-size:11px;">(±${tol})</span></td>
+          <td style="font-weight:bold; color:var(--primary);">${ringDensities[i]}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function drawSkyMap() {
+      const svg = document.getElementById('sky-map-svg');
+      const w = 640, h = 440;
+      const pad = 22;
+      const pw = w - 2 * pad;
+      const ph = h - 2 * pad;
+
+      const cosD = Math.cos(delta0 * Math.PI / 180.0);
+      const spanDeg = 0.165;
+
+      const scale = Math.min(pw, ph) / (2.0 * spanDeg);
+
+      const mapX = a => (w / 2) + ((a - alpha0) * cosD) * scale;
+      const mapY = d => (h / 2) - (d - delta0) * scale;
+
+      const ccx = mapX(centerAlpha);
+      const ccy = mapY(centerDelta);
+
+      const ringsToDraw = (currentStep === 1) ? 5 : currentM;
+      const dr = maxR / ringsToDraw;
+
+      let html = '';
+      html += `<rect width="${w}" height="${h}" fill="#f8fafc" stroke="#cbd5e1" rx="4"/>`;
+
+      // На Этапе 1 чередуем лёгкую заливку колец для максимальной наглядности границ
+      if (currentStep === 1) {
+        for (let k = ringsToDraw; k >= 1; k--) {
+          const radPix = k * dr * scale;
+          const fillCol = k % 2 === 1 ? '#eff6ff' : '#ffffff';
+          html += `<circle cx="${ccx.toFixed(2)}" cy="${ccy.toFixed(2)}" r="${radPix.toFixed(2)}" fill="${fillCol}" stroke="none"/>`;
+        }
+      }
+
+      html += `<line x1="${pad}" y1="${h/2}" x2="${w-pad}" y2="${h/2}" stroke="#cbd5e1" stroke-dasharray="3,3"/>`;
+      html += `<line x1="${w/2}" y1="${pad}" x2="${w/2}" y2="${h-pad}" stroke="#cbd5e1" stroke-dasharray="3,3"/>`;
+
+      for (let k = 1; k <= ringsToDraw; k++) {
+        const radPix = k * dr * scale;
+        html += `<circle cx="${ccx.toFixed(2)}" cy="${ccy.toFixed(2)}" r="${radPix.toFixed(2)}" fill="none" stroke="#3b82f6" stroke-width="1.2" stroke-dasharray="4,3"/>`;
+        if (currentStep === 1) {
+          const lblY = ccy - radPix + 11;
+          html += `<text x="${ccx.toFixed(1)}" y="${lblY.toFixed(1)}" font-size="10" fill="#1d4ed8" font-weight="700" text-anchor="middle" style="pointer-events:none;">№${k}</text>`;
+        }
+      }
+
+      // Центр скопления
+      const crossSize = currentStep === 1 ? 5 : 9;
+      html += `<line x1="${ccx-crossSize}" y1="${ccy}" x2="${ccx+crossSize}" y2="${ccy}" stroke="var(--accent)" stroke-width="1.6" style="pointer-events:none;"/>`;
+      html += `<line x1="${ccx}" y1="${ccy-crossSize}" x2="${ccx}" y2="${ccy+crossSize}" stroke="var(--accent)" stroke-width="1.6" style="pointer-events:none;"/>`;
+      if (currentStep === 0) {
+        html += `<circle cx="${ccx.toFixed(2)}" cy="${ccy.toFixed(2)}" r="3.5" fill="none" stroke="var(--accent)" stroke-width="1.5" style="pointer-events:none;"/>`;
+      }
+
+      // Звёзды
+      stars.forEach((s, idx) => {
+        const cx = mapX(s.alpha);
+        const cy = mapY(s.delta);
+        const info = getStarRingInfo(s, ringsToDraw);
+        let fill = '#334155';
+        if (currentStep === 1) {
+          fill = (info.idx >= 0 && info.idx < RING_COLORS.length) ? RING_COLORS[info.idx] : '#94a3b8';
+        }
+        const isMarked = markedStars.has(idx);
+        if (isMarked && currentStep === 1) {
+          html += `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="5.2" fill="none" stroke="#0f172a" stroke-width="1.4" data-star-idx="${idx}"/>`;
+        }
+        html += `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="${isMarked && currentStep === 1 ? '2.2' : '2.7'}" fill="${fill}" stroke="#ffffff" stroke-width="0.9" opacity="${isMarked && currentStep === 1 ? '0.45' : '0.95'}" data-star-idx="${idx}"/>`;
+      });
+
+      html += `<text x="${w - 14}" y="${h/2 - 6}" font-size="11" fill="#64748b" text-anchor="end" style="pointer-events:none;">Δα · cos δ</text>`;
+      html += `<text x="${w/2 + 6}" y="${pad + 12}" font-size="11" fill="#64748b" style="pointer-events:none;">Δδ</text>`;
+
+      svg.innerHTML = html;
+
+      const markedCountEl = document.getElementById('marked-stars-count');
+      if (markedCountEl) markedCountEl.textContent = String(markedStars.size);
+
+      svg.onmousemove = (e) => {
+        const target = e.target;
+        const hoverBox = document.getElementById('star-hover-info');
+        if (!hoverBox) return;
+        if (target && target.dataset && target.dataset.starIdx !== undefined) {
+          const sIdx = parseInt(target.dataset.starIdx, 10);
+          const st = stars[sIdx];
+          if (st) {
+            const info = getStarRingInfo(st, manualRings);
+            const zoneLabel = info.idx >= 0 ? `Зона №${info.idx + 1} [${(info.idx * 0.03).toFixed(2)}°; ${((info.idx + 1) * 0.03).toFixed(2)}°)` : 'Вне колец (r ≥ 0.15°)';
+            hoverBox.textContent = `Звезда №${sIdx + 1}: α = ${st.alpha.toFixed(3)}°, δ = ${st.delta.toFixed(3)}° | r = ${info.r.toFixed(4)}° → ${zoneLabel}`;
+          }
+        }
+      };
+
+      svg.onclick = (e) => {
+        if (currentStep === 1) {
+          const target = e.target;
+          if (target && target.dataset && target.dataset.starIdx !== undefined) {
+            const sIdx = parseInt(target.dataset.starIdx, 10);
+            if (markedStars.has(sIdx)) markedStars.delete(sIdx);
+            else markedStars.add(sIdx);
+            drawSkyMap();
+          }
+          return;
+        }
+        if (currentStep !== 0) return;
+
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+
+        const ctm = svg.getScreenCTM();
+        if (!ctm) return;
+        const svgP = pt.matrixTransform(ctm.inverse());
+
+        const dxPix = svgP.x - w / 2;
+        const dyPix = h / 2 - svgP.y;
+
+        const dAlphaSkyDeg = dxPix / scale;
+        const dDeltaSkyDeg = dyPix / scale;
+
+        centerAlpha = +(alpha0 + dAlphaSkyDeg / cosD).toFixed(3);
+        centerDelta = +(delta0 + dDeltaSkyDeg).toFixed(3);
+
+        document.getElementById('center-alpha-inp').value = centerAlpha;
+        document.getElementById('center-delta-inp').value = centerDelta;
+
+        updateOffsetHint();
+        drawSkyMap();
+        syncServer();
+      };
+    }
+
+    document.getElementById('btn-clear-marks').onclick = () => {
+      markedStars.clear();
+      drawSkyMap();
+    };
+
+    for (let i = 0; i < manualRings; i++) {
+      const inp = document.getElementById(`ring-user-${i}`);
+      if (inp) {
+        inp.oninput = () => {
+          updateUserCountsSumBadge();
+          syncServer();
+        };
+      }
+    }
+
+    const mSlider = document.getElementById('m-slider');
+    mSlider.oninput = (e) => {
+      currentM = parseInt(e.target.value, 10);
+      document.getElementById('m-slider-val').textContent = currentM;
+      computeCountsForM(currentM);
+      drawPlot();
+      saveLocal();
+    };
+
+    function drawPlot() {
+      const svg = document.getElementById('plot-svg');
+      const w = 640, h = 240;
+      const pad = { top: 15, right: 20, bottom: 35, left: 50 };
+      const pw = w - pad.left - pad.right;
+      const ph = h - pad.top - pad.bottom;
+
+      const dr = maxR / currentM;
+      const maxD = Math.max(...ringDensities, n0Param * 1.15, 14);
+
+      const mapX = r => pad.left + (r / maxR) * pw;
+      const mapY = d => pad.top + ph - (d / maxD) * ph;
+
+      let html = '';
+      html += `<line x1="${pad.left}" y1="${mapY(0)}" x2="${pad.left + pw}" y2="${mapY(0)}" stroke="#475569" stroke-width="1.2"/>`;
+      html += `<line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top + ph}" stroke="#475569" stroke-width="1.2"/>`;
+
+      ringDensities.forEach((d, i) => {
+        const x1 = mapX(i * dr);
+        const x2 = mapX((i + 1) * dr);
+        const y = mapY(d);
+        html += `<rect x="${x1}" y="${y}" width="${Math.max(x2 - x1 - 1, 1)}" height="${Math.max(mapY(0) - y, 0)}" fill="#f1f5f9" stroke="#cbd5e1"/>`;
+      });
+
+      if (currentStep >= 4) {
+        let path = '';
+        const steps = 140;
+        for (let i = 0; i <= steps; i++) {
+          const r = (i / steps) * maxR;
+          let val = 0;
+          if (selectedModel === 'king') val = n0Param / (1.0 + Math.pow(r / Math.max(rcParam, 0.005), 2));
+          else if (selectedModel === 'exp') val = n0Param * Math.exp(-r / Math.max(rcParam, 0.005));
+          else if (selectedModel === 'gauss') val = n0Param * Math.exp(-0.5 * Math.pow(r / Math.max(rcParam, 0.005), 2));
+          else if (selectedModel === 'uniform') val = r <= rcParam ? n0Param : 0;
+          else if (selectedModel === 'power') val = n0Param / Math.pow(1.0 + r / Math.max(rcParam, 0.005), 3);
+
+          const x = mapX(r);
+          const y = mapY(val);
+          path += (i === 0 ? 'M' : 'L') + `${x.toFixed(1)},${y.toFixed(1)} `;
+        }
+        html += `<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-dasharray="6,4"/>`;
+      }
+
+      ringDensities.forEach((d, i) => {
+        const rMid = (i + 0.5) * dr;
+        html += `<circle cx="${mapX(rMid)}" cy="${mapY(d)}" r="3.5" fill="#0f172a" stroke="#fff" stroke-width="1.2"/>`;
+      });
+
+      html += `<text x="${pad.left + pw / 2}" y="${h - 8}" font-size="11" fill="#64748b" text-anchor="middle">Радиус от центра скопления r (градусы)</text>`;
+      html += `<text x="14" y="${pad.top + ph / 2}" font-size="11" fill="#64748b" text-anchor="middle" transform="rotate(-90 14 ${pad.top + ph / 2})">Плотность n (зв / (0.03°)²)</text>`;
+
+      svg.innerHTML = html;
+    }
+
+    function renderCards() {
+      const box = document.getElementById('cards-grid');
+      box.innerHTML = '';
+      MODELS.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'model-card' + (m.id === selectedModel ? ' active' : '');
+        div.innerHTML = `
+          <div class="model-title">${m.title}</div>
+          <svg width="100%" height="40" viewBox="0 0 80 40">
+            <line x1="5" y1="35" x2="75" y2="35" stroke="#94a3b8" stroke-width="1"/>
+            <path d="${m.d}" fill="none" stroke="${m.id === selectedModel ? 'var(--accent)' : 'var(--dark)'}" stroke-width="2"/>
+          </svg>
+          <div class="model-formula">${m.formula}</div>
+        `;
+        div.onclick = () => {
+          selectedModel = m.id;
+          renderCards();
+          drawPlot();
+          syncServer();
+        };
+        box.appendChild(div);
+      });
+    }
+
+    function updateActiveFormula() {
+      const m = MODELS.find(x => x.id === selectedModel);
+      let fText = m ? m.formula : '';
+      fText = fText.replace('rc', `${rcParam.toFixed(3)}`).replace('n₀', `${n0Param.toFixed(1)}`);
+      document.getElementById('active-formula-display').textContent = fText;
+    }
+
+    document.getElementById('btn-to-step-1').onclick = () => {
+      const aVal = parseFloat(String(document.getElementById('center-alpha-inp').value).replace(',', '.'));
+      const dVal = parseFloat(String(document.getElementById('center-delta-inp').value).replace(',', '.'));
+      if (Number.isFinite(aVal)) centerAlpha = aVal;
+      if (Number.isFinite(dVal)) centerDelta = dVal;
+      goToStep1();
+    };
+
+    document.getElementById('btn-back-to-0').onclick = goToStep0;
+    document.getElementById('btn-verify-counts').onclick = verifyCounts;
+    document.getElementById('btn-back-to-1').onclick = goToStep1;
+    document.getElementById('btn-to-step-3').onclick = goToStep3;
+    document.getElementById('btn-back-to-2').onclick = verifyCounts;
+    document.getElementById('btn-lock-bins').onclick = lockBinsToStep4;
+    document.getElementById('btn-back-to-3').onclick = goToStep3;
+    document.getElementById('btn-to-step-5').onclick = goToStep5;
+    document.getElementById('btn-back-to-4').onclick = lockBinsToStep4;
+
+    const rcInp = document.getElementById('param-rc');
+    const n0Inp = document.getElementById('param-n0');
+
+    rcInp.oninput = (e) => {
+      rcParam = parseFloat(e.target.value);
+      document.getElementById('rc-display').textContent = `${rcParam.toFixed(3)}°`;
+      updateActiveFormula();
+      drawPlot();
+      syncServer();
+    };
+
+    n0Inp.oninput = (e) => {
+      n0Param = parseFloat(e.target.value);
+      document.getElementById('n0-display').textContent = `${n0Param.toFixed(1)} зв/(0.03°)²`;
+      updateActiveFormula();
+      drawPlot();
+      syncServer();
+    };
+
+    document.getElementById('center-alpha-inp').oninput = (e) => {
+      const v = parseFloat(String(e.target.value).replace(',', '.'));
+      if (Number.isFinite(v)) {
+        centerAlpha = v;
+        updateOffsetHint();
+        drawSkyMap();
+        syncServer();
+      }
+    };
+
+    document.getElementById('center-delta-inp').oninput = (e) => {
+      const v = parseFloat(String(e.target.value).replace(',', '.'));
+      if (Number.isFinite(v)) {
+        centerDelta = v;
+        updateOffsetHint();
+        drawSkyMap();
+        syncServer();
+      }
+    };
+
+    document.getElementById('btn-final-submit').onclick = () => {
+      const activeObj = MODELS.find(m => m.id === selectedModel);
+      const submitBtn = document.getElementById('btn-final-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Отправка в систему...';
+
+      window.parent.postMessage({
+        type: 'ASTROSITE_SUBMIT_ATTEMPT',
+        answers: {
+          current_step: 5,
+          center_alpha: parseFloat(centerAlpha),
+          center_delta: parseFloat(centerDelta),
+          user_counts: getUserCountsArray(),
+          current_m: currentM,
+          model_type: activeObj ? activeObj.nameForSheet : selectedModel,
+          rc_val: parseFloat(rcParam),
+          n0_val: parseFloat(n0Param)
+        }
+      }, '*');
+
+      saveLocal();
+    };
+
+    function lockSubmittedUI(gradingInfo) {
+      rcInp.disabled = true;
+      n0Inp.disabled = true;
+      const submitBtn = document.getElementById('btn-final-submit');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Работа сдана';
+      }
+      const backBtn = document.getElementById('btn-back-to-4');
+      if (backBtn) backBtn.style.display = 'none';
+
+      const banner = document.getElementById('session-banner');
+      const scoreTitle = document.getElementById('session-score-title');
+      const detailsBox = document.getElementById('session-grading-details');
+
+      const finalScore = (gradingInfo && gradingInfo.score !== undefined) ? gradingInfo.score : null;
+      const maxScore = (gradingInfo && gradingInfo.max_score !== undefined) ? gradingInfo.max_score : 5.0;
+
+      if (finalScore !== null) {
+        scoreTitle.innerHTML = `Результат проверки: <strong style="color: ${finalScore >= 3.5 ? '#16a34a' : '#d97706'}">${finalScore} из ${maxScore} баллов</strong>`;
+      } else {
+        scoreTitle.innerHTML = `✓ Задание успешно сдано и зафиксировано в системе!`;
+      }
+
+      if (gradingInfo && gradingInfo.details && Object.keys(gradingInfo.details).length > 0) {
+        const d = gradingInfo.details;
+        let detailsHtml = '';
+
+        if (d.center_pos) {
+          detailsHtml += `
+            <div class="grade-row">
+              <span>1. Центр скопления: <strong>${d.center_pos.user ?? '—'}</strong> (эталон: ${d.center_pos.truth}, допуск ≤ 0.020°)</span>
+              <span style="font-weight:700; color:${d.center_pos.ok ? '#16a34a' : '#dc2626'};">${d.center_pos.score} / ${d.center_pos.max} б.</span>
+            </div>
+          `;
+        }
+
+        if (d.bin_counts) {
+          detailsHtml += `
+            <div class="grade-row">
+              <span>2. Населённость колец: ${d.bin_counts.user ?? '—'} (эталон: ${d.bin_counts.truth}, допуск ≤ 3)</span>
+              <span style="font-weight:700; color:${d.bin_counts.ok ? '#16a34a' : '#dc2626'};">${d.bin_counts.score} / ${d.bin_counts.max} б.</span>
+            </div>
+          `;
+        }
+
+        if (d.model_type) {
+          detailsHtml += `
+            <div class="grade-row">
+              <span>3. Тип профиля: <strong>${d.model_type.user ?? '—'}</strong></span>
+              <span style="font-weight:700; color:${d.model_type.ok ? '#16a34a' : '#dc2626'};">${d.model_type.score} / ${d.model_type.max} б.</span>
+            </div>
+          `;
+        }
+
+        if (d.rc_val) {
+          detailsHtml += `
+            <div class="grade-row">
+              <span>4. Радиус ядра rc = ${d.rc_val.user ?? '—'}° (эталон: ${d.rc_val.truth}° ± ${d.rc_val.tol}°)</span>
+              <span style="font-weight:700; color:${d.rc_val.ok ? '#16a34a' : '#dc2626'};">${d.rc_val.score} / ${d.rc_val.max} б.</span>
+            </div>
+          `;
+        }
+
+        if (d.n0_val) {
+          detailsHtml += `
+            <div class="grade-row">
+              <span>5. Плотность n₀ = ${d.n0_val.user ?? '—'} (эталон: ${d.n0_val.truth} ± ${d.n0_val.tol})</span>
+              <span style="font-weight:700; color:${d.n0_val.ok ? '#16a34a' : '#dc2626'};">${d.n0_val.score} / ${d.n0_val.max} б.</span>
+            </div>
+          `;
+        }
+
+        detailsBox.innerHTML = detailsHtml;
+        detailsBox.style.display = 'block';
+      }
+
+      document.getElementById('session-code-val').value = userSessionCode;
+      banner.style.display = 'block';
+      banner.scrollIntoView({ behavior: 'smooth' });
+
+      setTimeout(reportHeight, 50);
+      setTimeout(reportHeight, 300);
+    }
+
+    document.getElementById('btn-copy-code').onclick = () => {
+      const codeInput = document.getElementById('session-code-val');
+      codeInput.select();
+      navigator.clipboard.writeText(codeInput.value);
+      const btn = document.getElementById('btn-copy-code');
+      btn.textContent = 'Скопировано!';
+      setTimeout(() => { btn.textContent = 'Скопировать код'; }, 2000);
+    };
+
+    function restoreState(draft) {
+      let targetStep = 0;
+      let s = null;
+      try {
+        const raw = localStorage.getItem(getStorageKey());
+        if (raw) s = JSON.parse(raw);
+      } catch (e) {}
+
+      // Восстанавливаем сохранённые значения из localStorage как резерв, затем приоритетно из серверного draft
+      if (s && typeof s === 'object') {
+        if (typeof s.step === 'number') targetStep = s.step;
+        if (Number.isFinite(parseFloat(s.centerAlpha))) centerAlpha = parseFloat(s.centerAlpha);
+        if (Number.isFinite(parseFloat(s.centerDelta))) centerDelta = parseFloat(s.centerDelta);
+        if (Number.isFinite(parseInt(s.currentM, 10))) currentM = parseInt(s.currentM, 10);
+        if (s.selectedModel) selectedModel = s.selectedModel;
+        if (Number.isFinite(parseFloat(s.rcParam))) rcParam = parseFloat(s.rcParam);
+        if (Number.isFinite(parseFloat(s.n0Param))) n0Param = parseFloat(s.n0Param);
+      }
+
+      if (draft && typeof draft === 'object' && Object.keys(draft).length > 0) {
+        if (draft.current_step !== undefined) targetStep = Math.max(targetStep, parseInt(draft.current_step, 10) || 0);
+        if (Number.isFinite(parseFloat(draft.center_alpha))) centerAlpha = parseFloat(draft.center_alpha);
+        if (Number.isFinite(parseFloat(draft.center_delta))) centerDelta = parseFloat(draft.center_delta);
+        if (Number.isFinite(parseInt(draft.current_m, 10))) currentM = parseInt(draft.current_m, 10);
+        if (draft.model_type) {
+          const mObj = MODELS.find(m => m.nameForSheet === draft.model_type || m.id === draft.model_type);
+          if (mObj) selectedModel = mObj.id;
+        }
+        if (Number.isFinite(parseFloat(draft.rc_val))) rcParam = parseFloat(draft.rc_val);
+        if (Number.isFinite(parseFloat(draft.n0_val))) n0Param = parseFloat(draft.n0_val);
+      }
+
+      document.getElementById('param-rc').value = rcParam;
+      document.getElementById('rc-display').textContent = `${rcParam.toFixed(3)}°`;
+      document.getElementById('param-n0').value = n0Param;
+      document.getElementById('n0-display').textContent = `${n0Param.toFixed(1)} зв/(0.03°)²`;
+
+      document.getElementById('center-alpha-inp').value = centerAlpha;
+      document.getElementById('center-delta-inp').value = centerDelta;
+      updateOffsetHint();
+
+      computeCountsForM(manualRings);
+      const draftCounts = (draft && Array.isArray(draft.user_counts)) ? draft.user_counts : null;
+      const localCounts = (s && Array.isArray(s.userCounts)) ? s.userCounts : null;
+      const draftHasValues = draftCounts && draftCounts.some(v => Number(v) > 0);
+      const localHasValues = localCounts && localCounts.some(v => Number(v) > 0);
+      const countsSource = draftHasValues ? draftCounts : (localHasValues ? localCounts : (draftCounts || localCounts));
+      if (Array.isArray(countsSource)) {
+        countsSource.forEach((val, i) => {
+          const el = document.getElementById(`ring-user-${i}`);
+          if (el && val !== '' && val !== null && val !== undefined) {
+            el.value = val;
+          }
+        });
+      }
+      updateUserCountsSumBadge();
+
+      if (targetStep === 0) goToStep0();
+      else if (targetStep === 1) goToStep1();
+      else if (targetStep === 2) verifyCounts();
+      else if (targetStep === 3) goToStep3();
+      else if (targetStep === 4) lockBinsToStep4();
+      else if (targetStep === 5) {
+        goToStep5();
+        if (s && s.isSubmitted) lockSubmittedUI();
+      }
+    }
+
+    function init(data, sessionCode, draft, fromHost = false) {
+      if (fromHost) isInitializedFromHost = true;
+      if (sessionCode) userSessionCode = sessionCode;
+      stars = data && data.stars ? data.stars : fallbackStars();
+      if (data && data.alpha_0 !== undefined) alpha0 = Number(data.alpha_0);
+      if (data && data.delta_0 !== undefined) delta0 = Number(data.delta_0);
+
+      // По умолчанию при старте ставим прицел в центр поля (alpha_0, delta_0),
+      // даже если alpha_core / delta_core скрыты сервером (SECRET_DATA_KEYS)
+      centerAlpha = (data && data.alpha_core !== undefined) ? Number(data.alpha_core) : alpha0;
+      centerDelta = (data && data.delta_core !== undefined) ? Number(data.delta_core) : delta0;
+      markedStars.clear();
+
+      if (data && data.statement) {
+        document.getElementById('statement-text').textContent = data.statement;
+      }
+
+      document.getElementById('data-stats-bar').innerHTML = `
+        <span><strong>Число звёзд:</strong> N = ${stars.length}</span>
+        <span><strong>Центр поля:</strong> α₀ = ${alpha0}°, δ₀ = ${delta0}°</span>
+        <span><strong>Базовый шаг:</strong> Δr = 0.03° (5 колец)</span>
+      `;
+
+      const tbody = document.getElementById('stars-table-body');
+      tbody.innerHTML = '';
+      for (let i = 0; i < stars.length; i += 3) {
+        const s1 = stars[i];
+        const s2 = stars[i + 1] || { alpha: '—', delta: '—' };
+        const s3 = stars[i + 2] || { alpha: '—', delta: '—' };
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${i + 1}</td><td>${s1.alpha}</td><td>${s1.delta}</td>
+          <td>${i + 2 <= stars.length ? i + 2 : '—'}</td><td>${s2.alpha}</td><td>${s2.delta}</td>
+          <td>${i + 3 <= stars.length ? i + 3 : '—'}</td><td>${s3.alpha}</td><td>${s3.delta}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      restoreState(draft);
+    }
+
+    window.addEventListener('message', (e) => {
+      if (!e.data) return;
+
+      if (e.data.type === 'ASTROSITE_INIT_DATA') {
+        init(e.data.data, e.data.session_code, e.data.draft, true);
+        if (e.data.is_submitted) {
+          lockSubmittedUI(e.data.grading);
+        }
+      }
+
+      if (e.data.type === 'ASTROSITE_SUBMIT_SUCCESS') {
+        if (e.data.recovery_code) userSessionCode = e.data.recovery_code;
+        const grading = e.data.grading || (e.data.score !== undefined ? { score: e.data.score, max_score: e.data.max_score } : null);
+        lockSubmittedUI(grading);
+      }
+
+      if (e.data.type === 'ASTROSITE_SUBMIT_ERROR') {
+        const submitBtn = document.getElementById('btn-final-submit');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Зафиксировать параметры и сдать решение';
+        }
+      }
+    });
+
+    init(null, null, null, false);
+
+    let lastSentHeight = 0;
+    let resizeTimer = null;
+
+    function reportHeight() {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const root = document.getElementById('widget-root');
+        const contentH = root ? Math.ceil(root.getBoundingClientRect().height) : document.body.offsetHeight;
+        if (Math.abs(contentH - lastSentHeight) > 6) {
+          lastSentHeight = contentH;
+          window.parent.postMessage({
+            type: 'ASTROSITE_FRAME_RESIZE',
+            height: contentH + 30
+          }, '*');
+        }
+      }, 50);
+    }
+
+    window.addEventListener('load', reportHeight);
+    window.addEventListener('resize', reportHeight);
+
+    if (window.ResizeObserver) {
+      const target = document.getElementById('widget-root') || document.body;
+      new ResizeObserver(() => reportHeight()).observe(target);
+    }
+  </script>
+</body>
+</html>

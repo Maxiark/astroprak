@@ -1,0 +1,22 @@
+{
+  "schema_version": "2.0",
+  "id": "jet-superluminal",
+  "title": "узлы джета по эпохам → сверхсветовое движение → скорость джета",
+  "kind": "generated",
+  "version": "1.0.0",
+  "hidden": false,
+  "tags": {
+    "class": [
+      11
+    ],
+    "topic": "внегалактическая астрономия и релятивизм",
+    "skills": [
+      "собственное движение узлов джета",
+      "закон Хаббла",
+      "видимое сверхсветовое движение"
+    ]
+  },
+  "max_score": 25.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

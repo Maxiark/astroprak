@@ -1,0 +1,20 @@
+{
+  "schema_version": "2.0",
+  "id": "theory-2d",
+  "title": "Тема 2: Двумерный анализ данных, координатные сетки и выбор масштаба",
+  "kind": "theory",
+  "version": "1.0.0",
+  "hidden": false,
+  "tags": {
+    "class": [
+      9,
+      10,
+      11
+    ],
+    "category": "Урок 2",
+    "topic": "теория и методы",
+    "category_order": 100
+  },
+  "max_score": 0.0,
+  "entry_point": "widget.html"
+}

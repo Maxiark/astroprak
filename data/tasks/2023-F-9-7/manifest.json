@@ -1,0 +1,22 @@
+{
+  "schema_version": "2.0",
+  "id": "2023-F-9-7",
+  "title": "ВсОШ 2023 (9 кл.): Осенний солнечный день",
+  "kind": "archive",
+  "version": "2.0.0",
+  "hidden": false,
+  "tags": {
+    "class": [
+      9
+    ],
+    "topic": "практический тур ВсОШ (сферическая астрономия)",
+    "skills": [
+      "измерения по фотографии",
+      "высота Солнца",
+      "азимут"
+    ]
+  },
+  "max_score": 15.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

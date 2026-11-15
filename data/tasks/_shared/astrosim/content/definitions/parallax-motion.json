@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.0",
+  "id": "parallax-motion",
+  "version": 1,
+  "kind": "generated",
+  "title": "годичный параллакс и собственное движение → расстояние и скорость",
+  "language": "ru",
+  "model": {
+    "id": "parallax-motion",
+    "version": "0.1.0"
+  },
+  "sources": [
+    {
+      "id": "esa-parallax",
+      "title": "ESA: Cosmic distances",
+      "locator": "https://www.esa.int/content/view/full/416409",
+      "role": "reference",
+      "rights": "Ссылка на источник; данные задания синтетические."
+    },
+    {
+      "id": "esa-motion",
+      "title": "ESA: Proper motion",
+      "locator": "https://www.esa.int/Science_Exploration/Space_Science/Gaia/Proper_motion",
+      "role": "reference",
+      "rights": "Ссылка на источник; данные задания синтетические."
+    },
+    {
+      "id": "validation",
+      "title": "Валидация модели",
+      "locator": "packages/astrosim/docs/validation/parallax_motion.md",
+      "role": "validation",
+      "rights": "Ссылка на источник; данные задания синтетические."
+    }
+  ],
+  "statement_template": {
+    "title": "{designation}",
+    "text": "За два года измерены положения звезды {designation} вдоль одной оси. Учебная модель: x(t) = x₀ + μt + π cos(2πt), где t задано в годах, μ — собственное движение, π — годичный параллакс. Коэффициент параллактической проекции равен единице; орбиту Земли считайте круговой. Среднеквадратическая ошибка одного измерения {sigma}″. Движение звезды по небу целиком направлено вдоль этой оси.",
+    "asks": [
+      "Определите собственное движение μ.",
+      "Определите годичный параллакс π.",
+      "Найдите расстояние до звезды.",
+      "Вычислите тангенциальную скорость звезды."
+    ],
+    "note": "Снимайте значения курсором. Точность ответа согласуйте с шумом наблюдений; используйте две–три значащие цифры."
+  },
+  "answers": [
+    {
+      "id": "proper_motion",
+      "label": "μ",
+      "unit": "″/год",
+      "kind": "number",
+      "hint": "Сравните координаты в одинаковую фазу годичного цикла."
+    },
+    {
+      "id": "parallax",
+      "label": "π",
+      "unit": "″",
+      "kind": "number",
+      "hint": "Отделите периодическую часть от линейного дрейфа."
+    },
+    {
+      "id": "distance",
+      "label": "d",
+      "unit": "пк",
+      "kind": "number",
+      "hint": ""
+    },
+    {
+      "id": "speed",
+      "label": "v_t",
+      "unit": "км/с",
+      "kind": "number",
+      "hint": "Движение по небу направлено вдоль измеряемой оси."
+    }
+  ],
+  "parts": [
+    {
+      "id": "part-1",
+      "answer_ids": [
+        "proper_motion"
+      ]
+    },
+    {
+      "id": "part-2",
+      "answer_ids": [
+        "parallax"
+      ]
+    },
+    {
+      "id": "part-3",
+      "answer_ids": [
+        "distance"
+      ]
+    },
+    {
+      "id": "part-4",
+      "answer_ids": [
+        "speed"
+      ]
+    }
+  ],
+  "tools": [
+    "cursor",
+    "loupe",
+    "segment"
+  ],
+  "solution_template": {
+    "title": "Разбор задачи",
+    "steps": [
+      {
+        "id": "step-1",
+        "title": "μ",
+        "text": "Годичная часть в t = 0 и t = 2 одинакова, поэтому μ = [x(2) − x(0)]/2 ≈ {mu}″/год.",
+        "answer_ids": [
+          "proper_motion"
+        ],
+        "part_ids": [
+          "part-1"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-2",
+        "title": "π",
+        "text": "В комбинации x(0) + x(1) − 2x(0,5) постоянное смещение и линейный дрейф сокращаются. Остаётся 4π, поэтому π ≈ {parallax}″.",
+        "answer_ids": [
+          "parallax"
+        ],
+        "part_ids": [
+          "part-2"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-3",
+        "title": "d",
+        "text": "По определению парсека d[пк] = 1/π[″] ≈ {distance} пк.",
+        "answer_ids": [
+          "distance"
+        ],
+        "part_ids": [
+          "part-3"
+        ],
+        "depends_on": [
+          "step-2"
+        ]
+      },
+      {
+        "id": "step-4",
+        "title": "v_t",
+        "text": "v_t = μd: в удобных единицах v_t[км/с] = 4,74 μ[″/год] d[пк] ≈ {speed} км/с.",
+        "answer_ids": [
+          "speed"
+        ],
+        "part_ids": [
+          "part-4"
+        ],
+        "depends_on": [
+          "step-1",
+          "step-3"
+        ]
+      }
+    ]
+  },
+  "bindings": {
+    "statement": [
+      "designation",
+      "sigma"
+    ],
+    "solution": [
+      "distance",
+      "mu",
+      "parallax",
+      "speed"
+    ]
+  }
+}
