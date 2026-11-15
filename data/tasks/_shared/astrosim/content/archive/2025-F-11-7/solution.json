@@ -1,0 +1,60 @@
+{
+  "schema_version": "0.1",
+  "solution_id": "2025-F-11-7.v2.worked",
+  "revision": 1,
+  "task_ref": {
+    "task_id": "2025-F-11-7.v2",
+    "revision": 1
+  },
+  "status": "reviewed",
+  "title": "Решение",
+  "language": "ru",
+  "assets": [
+    {
+      "id": "solution-002",
+      "path": "assets/solution/solution-002.webp",
+      "access": "solution",
+      "sha256": "6d5bb3f0aa1f7777ad4eab5a68f65dd017f05d8580ef3583b0fa009a8bb07abe",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-003",
+      "path": "assets/solution/solution-003.webp",
+      "access": "solution",
+      "sha256": "0ab227e0843909a403a45214ea290966e77c2500c87cb81f3493025ffe76d063",
+      "media_type": "image/webp"
+    }
+  ],
+  "methods": [
+    {
+      "id": "standard",
+      "title": "Решение",
+      "steps": [
+        {
+          "id": "official",
+          "title": "Полный официальный разбор и критерии",
+          "body": [
+            {
+              "type": "figure",
+              "asset_id": "solution-002",
+              "alt": "Официальное решение и критерии, страница 2",
+              "caption": "Оригинал, стр. 2."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-003",
+              "alt": "Официальное решение и критерии, страница 3",
+              "caption": "Оригинал, стр. 3."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [],
+          "depends_on": []
+        }
+      ],
+      "results": []
+    }
+  ]
+}

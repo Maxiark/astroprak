@@ -1,0 +1,99 @@
+{
+  "schema_version": "0.1",
+  "solution_id": "2025-F-10-9.v2.worked",
+  "revision": 1,
+  "task_ref": {
+    "task_id": "2025-F-10-9.v2",
+    "revision": 1
+  },
+  "status": "reviewed",
+  "title": "Решение",
+  "language": "ru",
+  "assets": [
+    {
+      "id": "solution-004",
+      "path": "assets/solution/solution-004.webp",
+      "access": "solution",
+      "sha256": "b6b50e53e84ed938adffd5a00c9ffdf27026a2a0e713d7b4c7cc966540454c25",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-005",
+      "path": "assets/solution/solution-005.webp",
+      "access": "solution",
+      "sha256": "acf6d52aeb4bd9232ec8ec88c3bef6534ee6666780065a1ce9f203cd98e58011",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-006",
+      "path": "assets/solution/solution-006.webp",
+      "access": "solution",
+      "sha256": "cec170802ce71171b1171a1cd88e9eae6deecb9be1e30613313658cdfee14df5",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-007",
+      "path": "assets/solution/solution-007.webp",
+      "access": "solution",
+      "sha256": "7a931dc366aacbdc9679f950a50d37bf6f0d519fe45a6608a9a3f04893fa4c69",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-008",
+      "path": "assets/solution/solution-008.webp",
+      "access": "solution",
+      "sha256": "18845f2fba41398be174c8fadcce1551c568376a9d98f6e7ed49dc3357f7af03",
+      "media_type": "image/webp"
+    }
+  ],
+  "methods": [
+    {
+      "id": "standard",
+      "title": "Решение",
+      "steps": [
+        {
+          "id": "official",
+          "title": "Полный официальный разбор и критерии",
+          "body": [
+            {
+              "type": "figure",
+              "asset_id": "solution-004",
+              "alt": "Официальное решение и критерии, страница 17",
+              "caption": "Оригинал, стр. 17."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-005",
+              "alt": "Официальное решение и критерии, страница 18",
+              "caption": "Оригинал, стр. 18."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-006",
+              "alt": "Официальное решение и критерии, страница 19",
+              "caption": "Оригинал, стр. 19."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-007",
+              "alt": "Официальное решение и критерии, страница 20",
+              "caption": "Оригинал, стр. 20."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-008",
+              "alt": "Официальное решение и критерии, страница 21",
+              "caption": "Оригинал, стр. 21."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [],
+          "depends_on": []
+        }
+      ],
+      "results": []
+    }
+  ]
+}

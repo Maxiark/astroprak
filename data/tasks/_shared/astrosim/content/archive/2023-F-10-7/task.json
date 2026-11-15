@@ -1,0 +1,107 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2023-F-10-7.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2023, условия, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-final-prob-P-10.pdf",
+      "role": "original",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2023, решения и критерии, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-final-sol-P-10.pdf",
+      "role": "reference",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "3409e04e0add16f4d8588212a50a8bdb3fa9fec8d1ce3eab0178284460211022",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "День защитника Отечества",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 1",
+        "caption": "Оригинал, стр. 1."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: широта с точностью 0.5°."
+          }
+        ],
+        "answer_ids": [
+          "latitude",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "latitude",
+        "kind": "number",
+        "label": "$\\varphi$",
+        "unit": "$^\\circ$",
+        "hint": "Широта места наблюдения; северная широта положительна."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": [
+      {
+        "answer_id": "latitude",
+        "value": 80.8,
+        "tolerance": 0.5,
+        "source_id": "official-solution",
+        "rationale": "В официальном решении указана действительная широта +80,8°, в условии — требуемая точность 0,5°. Проверяется только число; баллы за вывод и учёт рефракции не назначаются автоматически."
+      }
+    ]
+  }
+}

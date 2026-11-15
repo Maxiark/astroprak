@@ -1,0 +1,107 @@
+{
+  "schema_version": "0.1",
+  "solution_id": "2023-F-10-7.v2.worked",
+  "revision": 1,
+  "task_ref": {
+    "task_id": "2023-F-10-7.v2",
+    "revision": 1
+  },
+  "status": "reviewed",
+  "title": "Решение",
+  "language": "ru",
+  "assets": [
+    {
+      "id": "solution-002",
+      "path": "assets/solution/solution-002.webp",
+      "access": "solution",
+      "sha256": "c90ca1f0909adf9c42ec738c4bc05fb9839bdd9aab0feef765c2712b6a9c71d5",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-003",
+      "path": "assets/solution/solution-003.webp",
+      "access": "solution",
+      "sha256": "73040f55fe5fad3812c2e211cb343397ba1511b99debc2677c8a2001e1def74e",
+      "media_type": "image/webp"
+    }
+  ],
+  "methods": [
+    {
+      "id": "standard",
+      "title": "Решение",
+      "steps": [
+        {
+          "id": "polar-night",
+          "title": "Окончание полярной ночи",
+          "body": [
+            {
+              "type": "markdown",
+              "text": "Найдите разности продолжительности дня между соседними датами. Резкое уменьшение суточной прибавки указывает на окончание полярной ночи около 23 февраля. Обоснуйте выбор даты по таблице."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [],
+          "depends_on": []
+        },
+        {
+          "id": "latitude",
+          "title": "Склонение Солнца и широта",
+          "body": [
+            {
+              "type": "markdown",
+              "text": "До весеннего равноденствия остаётся примерно 25 суток. Оценка склонения Солнца: $\\delta\\approx-24{,}5^\\circ\\sin\\varepsilon\\approx-9{,}7^\\circ$. При появлении верхнего края Солнца $h=-(\\rho+r)\\approx-0{,}85^\\circ$. Поэтому\n\n$$\\varphi=90^\\circ+\\delta+\\rho+r\\approx81{,}0^\\circ.$$\n\nЗдесь $\\rho$ — горизонтальная рефракция, $r$ — угловой радиус Солнца. Исходные данные рассчитаны для $\\varphi=+80{,}8^\\circ$."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [
+            "latitude"
+          ],
+          "depends_on": [
+            "polar-night"
+          ]
+        },
+        {
+          "id": "official",
+          "title": "Полный официальный разбор и критерии",
+          "body": [
+            {
+              "type": "figure",
+              "asset_id": "solution-002",
+              "alt": "Официальное решение и критерии, страница 1",
+              "caption": "Оригинал, стр. 1."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-003",
+              "alt": "Официальное решение и критерии, страница 2",
+              "caption": "Оригинал, стр. 2."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [],
+          "depends_on": []
+        }
+      ],
+      "results": [
+        {
+          "answer_id": "latitude",
+          "body": [
+            {
+              "type": "markdown",
+              "text": "$\\boxed{\\varphi\\approx+81^\\circ}$; требуемая точность — $0{,}5^\\circ$."
+            }
+          ],
+          "step_ids": [
+            "latitude"
+          ]
+        }
+      ]
+    }
+  ]
+}

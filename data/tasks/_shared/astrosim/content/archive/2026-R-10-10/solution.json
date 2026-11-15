@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1",
+  "solution_id": "2026-R-10-10.v2.worked",
+  "revision": 1,
+  "task_ref": {
+    "task_id": "2026-R-10-10.v2",
+    "revision": 1
+  },
+  "status": "reviewed",
+  "title": "Решение",
+  "language": "ru",
+  "assets": [
+    {
+      "id": "solution-002",
+      "path": "assets/solution/solution-002.webp",
+      "access": "solution",
+      "sha256": "3253b022e84f2d5f687e4eba3356c53233b2b2d7e0b31b52cf7bb3b3500a0c6b",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-003",
+      "path": "assets/solution/solution-003.webp",
+      "access": "solution",
+      "sha256": "a8180308aa462d7e81ea55a415c1bede7fd69eb7de16459258ae99987e644c5a",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-004",
+      "path": "assets/solution/solution-004.webp",
+      "access": "solution",
+      "sha256": "111259a1fbe8ef3e2b37fe0dd063a4fb1bc183aa2cd413f9986fb61f6cac02e3",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-005",
+      "path": "assets/solution/solution-005.webp",
+      "access": "solution",
+      "sha256": "e0ba35462c4d9d7aa2b4bd9b68ce17fac6c380fb1ca086d1557c271f9653ae79",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "solution-006",
+      "path": "assets/solution/solution-006.webp",
+      "access": "solution",
+      "sha256": "b92164e1b611f070af519664f82810ad603f60b7c3d61887773fefb6556ac9b1",
+      "media_type": "image/webp"
+    }
+  ],
+  "methods": [
+    {
+      "id": "standard",
+      "title": "Решение",
+      "steps": [
+        {
+          "id": "amplitudes",
+          "title": "Снятие амплитуд",
+          "body": [
+            {
+              "type": "markdown",
+              "text": "Выделите скорость центра масс и измерьте амплитуды относительно неё. В официальном разборе $K_1\\approx26{,}4\\,\\text{км/с}$, $K_2\\approx25{,}8\\,\\text{км/с}$, погрешность каждого измерения около $0{,}9\\,\\text{км/с}$."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [
+            "k1",
+            "k2"
+          ],
+          "depends_on": []
+        },
+        {
+          "id": "orbit",
+          "title": "Орбита и угловое разделение",
+          "body": [
+            {
+              "type": "markdown",
+              "text": "Для указанного в официальном решении угла $i=43^\\circ$:\n\n$$a=\\frac{T(K_1+K_2)}{2\\pi\\sin i}\\approx0{,}73\\,\\text{а.е.},\\qquad \\Delta a\\approx0{,}03\\,\\text{а.е.}.$$\n\nПри параллаксе $\\pi_*=0{,}076''$ имеем $\\rho_{\\max}=a[\\text{а.е.}]\\pi_*\\approx0{,}055''$ и $\\Delta\\rho_{\\max}\\approx0{,}002''$. Это существенно меньше атмосферного размытия обычных наземных наблюдений. Особые интерферометрические методы обсуждаются отдельно в оригинале."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [
+            "separation",
+            "conclusion"
+          ],
+          "depends_on": [
+            "amplitudes"
+          ]
+        },
+        {
+          "id": "official",
+          "title": "Полный официальный разбор и критерии",
+          "body": [
+            {
+              "type": "figure",
+              "asset_id": "solution-002",
+              "alt": "Официальное решение и критерии, страница 18",
+              "caption": "Оригинал, стр. 18."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-003",
+              "alt": "Официальное решение и критерии, страница 19",
+              "caption": "Оригинал, стр. 19."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-004",
+              "alt": "Официальное решение и критерии, страница 20",
+              "caption": "Оригинал, стр. 20."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-005",
+              "alt": "Официальное решение и критерии, страница 21",
+              "caption": "Оригинал, стр. 21."
+            },
+            {
+              "type": "figure",
+              "asset_id": "solution-006",
+              "alt": "Официальное решение и критерии, страница 22",
+              "caption": "Оригинал, стр. 22."
+            }
+          ],
+          "part_ids": [
+            "original-task"
+          ],
+          "answer_ids": [],
+          "depends_on": []
+        }
+      ],
+      "results": [
+        {
+          "answer_id": "separation",
+          "body": [
+            {
+              "type": "markdown",
+              "text": "$\\boxed{\\rho_{\\max}=(0{,}055\\pm0{,}002)''}$."
+            }
+          ],
+          "step_ids": [
+            "orbit"
+          ]
+        }
+      ]
+    }
+  ]
+}

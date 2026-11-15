@@ -1,0 +1,151 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2026-F-10-9.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2026, условия, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-final-prob-P-10.pdf",
+      "role": "original",
+      "pages": [
+        5
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2026, решения и критерии, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-final-sol-P-10.pdf",
+      "role": "reference",
+      "pages": [
+        14
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "0c724a9d943b5f7968a55fb45c601d9ce1a028d47226d593ee04bddba77decf2",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-002",
+      "path": "assets/public/public-002.webp",
+      "access": "public",
+      "sha256": "527733faabf6780a32cc16f62654592ace065093ba4cd983d42e03fcc82a6463",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-003",
+      "path": "assets/public/public-003.webp",
+      "access": "public",
+      "sha256": "640ee8c9b0ea1397488e61ed836642fb0dfd81bb4c11ba16a8fed5a9ddba251c",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-004",
+      "path": "assets/public/public-004.webp",
+      "access": "public",
+      "sha256": "fdcf0a955ef351fff21e7ba332dd036344a1a410674cb9366f81c2748aa33f6a",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-005",
+      "path": "assets/public/public-005.webp",
+      "access": "public",
+      "sha256": "b0dc32200cd558809681d257f48301ef82a86923a3ecf6c84dbd2f2cc50bd0aa",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "Светит мазер, светит ясный...",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 5",
+        "caption": "Оригинал, стр. 5."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-002",
+        "alt": "Условие и исходные данные, страница 6",
+        "caption": "Оригинал, стр. 6."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-003",
+        "alt": "Условие и исходные данные, страница 7",
+        "caption": "Оригинал, стр. 7."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-004",
+        "alt": "Условие и исходные данные, страница 8",
+        "caption": "Оригинал, стр. 8."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-005",
+        "alt": "Условие и исходные данные, страница 9",
+        "caption": "Оригинал, стр. 9."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: лабораторная частота линии, линейный размер, расстояние, принадлежность."
+          }
+        ],
+        "answer_ids": [
+          "answer",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "answer",
+        "kind": "text",
+        "label": "Ответ",
+        "unit": "",
+        "hint": "Запишите результаты с единицами, выводы и требуемые в условии ответы."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": []
+  }
+}

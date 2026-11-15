@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2026-R-11-5.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2026, условия, 11 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-reg-prob-day1-11.pdf",
+      "role": "original",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2026, решения и критерии, 11 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-reg-sol-day1-11.pdf",
+      "role": "reference",
+      "pages": [
+        10
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "07383b97569e51a3bbc6aa218c4718ddf980623e0a0f1aaaf8a5f0c5df82c1de",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-002",
+      "path": "assets/public/public-002.webp",
+      "access": "public",
+      "sha256": "adde330c38e97ae38a47b35fea8515262959099759cc71c6eabfde1493e5691d",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "Спектральный вальс",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 1",
+        "caption": "Оригинал, стр. 1."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-002",
+        "alt": "Условие и исходные данные, страница 2",
+        "caption": "Оригинал, стр. 2."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: масса чёрной дыры."
+          }
+        ],
+        "answer_ids": [
+          "mass",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "mass",
+        "kind": "number",
+        "label": "$M$",
+        "unit": "$10^9 M_\\odot$",
+        "hint": "Масса чёрной дыры в миллиардах масс Солнца."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": []
+  }
+}

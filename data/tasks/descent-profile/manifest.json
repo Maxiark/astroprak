@@ -1,0 +1,24 @@
+{
+  "schema_version": "2.0",
+  "id": "descent-profile",
+  "title": "спуск на парашюте → скорость от высоты → температура атмосферы",
+  "kind": "generated",
+  "version": "1.0.0",
+  "hidden": false,
+  "tags": {
+    "class": [
+      9,
+      10,
+      11
+    ],
+    "topic": "планетные атмосферы",
+    "skills": [
+      "дифференцирование графика",
+      "барометрическая формула",
+      "шкала высот"
+    ]
+  },
+  "max_score": 25.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

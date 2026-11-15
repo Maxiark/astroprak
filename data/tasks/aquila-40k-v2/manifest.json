@@ -1,0 +1,25 @@
+{
+  "schema_version": "2.0",
+  "id": "aquila-40k-v2",
+  "title": "Орёл 40-тысячелетия: собственные движения звёзд",
+  "kind": "generated",
+  "version": "2.2.0",
+  "tags": {
+    "class": [
+      9,
+      10,
+      11
+    ],
+    "topic": "собственные движения",
+    "skills": [
+      "астрометрия",
+      "построение карт",
+      "векторы смещений"
+    ],
+    "category": "Урок 2",
+    "category_order": 22
+  },
+  "max_score": 5.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

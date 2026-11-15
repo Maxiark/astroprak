@@ -1,0 +1,138 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2026-R-10-10.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2026, условия, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-reg-prob-day2-10.pdf",
+      "role": "original",
+      "pages": [
+        2
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2026, решения и критерии, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-reg-sol-day2-10.pdf",
+      "role": "reference",
+      "pages": [
+        18
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "15a601fafdccce119ce8c2c023ab48669c730624f59b36d3ab9811e59647e16a",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "Капелла",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 2",
+        "caption": "Оригинал, стр. 2."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: максимальное угловое расстояние компонент ± погрешность, разрешимость в 2.5 м при 0.7″."
+          }
+        ],
+        "answer_ids": [
+          "k1",
+          "k2",
+          "separation",
+          "conclusion",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "k1",
+        "kind": "number",
+        "label": "$K_1$",
+        "unit": "$\\text{км/с}$",
+        "hint": "Амплитуда лучевой скорости первой компоненты; промежуточный результат."
+      },
+      {
+        "id": "k2",
+        "kind": "number",
+        "label": "$K_2$",
+        "unit": "$\\text{км/с}$",
+        "hint": "Амплитуда лучевой скорости второй компоненты; промежуточный результат."
+      },
+      {
+        "id": "separation",
+        "kind": "number_with_error",
+        "label": "$\\rho_{\\max}$",
+        "unit": "$''$",
+        "hint": "Максимальное угловое разделение и погрешность: число ± погрешность."
+      },
+      {
+        "id": "conclusion",
+        "kind": "text",
+        "label": "Вывод о разрешимости",
+        "unit": "",
+        "hint": "Сравните разделение с ограничениями наземных наблюдений."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": [
+      {
+        "answer_id": "k1",
+        "value": 26.4,
+        "tolerance": 2,
+        "source_id": "official-solution",
+        "rationale": "В критерии К1 официального решения: точность определения лучевых скоростей ±2 км/с. Баллы за метод измерения проверяются отдельно по разбору."
+      },
+      {
+        "answer_id": "k2",
+        "value": 25.8,
+        "tolerance": 2,
+        "source_id": "official-solution",
+        "rationale": "В критерии К1 официального решения: точность определения лучевых скоростей ±2 км/с. Баллы за метод измерения проверяются отдельно по разбору."
+      }
+    ]
+  }
+}

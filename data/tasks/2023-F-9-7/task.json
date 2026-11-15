@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2023-F-9-7.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2023, условия, 9 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-final-prob-P-9.pdf",
+      "role": "original",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2023, решения и критерии, 9 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-final-sol-P-9.pdf",
+      "role": "reference",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "a01448a36271687c2a8620034a9278bc552d8b132bfe19e62ea2d3592e49d911",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-002",
+      "path": "assets/public/public-002.webp",
+      "access": "public",
+      "sha256": "40c0e7d3b577fbbbc922ff506e0ce0fe1fb0945967c2decd164fbe91a3359611",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "Осенний солнечный день",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 1",
+        "caption": "Оригинал, стр. 1."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-002",
+        "alt": "Условие и исходные данные, страница 3",
+        "caption": "Оригинал, стр. 3."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: высота Солнца, момент съёмки, высота здания, направление улицы."
+          }
+        ],
+        "answer_ids": [
+          "answer",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "answer",
+        "kind": "text",
+        "label": "Ответ",
+        "unit": "",
+        "hint": "Запишите результаты с единицами, выводы и требуемые в условии ответы."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "2.0",
+  "id": "new-methodology-v2",
+  "title": "Новая методика: попарные расстояния между звёздами",
+  "kind": "generated",
+  "version": "2.3.0",
+  "tags": {
+    "class": [
+      9,
+      10,
+      11
+    ],
+    "topic": "геометрия наблюдений",
+    "skills": [
+      "триангуляция",
+      "поле зрения",
+      "оценка погрешности",
+      "опознание созвездий"
+    ],
+    "category": "Урок 2",
+    "category_order": 22
+  },
+  "max_score": 10.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

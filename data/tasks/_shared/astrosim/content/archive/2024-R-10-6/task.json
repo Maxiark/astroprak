@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2024-R-10-6.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2024, условия, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2024/vos-2024-reg-prob-10.pdf",
+      "role": "original",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2024, решения и критерии, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2024/vos-2024-reg-sol-10.pdf",
+      "role": "reference",
+      "pages": [
+        9
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "2da0a049036e6b58a6cbea895a979efa00ab32b18d274437fdc338797d1c0858",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-002",
+      "path": "assets/public/public-002.webp",
+      "access": "public",
+      "sha256": "a6a75db2e1c735eda729ac35f201f0806098598c99fa0c516ac266e461ed287d",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "Затмение Солнца Фобосом",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 1",
+        "caption": "Оригинал, стр. 1."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-002",
+        "alt": "Условие и исходные данные, страница 2",
+        "caption": "Оригинал, стр. 2."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: высота Солнца, местное солнечное время на Марсе."
+          }
+        ],
+        "answer_ids": [
+          "answer",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "answer",
+        "kind": "text",
+        "label": "Ответ",
+        "unit": "",
+        "hint": "Запишите результаты с единицами, выводы и требуемые в условии ответы."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": []
+  }
+}

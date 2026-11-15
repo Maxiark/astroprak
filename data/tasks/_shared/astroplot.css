@@ -1,0 +1,180 @@
+:root {
+  --bg: #ffffff;
+  --card: #f8fafc;
+  --border: #cbd5e1;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #d3261f;
+  --primary: #2563eb;
+  --success: #16a34a;
+  --ink: #111827;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  padding: 14px;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.45;
+  font-feature-settings: "tnum", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+#widget-root { width: 100%; }
+
+.statement-box {
+  background: var(--card);
+  border-left: 4px solid var(--primary);
+  padding: 12px 14px;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  margin-bottom: 14px;
+  color: #334155;
+}
+
+.plot-container {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fafafa;
+  overflow: hidden;
+  touch-action: none;
+}
+
+svg.rv {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  display: block;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+svg.rv.is-disabled {
+  cursor: default;
+}
+
+/* Элементы графика (совместимы и с astroprak v1, и с astrosite_base Plot.tsx) */
+line.grid { stroke: #e2e8f0; stroke-width: 1; }
+rect.axes { fill: none; stroke: #334155; stroke-width: 1.5; }
+text.tick { font-size: 11px; fill: #475569; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+text.label { font-size: 12px; fill: #1e293b; font-weight: 600; }
+
+/* Точки серий: dot (.a), ring (.b), ломаная спектра (.series-line) и следы звёзд (.trail) */
+circle.pt { fill: var(--primary); stroke: #ffffff; stroke-width: 1; }
+circle.pt.a { fill: var(--primary); stroke: #ffffff; stroke-width: 1; }
+circle.pt.b { fill: #ffffff; stroke: #0f172a; stroke-width: 1.6; }
+polyline.series-line { fill: none; stroke: var(--primary); stroke-width: 1.5; stroke-linejoin: round; }
+line.trail { stroke: #0f172a; stroke-width: 1.8; stroke-linecap: round; }
+
+/* Метки и измерения */
+g.mark circle { fill: none; stroke: var(--accent); stroke-width: 1.8; }
+g.mark text { font-size: 11px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: bold; fill: var(--accent); }
+g.mark-seg line { stroke: var(--accent); stroke-width: 2; }
+g.mark-seg circle { fill: var(--accent); stroke: #ffffff; stroke-width: 1.2; }
+circle.pending { fill: var(--accent); opacity: 0.65; stroke: #ffffff; stroke-width: 1; }
+
+/* Курсор визира */
+g.cursor line { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3,3; opacity: 0.85; }
+g.cursor circle { fill: none; stroke: var(--accent); stroke-width: 2; }
+
+/* Лупа */
+g.loupe circle.loupe-bg { fill: #ffffff; }
+g.loupe circle.loupe-ring { fill: none; stroke: #334155; stroke-width: 2.2; }
+g.loupe line.crosshair { stroke: var(--accent); stroke-width: 1.1; stroke-dasharray: 2,2; }
+
+/* Панель инструментов */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tools { display: flex; gap: 4px; flex-wrap: wrap; }
+.tools button {
+  padding: 5px 11px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+.tools button.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.tools button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.readout {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Список меток */
+.marks-panel {
+  margin-top: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.marks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+.marks-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 90px;
+  overflow-y: auto;
+}
+.mark-chip {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mark-chip button {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-weight: bold;
+}
+.mark-chip button:hover { color: var(--accent); }
+
+/* Плашка сдачи */
+.session-banner {
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 14px;
+  display: none;
+}

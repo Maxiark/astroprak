@@ -1,0 +1,96 @@
+{
+  "task_id": "2023-R-11-6",
+  "render_scale": 2.2,
+  "regions": [
+    {
+      "asset_id": "public-001",
+      "source_id": "original",
+      "page": 3,
+      "crop_pt": [
+        22,
+        165.87,
+        573.22,
+        804.0
+      ],
+      "width": 1214,
+      "height": 1405,
+      "sha256": "e94dc02f3954a0f97f48f5bec8aee1b7d9b46048dd3e3cae5b33c95bbd88f375",
+      "source_sha256": "5fa587fbc6396ace480fe07e3daaf444e729d35354a127377f8d56b90b251739"
+    },
+    {
+      "asset_id": "solution-002",
+      "source_id": "official-solution",
+      "page": 6,
+      "crop_pt": [
+        22,
+        336.61,
+        573.3,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1029,
+      "sha256": "a8dc6d3b154fff1407a14e3a4e42e9afc8ed0acf92326818793d3a783371d8ec",
+      "source_sha256": "8e14d338057b19888b14116ad4612c365b37fd72c1f808d0681d8dc51ceb30b8"
+    },
+    {
+      "asset_id": "solution-003",
+      "source_id": "official-solution-10",
+      "page": 10,
+      "crop_pt": [
+        22,
+        73.11,
+        573.3,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1609,
+      "sha256": "282de72345eecd8726ee68ed9d9edd1b854827c89b5d8df3403f3cc55a886ddd",
+      "source_sha256": "3260f21e54c2bf93a24dfae7d549fa602081124cea02ee8dbd40e19a7834d8de"
+    },
+    {
+      "asset_id": "solution-004",
+      "source_id": "official-solution-10",
+      "page": 11,
+      "crop_pt": [
+        22,
+        42,
+        573.3,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "348c68d44f575e592a2f1b6a2913cad5a4ffb585700c7a6f4a215d6aec7213f2",
+      "source_sha256": "3260f21e54c2bf93a24dfae7d549fa602081124cea02ee8dbd40e19a7834d8de"
+    },
+    {
+      "asset_id": "solution-005",
+      "source_id": "official-solution-10",
+      "page": 12,
+      "crop_pt": [
+        22,
+        42,
+        573.3,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "b5b6205936d4a4a11bacbea5a1862bc41063c5c43e09ec633b3b042570733d3f",
+      "source_sha256": "3260f21e54c2bf93a24dfae7d549fa602081124cea02ee8dbd40e19a7834d8de"
+    },
+    {
+      "asset_id": "solution-006",
+      "source_id": "official-solution-10",
+      "page": 13,
+      "crop_pt": [
+        22,
+        42,
+        573.3,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "b86b77af7080d1b0c59b9c37c11549a2d99f9ce015102c8cf99169ff1aaf7f1c",
+      "source_sha256": "3260f21e54c2bf93a24dfae7d549fa602081124cea02ee8dbd40e19a7834d8de"
+    }
+  ]
+}

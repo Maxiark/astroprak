@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0",
+  "id": "2023-F-9-7",
+  "version": 2,
+  "kind": "archive",
+  "title": "Осенний солнечный день",
+  "language": "ru",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2023, условия, 9 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-final-prob-P-9.pdf",
+      "role": "original",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2023, решения и критерии, 9 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-final-sol-P-9.pdf",
+      "role": "reference",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "statement_template": {
+    "title": "Осенний солнечный день",
+    "text": "Фотография солнечного пятна на стене комнаты; известны дата, широта, размеры окна и расстояние до здания.",
+    "asks": [
+      "Определить: высота Солнца, момент съёмки, высота здания, направление улицы."
+    ],
+    "note": "Условие, исходные данные и бланк доступны в задании. Решение раскрывается после сдачи."
+  },
+  "answers": [
+    {
+      "id": "answer",
+      "kind": "text",
+      "label": "Ответ",
+      "unit": "",
+      "hint": "Запишите результаты с единицами, выводы и требуемые в условии ответы."
+    },
+    {
+      "id": "reasoning",
+      "kind": "text",
+      "label": "Ход решения",
+      "unit": "",
+      "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+    },
+    {
+      "id": "measurements",
+      "kind": "points",
+      "label": "Измерения на рисунках",
+      "unit": "",
+      "hint": ""
+    }
+  ],
+  "parts": [
+    {
+      "id": "original-task",
+      "answer_ids": [
+        "answer",
+        "reasoning",
+        "measurements"
+      ]
+    }
+  ],
+  "tools": [
+    "image-zoom",
+    "image-ruler"
+  ],
+  "solution_template": {
+    "title": "Официальное решение",
+    "steps": [
+      {
+        "id": "official",
+        "title": "Решение и критерии оценивания",
+        "blocks": [
+          {
+            "type": "source_excerpt",
+            "source_id": "official-solution",
+            "pages": [
+              1
+            ],
+            "note": "Официальное решение и критерии задания 7. Начало разбора на странице 1 PDF."
+          }
+        ],
+        "part_ids": [
+          "original-task"
+        ],
+        "answer_ids": [],
+        "depends_on": []
+      }
+    ]
+  },
+  "archive": {
+    "year": 2023,
+    "grade": 9,
+    "stage": "final",
+    "number": 7,
+    "points": 15,
+    "authors": [],
+    "domain": "sphere",
+    "condition_source_id": "original",
+    "condition_pages": [
+      1
+    ]
+  },
+  "package_path": "archive/2023-F-9-7/task.json"
+}

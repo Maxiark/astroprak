@@ -1,0 +1,15 @@
+{
+  "schema_version": "2.0",
+  "id": "task-template",
+  "title": "Название нового тренажёра",
+  "kind": "generated",
+  "version": "1.0.0",
+  "tags": {
+    "class": [9, 10, 11],
+    "topic": "астрофизика",
+    "skills": ["анализ данных", "аппроксимация"]
+  },
+  "max_score": 10.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

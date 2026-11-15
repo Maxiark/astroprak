@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0",
+  "id": "rotation-mass",
+  "version": 1,
+  "kind": "generated",
+  "title": "вращение газового диска → масса центрального объекта",
+  "language": "ru",
+  "model": {
+    "id": "rotation-mass",
+    "version": "0.1.0"
+  },
+  "sources": [
+    {
+      "id": "prototype",
+      "title": "ВсОШ 2026, 11 класс, задача 5 «Спектральный вальс»",
+      "locator": "https://astroedu.ru/assets/problems/vos/2026/vos-2026-reg-sol-day1-11.pdf",
+      "role": "prototype",
+      "rights": "Ссылка на источник; данные задания синтетические."
+    },
+    {
+      "id": "validation",
+      "title": "Валидация модели",
+      "locator": "packages/astrosim/docs/validation/rotation_mass.md",
+      "role": "validation",
+      "rights": "Ссылка на источник; данные задания синтетические."
+    }
+  ],
+  "statement_template": {
+    "title": "{designation}",
+    "text": "Для газового диска {designation} измерены лучевые скорости двух противоположных сторон вдоль большой оси. Скорость центра галактики уже вычтена. Расстояние до галактики D = {distance} Мпк, наклон плоскости диска к картинной плоскости i = {inclination}°. Газ движется по круговым орбитам вокруг центральной точечной массы. Среднеквадратическая ошибка каждой скорости {sigma} км/с. D, i и угловые расстояния считайте известными точно.",
+    "asks": [
+      "Найдите линейный радиус орбиты при θ = 1″.",
+      "По обеим сторонам диска определите круговую скорость на этом радиусе.",
+      "Определите массу центрального объекта."
+    ],
+    "note": "Снимайте значения курсором. Точность ответа согласуйте с шумом наблюдений; используйте две–три значащие цифры."
+  },
+  "answers": [
+    {
+      "id": "radius",
+      "label": "r",
+      "unit": "пк",
+      "kind": "number",
+      "hint": "Линейный радиус при угловом расстоянии θ = 1″."
+    },
+    {
+      "id": "speed",
+      "label": "v",
+      "unit": "км/с",
+      "kind": "number",
+      "hint": "Круговая скорость при θ = 1″, с поправкой на наклон."
+    },
+    {
+      "id": "mass",
+      "label": "M",
+      "unit": "10⁸ M_☉",
+      "kind": "number",
+      "hint": "В сотнях миллионов масс Солнца. Массой самого диска пренебречь."
+    }
+  ],
+  "parts": [
+    {
+      "id": "part-1",
+      "answer_ids": [
+        "radius"
+      ]
+    },
+    {
+      "id": "part-2",
+      "answer_ids": [
+        "speed"
+      ]
+    },
+    {
+      "id": "part-3",
+      "answer_ids": [
+        "mass"
+      ]
+    }
+  ],
+  "tools": [
+    "cursor",
+    "loupe",
+    "segment"
+  ],
+  "solution_template": {
+    "title": "Разбор задачи",
+    "steps": [
+      {
+        "id": "step-1",
+        "title": "r",
+        "text": "Малый угол в радианах θ = 1/206265. Поэтому r = Dθ ≈ {radius} пк.",
+        "answer_ids": [
+          "radius"
+        ],
+        "part_ids": [
+          "part-1"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-2",
+        "title": "v",
+        "text": "Разность скоростей двух сторон равна 2v sin i. Следовательно, v = (v_A − v_B)/(2 sin i) ≈ {speed} км/с.",
+        "answer_ids": [
+          "speed"
+        ],
+        "part_ids": [
+          "part-2"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-3",
+        "title": "M",
+        "text": "Из v²/r = GM/r² получаем M = v²r/G ≈ {mass} · 10⁸ M☉. Радиус и скорость перед подстановкой переводятся в СИ.",
+        "answer_ids": [
+          "mass"
+        ],
+        "part_ids": [
+          "part-3"
+        ],
+        "depends_on": [
+          "step-1",
+          "step-2"
+        ]
+      }
+    ]
+  },
+  "bindings": {
+    "statement": [
+      "designation",
+      "distance",
+      "inclination",
+      "sigma"
+    ],
+    "solution": [
+      "mass",
+      "radius",
+      "speed"
+    ]
+  }
+}

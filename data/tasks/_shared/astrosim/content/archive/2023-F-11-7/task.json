@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2023-F-11-7.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2023, условия, 11 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-final-prob-P-11.pdf",
+      "role": "original",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2023, решения и критерии, 11 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-final-sol-P-11.pdf",
+      "role": "reference",
+      "pages": [
+        1
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "ee9cab4edcd3a9d3fefd54bbb66f42b0cb200d8233e17b69fd980b34fdc43aab",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-002",
+      "path": "assets/public/public-002.webp",
+      "access": "public",
+      "sha256": "8fc591ddb76e88fc12d469060f7aec243ad97c674b617024ca8e226edfa6b03b",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "Двойная линия",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 1",
+        "caption": "Оригинал, стр. 1."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-002",
+        "alt": "Условие и исходные данные, страница 2",
+        "caption": "Оригинал, стр. 2."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: минимальная полная масса системы, природа звёзд."
+          }
+        ],
+        "answer_ids": [
+          "answer",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "answer",
+        "kind": "text",
+        "label": "Ответ",
+        "unit": "",
+        "hint": "Запишите результаты с единицами, выводы и требуемые в условии ответы."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": []
+  }
+}

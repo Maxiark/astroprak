@@ -1,0 +1,550 @@
+/* Универсальная тема виджета задач astrosim (Швейцарская сетка + адаптация для astroprak iframe) */
+.lw-wrap {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #111827;
+  line-height: 1.45;
+  padding: 4px 2px 16px;
+}
+
+/* Шапка метаданных варианта */
+.lw-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px 18px;
+  padding: 6px 0 10px;
+  border-bottom: 2px solid #111827;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.lw-topbar .lw-meta-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: baseline;
+}
+.lw-k {
+  color: #64748b;
+  font-size: 12px;
+  margin-right: 4px;
+}
+.lw-topbar code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.lw-clock {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* Условие задачи */
+.lw-statement {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #111827;
+  border-radius: 0 8px 8px 0;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.lw-task-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  color: #0f172a;
+}
+.lw-task-title .lw-num {
+  color: #d3261f;
+  margin-right: 4px;
+}
+.lw-statement-text {
+  font-size: 14px;
+  color: #1e293b;
+  margin-bottom: 10px;
+}
+.lw-asks {
+  list-style: none;
+  counter-reset: lw-ask;
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+  padding: 0;
+  font-size: 14px;
+}
+.lw-asks li {
+  counter-increment: lw-ask;
+  position: relative;
+  padding-left: 24px;
+}
+.lw-asks li::before {
+  content: counter(lw-ask, upper-latin) ". ";
+  position: absolute;
+  left: 0;
+  font-weight: 800;
+  color: #0f172a;
+}
+.lw-note {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+/* Основная сетка: слева график и инструменты, справа журнал и бланк */
+.lw-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(290px, 4.5fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .lw-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Подпись графика и легенда серий */
+.lw-plot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.lw-plot-caption {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+.lw-legend {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #334155;
+}
+.lw-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.lw-dot-a {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2563eb;
+  display: inline-block;
+}
+.lw-dot-b {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid #0f172a;
+  background: #fff;
+  display: inline-block;
+}
+.lw-line-seg {
+  width: 14px;
+  height: 2px;
+  background: #0f172a;
+  display: inline-block;
+}
+
+/* Табло координат */
+.lw-readout-box {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.lw-readout-val {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Журнал снятых значений (таблица как в astrosite_base Workbench.tsx) */
+.lw-log-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.lw-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid #0f172a;
+}
+.lw-card-head h3 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #475569;
+}
+.lw-clear-btn {
+  background: none;
+  border: none;
+  color: #d3261f;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lw-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.lw-log-table th {
+  text-align: left;
+  color: #64748b;
+  font-weight: 600;
+  padding: 5px 6px 5px 0;
+  border-bottom: 1px solid #cbd5e1;
+}
+.lw-log-table td {
+  padding: 6px 6px 6px 0;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+.lw-log-table td.lw-col-y {
+  font-weight: 700;
+}
+.lw-log-table td.lw-col-kind {
+  color: #64748b;
+  font-size: 12px;
+}
+.lw-del-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.lw-del-btn:hover {
+  color: #d3261f;
+}
+
+/* Бланк ответа */
+.lw-sheet-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.lw-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lw-field-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px auto;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.lw-field-row.lw-wide {
+  grid-template-columns: minmax(0, 1fr) 190px auto;
+}
+.lw-field-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f172a;
+}
+.lw-field-hint {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 400;
+  color: #64748b;
+  margin-top: 2px;
+}
+.lw-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.lw-input {
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: right;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  background: #f8fafc;
+  color: #0f172a;
+}
+.lw-input:focus {
+  outline: 2px solid #2563eb;
+  background: #fff;
+}
+.lw-input:disabled {
+  background: #f1f5f9;
+  color: #334155;
+}
+.lw-unit {
+  font-size: 13px;
+  color: #475569;
+  min-width: 36px;
+}
+.lw-pm-btn {
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #e2e8f0;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #0f172a;
+}
+.lw-pm-btn:hover { background: #cbd5e1; }
+.lw-yesno-pills {
+  display: flex;
+  gap: 4px;
+}
+.lw-pill {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #f8fafc;
+  cursor: pointer;
+}
+.lw-pill.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+.lw-written {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.lw-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13.5px;
+  font-family: inherit;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  resize: vertical;
+  min-height: 76px;
+}
+.lw-select {
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 13.5px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  background: #fff;
+}
+
+.lw-submit-row {
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.lw-submit-btn {
+  width: 100%;
+  padding: 11px 18px;
+  background: #d3261f;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.lw-submit-btn:hover:not(:disabled) {
+  background: #b91c1c;
+}
+.lw-submit-btn:disabled {
+  background: #94a3b8;
+  cursor: default;
+}
+
+/* Вердикт и эталонный разбор после сдачи */
+.lw-verdict-box {
+  background: #ffffff;
+  border: 2px solid #0f172a;
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-top: 18px;
+}
+.lw-verdict-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #0f172a;
+  margin-bottom: 12px;
+}
+.lw-verdict-head h3 {
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.lw-score-badge {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.lw-score-badge b {
+  font-size: 32px;
+  color: #16a34a;
+}
+.lw-verdict-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  margin-bottom: 16px;
+}
+.lw-verdict-table td {
+  padding: 8px 10px 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+.lw-verdict-table tr.lw-bad td.lw-v-name,
+.lw-verdict-table tr.lw-bad td.lw-v-pts {
+  color: #d3261f;
+}
+.lw-verdict-table tr.lw-near td.lw-v-pts {
+  color: #d97706;
+}
+.lw-verdict-table tr.lw-ok td.lw-v-pts {
+  color: #16a34a;
+}
+.lw-v-name { font-weight: 700; white-space: nowrap; }
+.lw-v-ans { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600; white-space: nowrap; }
+.lw-v-pts { font-weight: 800; white-space: nowrap; }
+.lw-v-comment { color: #334155; }
+.lw-penalty {
+  color: #d3261f;
+  font-size: 12.5px;
+  margin-top: 3px;
+  font-weight: 600;
+}
+
+/* Пошаговое решение */
+.lw-solution-box {
+  background: #f8fafc;
+  border-top: 2px solid #0f172a;
+  padding-top: 14px;
+  margin-top: 14px;
+}
+.lw-solution-box h4 {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.lw-sol-steps {
+  padding-left: 20px;
+  display: grid;
+  gap: 10px;
+  font-size: 13.5px;
+}
+.lw-sol-step-title {
+  font-weight: 700;
+  color: #0f172a;
+  margin-right: 6px;
+}
+.lw-sol-results {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #cbd5e1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.lw-sol-res-chip {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+/* Панель рисунков и линейки для архивных задач (FigurePanel) */
+.lw-figure {
+  margin: 14px 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  padding: 10px;
+}
+.lw-fig-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.lw-fig-btn {
+  padding: 5px 10px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lw-fig-btn.active {
+  background: #0f172a;
+  color: #fff;
+  border-color: #0f172a;
+}
+.lw-fig-scroll {
+  overflow: auto;
+  max-height: 520px;
+  border: 1px solid #e2e8f0;
+}
+.lw-fig-canvas {
+  position: relative;
+  transform-origin: top left;
+}
+.lw-fig-canvas img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+.lw-fig-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.lw-fig-overlay line {
+  stroke: #d3261f;
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}
+.lw-fig-overlay circle {
+  fill: #d3261f;
+  stroke: #ffffff;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}

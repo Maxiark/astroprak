@@ -1,0 +1,60 @@
+name: testprak
+
+services:
+  db:
+    restart: unless-stopped
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: astrosite_v2
+      POSTGRES_USER: astrosite_v2
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-astrosite}
+    volumes:
+      - pgdata_v2:/var/lib/postgresql/data
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U astrosite_v2 -d astrosite_v2"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  core:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: services/core/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://astrosite_v2:${POSTGRES_PASSWORD:-astrosite}@db:5432/astrosite_v2
+      COOKIE_SECURE: ${COOKIE_SECURE:-0}
+      CORS_ORIGINS: ""
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-dev-admin}
+      BACKUP_INTERVAL_MINUTES: ${BACKUP_INTERVAL_MINUTES:-30}
+      BACKUP_DIR: /app/data/backups
+    volumes:
+      - ../data/tasks:/app/data/tasks
+      - ../data/backups:/app/data/backups
+      - ../docs:/app/docs:ro
+    networks:
+      default:
+        aliases:
+          - core
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web2:
+    restart: unless-stopped
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile
+    networks:
+      - default
+    depends_on:
+      - core
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  pgdata_v2:

@@ -1,0 +1,51 @@
+{
+  "task_id": "2023-F-10-7",
+  "render_scale": 2.2,
+  "regions": [
+    {
+      "asset_id": "public-001",
+      "source_id": "original",
+      "page": 1,
+      "crop_pt": [
+        22,
+        179.09,
+        573.22,
+        487.05
+      ],
+      "width": 1214,
+      "height": 679,
+      "sha256": "3409e04e0add16f4d8588212a50a8bdb3fa9fec8d1ce3eab0178284460211022",
+      "source_sha256": "b7023889275a19a415b66e020e78f36e2915b4d653194ad0cd72707bd1b0fe18"
+    },
+    {
+      "asset_id": "solution-002",
+      "source_id": "official-solution",
+      "page": 1,
+      "crop_pt": [
+        22,
+        87.61,
+        573.22,
+        804.0
+      ],
+      "width": 1214,
+      "height": 1577,
+      "sha256": "c90ca1f0909adf9c42ec738c4bc05fb9839bdd9aab0feef765c2712b6a9c71d5",
+      "source_sha256": "d32aa92b2563afc26fcc0ee98d44353d0814746816246bc05818b159a0a36fca"
+    },
+    {
+      "asset_id": "solution-003",
+      "source_id": "official-solution",
+      "page": 2,
+      "crop_pt": [
+        22,
+        42,
+        573.22,
+        804.0
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "73040f55fe5fad3812c2e211cb343397ba1511b99debc2677c8a2001e1def74e",
+      "source_sha256": "d32aa92b2563afc26fcc0ee98d44353d0814746816246bc05818b159a0a36fca"
+    }
+  ]
+}

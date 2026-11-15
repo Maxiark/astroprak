@@ -1,0 +1,81 @@
+{
+  "task_id": "2026-R-11-10",
+  "render_scale": 2.2,
+  "regions": [
+    {
+      "asset_id": "public-001",
+      "source_id": "original",
+      "page": 2,
+      "crop_pt": [
+        22,
+        442.67,
+        573.28,
+        803.89
+      ],
+      "width": 1214,
+      "height": 796,
+      "sha256": "38a86b68d18b82f52f549edc207e7f90f08bf3d693b44d6ac1250818778fadc1",
+      "source_sha256": "54fb31aa65c60928a202920439b4892d87b1be167ec2b375c3ff18f5919629bb"
+    },
+    {
+      "asset_id": "public-002",
+      "source_id": "original",
+      "page": 3,
+      "crop_pt": [
+        22,
+        42,
+        573.28,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "0d82e32cb1b3796b44f734670458201148c70f149af3fe7183e615436e3b23db",
+      "source_sha256": "54fb31aa65c60928a202920439b4892d87b1be167ec2b375c3ff18f5919629bb"
+    },
+    {
+      "asset_id": "solution-003",
+      "source_id": "official-solution",
+      "page": 11,
+      "crop_pt": [
+        22,
+        52.44,
+        573.28,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1654,
+      "sha256": "5a71f0ba7177a45f5e5eda2a2d6506e613cf9dc48d1a5a0b95d697b5c311a797",
+      "source_sha256": "7d5f4558dbd312a9b75f4dbb4d4fc283090aebd48e3d86a7a216b6d21cac656d"
+    },
+    {
+      "asset_id": "solution-004",
+      "source_id": "official-solution",
+      "page": 12,
+      "crop_pt": [
+        22,
+        42,
+        573.28,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "917154e9f976d213626d7518a103077f76118ffb8086b5fcb878af04fceb3ff4",
+      "source_sha256": "7d5f4558dbd312a9b75f4dbb4d4fc283090aebd48e3d86a7a216b6d21cac656d"
+    },
+    {
+      "asset_id": "solution-005",
+      "source_id": "official-solution",
+      "page": 13,
+      "crop_pt": [
+        22,
+        42,
+        573.28,
+        803.89
+      ],
+      "width": 1214,
+      "height": 1677,
+      "sha256": "2954eefdfc9b6d1e6c84deff3fae497abe60864a47530497043c521b02419754",
+      "source_sha256": "7d5f4558dbd312a9b75f4dbb4d4fc283090aebd48e3d86a7a216b6d21cac656d"
+    }
+  ]
+}

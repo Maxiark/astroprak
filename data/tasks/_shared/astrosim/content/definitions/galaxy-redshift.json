@@ -1,0 +1,175 @@
+{
+  "schema_version": "1.0",
+  "id": "galaxy-redshift",
+  "version": 1,
+  "kind": "generated",
+  "title": "спектр галактики → красное смещение → расстояние",
+  "language": "ru",
+  "model": {
+    "id": "galaxy-redshift",
+    "version": "0.1.0"
+  },
+  "sources": [
+    {
+      "id": "validation",
+      "title": "Модель и валидация galaxy-redshift",
+      "locator": "packages/astrosim/docs/validation/galaxy_redshift.md",
+      "role": "validation",
+      "rights": "Материал проекта"
+    }
+  ],
+  "statement_template": {
+    "title": "Галактика {designation}",
+    "text": "Спектрограф записал спектр галактики {designation} в диапазоне {fmt_LAMBDA_MIN_4}–{fmt_lam_max_4} Å: спектральная плотность потока в единицах 10⁻¹⁷ эрг/(см²·с·Å) в зависимости от длины волны. В спектре видны эмиссионные линии; их лабораторные длины волн: {lines_text}. Постоянную Хаббла примите H = 70 км/(с·Мпк).",
+    "asks": [
+      "Отождествите линии и измерьте наблюдаемые длины волн Hβ и Hα.",
+      "Определите красное смещение галактики z по двум линиям.",
+      "Найдите скорость удаления галактики (z ≪ 1).",
+      "Найдите расстояние до галактики по закону Хаббла."
+    ],
+    "note": "«Экстремум» рядом с линией находит её вершину. Число значащих цифр — по допуску; единицы — как на бланке."
+  },
+  "answers": [
+    {
+      "id": "lambda_hb",
+      "label": "λ(Hβ)",
+      "unit": "Å",
+      "kind": "number",
+      "hint": "наблюдаемая длина волны"
+    },
+    {
+      "id": "lambda_ha",
+      "label": "λ(Hα)",
+      "unit": "Å",
+      "kind": "number",
+      "hint": "наблюдаемая длина волны"
+    },
+    {
+      "id": "z",
+      "label": "z",
+      "unit": "",
+      "kind": "number",
+      "hint": "красное смещение"
+    },
+    {
+      "id": "velocity",
+      "label": "v",
+      "unit": "км/с",
+      "kind": "number",
+      "hint": ""
+    },
+    {
+      "id": "distance",
+      "label": "r",
+      "unit": "Мпк",
+      "kind": "number",
+      "hint": ""
+    }
+  ],
+  "parts": [
+    {
+      "id": "part-1",
+      "answer_ids": [
+        "lambda_hb",
+        "lambda_ha"
+      ]
+    },
+    {
+      "id": "part-2",
+      "answer_ids": [
+        "z"
+      ]
+    },
+    {
+      "id": "part-3",
+      "answer_ids": [
+        "velocity"
+      ]
+    },
+    {
+      "id": "part-4",
+      "answer_ids": [
+        "distance"
+      ]
+    }
+  ],
+  "tools": [
+    "cursor",
+    "loupe",
+    "extremum",
+    "segment"
+  ],
+  "solution_template": {
+    "title": "Разбор задачи",
+    "steps": [
+      {
+        "id": "step-1",
+        "title": "λ(Hβ) / λ(Hα)",
+        "text": "Самая сильная линия — Hα, её вершина на {fmt_lam_ha_4} Å; правее её слабый спутник [N II] и пара [S II]. Левее, на {fmt_lam_hb_4} Å, — Hβ, а за ней более слабая [O III] ({fmt_lam_o3_4} Å). Проверка отождествления: отношение наблюдаемой длины волны к лабораторной у всех линий одно и то же, {fmt_1_z_4}.",
+        "answer_ids": [
+          "lambda_hb",
+          "lambda_ha"
+        ],
+        "part_ids": [
+          "part-1"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-2",
+        "title": "z",
+        "text": "z = λ/λ₀ − 1: по Hβ {fmt_lam_hb_4}/4861 − 1 = {fmt_redshift_lam_hb_4861_0_3}, по Hα {fmt_lam_ha_4}/6563 − 1 = {fmt_redshift_lam_ha_6563_0_3}; среднее z = {fmt_z_3}.",
+        "answer_ids": [
+          "z"
+        ],
+        "part_ids": [
+          "part-2"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-3",
+        "title": "v",
+        "text": "При z ≪ 1 скорость удаления v = cz = 2,998·10⁵ · {fmt_z_3} = {fmt_velocity_3} км/с.",
+        "answer_ids": [
+          "velocity"
+        ],
+        "part_ids": [
+          "part-3"
+        ],
+        "depends_on": []
+      },
+      {
+        "id": "step-4",
+        "title": "r",
+        "text": "Закон Хаббла: r = v/H = {fmt_velocity_3} / 70 = {fmt_distance} Мпк.",
+        "answer_ids": [
+          "distance"
+        ],
+        "part_ids": [
+          "part-4"
+        ],
+        "depends_on": []
+      }
+    ]
+  },
+  "bindings": {
+    "statement": [
+      "designation",
+      "fmt_LAMBDA_MIN_4",
+      "fmt_lam_max_4",
+      "lines_text"
+    ],
+    "solution": [
+      "fmt_lam_ha_4",
+      "fmt_lam_hb_4",
+      "fmt_lam_o3_4",
+      "fmt_1_z_4",
+      "fmt_redshift_lam_hb_4861_0_3",
+      "fmt_redshift_lam_ha_6563_0_3",
+      "fmt_z_3",
+      "fmt_velocity_3",
+      "fmt_distance"
+    ]
+  }
+}

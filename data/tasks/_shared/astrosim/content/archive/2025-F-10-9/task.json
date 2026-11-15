@@ -1,0 +1,125 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2025-F-10-9.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2025, условия, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2025/vos-2025-final-prob-P-10.pdf",
+      "role": "original",
+      "pages": [
+        3
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2025, решения и критерии, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2025/vos-2025-final-sol-P-10.pdf",
+      "role": "reference",
+      "pages": [
+        17
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "20cbf949df9abcd27b448311c56364c9f05726d53f03c64a6df887c64015728b",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-002",
+      "path": "assets/public/public-002.webp",
+      "access": "public",
+      "sha256": "b37b78e891f06ea414bf737645c62ab2831117f1dd2fc101c9bdcdfdd68e9755",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-003",
+      "path": "assets/public/public-003.webp",
+      "access": "public",
+      "sha256": "331aab25966f41cd4ddf953adaa4d1fc93ff5e90162cde8b5b862d2377f87fb8",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "Сгорел на работе",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 3",
+        "caption": "Оригинал, стр. 3."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-002",
+        "alt": "Условие и исходные данные, страница 4",
+        "caption": "Оригинал, стр. 4."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-003",
+        "alt": "Условие и исходные данные, страница 5",
+        "caption": "Оригинал, стр. 5."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: масса сгоревшего водорода сейчас и за всю ГП, доли H и He на выходе с ГП, то же для звезды с Z=0.001."
+          }
+        ],
+        "answer_ids": [
+          "answer",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "answer",
+        "kind": "text",
+        "label": "Ответ",
+        "unit": "",
+        "hint": "Запишите результаты с единицами, выводы и требуемые в условии ответы."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": []
+  }
+}

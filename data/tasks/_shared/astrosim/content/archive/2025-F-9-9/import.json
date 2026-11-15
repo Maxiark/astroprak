@@ -1,0 +1,81 @@
+{
+  "task_id": "2025-F-9-9",
+  "render_scale": 2.2,
+  "regions": [
+    {
+      "asset_id": "public-001",
+      "source_id": "original",
+      "page": 1,
+      "crop_pt": [
+        22,
+        449.23,
+        590.0,
+        754.0
+      ],
+      "width": 1250,
+      "height": 671,
+      "sha256": "11ba4a47376ba35e96dbddbcb64f14d2b69f877cef765a405bd002fb0a2af454",
+      "source_sha256": "e44c1f507abfa2c7240c18f7c13134ac5f01eca511f87a7baf463c4169272c64"
+    },
+    {
+      "asset_id": "public-002",
+      "source_id": "original",
+      "page": 4,
+      "crop_pt": [
+        22,
+        42,
+        590.0,
+        754.0
+      ],
+      "width": 1250,
+      "height": 1567,
+      "sha256": "200888e3ad764473eab5520095324ea5436f37c16901d02f7a03d8cfa91b7619",
+      "source_sha256": "e44c1f507abfa2c7240c18f7c13134ac5f01eca511f87a7baf463c4169272c64"
+    },
+    {
+      "asset_id": "solution-003",
+      "source_id": "official-solution",
+      "page": 8,
+      "crop_pt": [
+        22,
+        50.53,
+        590.0,
+        754.0
+      ],
+      "width": 1250,
+      "height": 1548,
+      "sha256": "09306b6b5b239b0c415fb087e7941f5d37bf875b0de1c3a12ebe8656e0dc868a",
+      "source_sha256": "dcdc4e4569594d26040e2faacefc85764d7c3c14fa532577746592cdcc96a356"
+    },
+    {
+      "asset_id": "solution-004",
+      "source_id": "official-solution",
+      "page": 9,
+      "crop_pt": [
+        22,
+        42,
+        590.0,
+        754.0
+      ],
+      "width": 1250,
+      "height": 1567,
+      "sha256": "874512972d9866577034fba2de81588c6864ccab67179c7eefdd9a1091457d29",
+      "source_sha256": "dcdc4e4569594d26040e2faacefc85764d7c3c14fa532577746592cdcc96a356"
+    },
+    {
+      "asset_id": "solution-005",
+      "source_id": "official-solution",
+      "page": 10,
+      "crop_pt": [
+        22,
+        42,
+        590.0,
+        754.0
+      ],
+      "width": 1250,
+      "height": 1567,
+      "sha256": "8124fd0a09fb866e3ca24fa4ee56c507296852aa43e28a77a4fc4decad8b395d",
+      "source_sha256": "dcdc4e4569594d26040e2faacefc85764d7c3c14fa532577746592cdcc96a356"
+    }
+  ]
+}

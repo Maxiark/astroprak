@@ -1,0 +1,96 @@
+# Спецификация API ядра Astrosite (v2.1)
+
+Базовый путь: `/api`
+
+## 1. Публичные маршруты
+
+### `GET /api/me`
+Возвращает идентификатор пользователя и открытый код восстановления сессии:
+* **Ответ `200 OK`:**
+  ```json
+  {
+    "user_id": 1,
+    "recovery_code": "a1b2c3d4e5f6789012345678abcdef01"
+  }
+  ```
+
+### `POST /api/restore`
+Переключает текущую сессию браузера на переданный код восстановления:
+* **Тело запроса:** `{"key": "a1b2c3d4e5f6789012345678abcdef01"}`
+* **Ответ `200 OK`:** `{"status": "ok", "recovery_code": "...", "message": "Сессия восстановлена"}`
+
+### `GET /api/tasks`
+Возвращает список всех проверенных активных манифестов из директории `/data/tasks/` (за исключением помеченных `"hidden": true`).
+
+### `POST /api/attempts`
+Возвращает активную незавершённую попытку либо генерирует новую, если предыдущая сдана или передан параметр `new=true`:
+* **Query-параметры:** `task_id` (обязательный), `seed` (опциональное целое число), `new` (опциональный bool).
+
+### `PATCH /api/attempts/{attempt_id}/answers`
+Фоновое сохранение промежуточного черновика ответов и автоматическая запись события `answer.save` в лог действий.
+
+### `POST /api/attempts/{attempt_id}/events`
+Записывает пакет пользовательских действий в журнал аудита `events`.
+
+### `POST /api/attempts/{attempt_id}/submit`
+Фиксирует финальную сдачу решения: проставляет `submitted_at = NOW()`, вызывает `grade(seed, answers)` генератора задачи, записывает событие `attempt.submit` в журнал и мгновенно дописывает сданную попытку в резервный live-журнал на диске (`submitted_live_log.csv` и `.jsonl`).
+
+---
+
+## 2. Административный контур
+
+Все административные маршруты требуют заголовок:
+`Authorization: Bearer <ADMIN_TOKEN>`
+
+### `GET /api/admin/tasks`
+Возвращает реестр всех обнаруженных на диске папок задач со статусами валидации и флагами видимости.
+
+### `POST /api/admin/tasks/rescan`
+Инициирует повторное чтение директории хранилища без перезапуска контейнеров.
+
+### `POST /api/admin/tasks/upload`
+Принимает `multipart/form-data` ZIP-архив задачи, распаковывает в `/data/tasks/<task_id>/` и запускает регистрацию.
+
+### `POST /api/admin/tasks/{task_id}/toggle-visibility`
+Инвертирует флаг `"hidden"` в `manifest.json` задачи.
+
+### `DELETE /api/admin/tasks/{task_id}`
+Удаляет директорию задачи с диска и исключает её из реестра.
+
+### `GET /api/admin/sessions`
+Возвращает постраничный список попыток с поддержкой сквозного поиска по всей базе данных:
+* **Query-параметры:**
+  * `limit` (по умолчанию `100`, макс. `1000`)
+  * `offset` (по умолчанию `0`)
+  * `q` — сквозной поиск по коду участника (`raw_key`), ID попытки или `task_id` по всей таблице `attempts`
+  * `task_id` — фильтр по задаче
+  * `status_filter` — `submitted` | `in_progress`
+  * `exclude_short` — `true` для исключения коротких незавершённых сессий `< 5 с` на стороне сервера
+* **Ответ `200 OK`:** `{"sessions": [...], "total": 450, "limit": 100, "offset": 0}`
+
+### `GET /api/admin/sessions/{attempt_id}/events`
+Возвращает детальную хронологическую цепочку всех действий ученика в рамках попытки.
+
+### `GET /api/admin/sessions/{attempt_id}/export/json`
+Скачивание полного дампа отдельной попытки в виде JSON-файла.
+
+### `GET /api/admin/sessions/export/csv`
+Формирует сводный CSV-файл (UTF-8 BOM для Excel) со всеми попытками, длительностью, ответами и JSON-логом действий (учитывает параметры фильтрации `q`, `status_filter`, `exclude_short`).
+
+### `GET /api/admin/sessions/export/events-csv`
+Формирует сквозной хронологический CSV-файл (`astrosite_all_events_log.csv`) со всеми записанными действиями по всем работам в системе.
+
+### `GET /api/admin/sessions/export/full-json`
+Формирует полный JSON-дамп всех попыток вместе с массивом событий `events` по каждой работе.
+
+### `GET /api/admin/backups`
+Возвращает статус автоматического резервного копирования и список доступных файлов бэкапов в `/app/data/backups`.
+
+### `POST /api/admin/backups/create`
+Немедленно создаёт полный архив резервной копии (`backup_YYYY-MM-DD_HH-MM-SS.zip` и обновляет `latest_backup.zip`).
+
+### `GET /api/admin/backups/download/{filename}`
+Скачивание выбранного файла резервной копии (`.zip`, `.csv`, `.jsonl`).
+
+### `POST /api/admin/backups/restore`
+Идемпотентное восстановление таблиц `users`, `attempts` и `events` из загруженного архива `backup_*.zip` или `full_restore_dump.json`.

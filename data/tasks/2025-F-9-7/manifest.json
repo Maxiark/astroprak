@@ -1,0 +1,21 @@
+{
+  "schema_version": "2.0",
+  "id": "2025-F-9-7",
+  "title": "ВсОШ 2025 (9 кл.): Хранители полюса",
+  "kind": "archive",
+  "version": "2.0.0",
+  "hidden": false,
+  "tags": {
+    "class": [
+      9
+    ],
+    "topic": "практический тур ВсОШ",
+    "skills": [
+      "практический тур",
+      "анализ данных"
+    ]
+  },
+  "max_score": 15.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py"
+}

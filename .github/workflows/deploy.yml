@@ -1,0 +1,32 @@
+name: Deploy Astrosite
+
+on:
+  push:
+    branches: [dev]
+  # Если хотите деплоить прод только по релизу — уберите main выше и раскомментируйте:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            set -e
+            if [ "${{ github.ref_name }}" = "dev" ]; then
+              cd /srv/testprak
+              git fetch origin dev
+              git reset --hard origin/dev
+              docker compose -f infra/docker-compose.yml -f infra/docker-compose.test.yml up -d --build --remove-orphans
+            else
+              cd /srv/astroprak
+              git fetch origin main
+              git reset --hard origin/main
+              docker compose -f infra/docker-compose.yml -f infra/docker-compose.prod.yml up -d --build --remove-orphans
+            fi

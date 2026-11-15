@@ -1,0 +1,23 @@
+{
+  "schema_version": "2.0",
+  "id": "demo-counter",
+  "title": "Демонстрационный тренажёр: Анализ случайных импульсов",
+  "kind": "generated",
+  "version": "1.0.0",
+  "tags": {
+    "class": [
+      9,
+      10,
+      11
+    ],
+    "topic": "фотометрия",
+    "skills": [
+      "подсчёт",
+      "статистика"
+    ]
+  },
+  "max_score": 10.0,
+  "entry_point": "widget.html",
+  "generator_script": "generator.py",
+  "hidden": true
+}

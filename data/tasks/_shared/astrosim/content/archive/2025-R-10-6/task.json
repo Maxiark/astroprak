@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2025-R-10-6.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2025, условия, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2025/vos-2025-reg-prob-10.pdf",
+      "role": "original",
+      "pages": [
+        2
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2025, решения и критерии, 10 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2025/vos-2025-reg-sol-10.pdf",
+      "role": "reference",
+      "pages": [
+        22
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "f5e09952374c437ac3bbe01e29d75486132e9790f28d4a40b1af09f20b4fc803",
+      "media_type": "image/webp"
+    },
+    {
+      "id": "public-002",
+      "path": "assets/public/public-002.webp",
+      "access": "public",
+      "sha256": "540c6ba411a10a65195d03fd8dbc6b1fd6359998b103e1ffa41471e461bd874f",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "Комета C/2023 A3 (Tsuchinshan-Atlas) у горизонта",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 2",
+        "caption": "Оригинал, стр. 2."
+      },
+      {
+        "type": "figure",
+        "asset_id": "public-002",
+        "alt": "Условие и исходные данные, страница 3",
+        "caption": "Оригинал, стр. 3."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: угловые размеры кадра ± погрешность, время суток, географические координаты ± погрешность."
+          }
+        ],
+        "answer_ids": [
+          "answer",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "answer",
+        "kind": "text",
+        "label": "Ответ",
+        "unit": "",
+        "hint": "Запишите результаты с единицами, выводы и требуемые в условии ответы."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": []
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "schema_version": "0.1",
+  "task_id": "2023-R-11-6.v2",
+  "revision": 1,
+  "kind": "fixed",
+  "status": "reviewed",
+  "sources": [
+    {
+      "id": "original",
+      "title": "ВсОШ 2023, условия, 11 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-reg-prob-11.pdf",
+      "role": "original",
+      "pages": [
+        3
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution",
+      "title": "ВсОШ 2023, решения и критерии, 11 класс",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-reg-sol-11.pdf",
+      "role": "reference",
+      "pages": [
+        6
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    },
+    {
+      "id": "official-solution-10",
+      "title": "Решение задания 6 для 10 класса (ссылка из официального решения 11 класса)",
+      "locator": "https://astroedu.ru/assets/problems/vos/2023/vos-2023-reg-sol-10.pdf",
+      "role": "reference",
+      "pages": [
+        10
+      ],
+      "rights": "Официальный материал из локального архива пользователя; авторство сохранено. Фрагменты перенесены для работы с заданием."
+    }
+  ],
+  "assets": [
+    {
+      "id": "public-001",
+      "path": "assets/public/public-001.webp",
+      "access": "public",
+      "sha256": "e94dc02f3954a0f97f48f5bec8aee1b7d9b46048dd3e3cae5b33c95bbd88f375",
+      "media_type": "image/webp"
+    }
+  ],
+  "public": {
+    "title": "Граф Монте-Кристо",
+    "language": "ru",
+    "statement": [
+      {
+        "type": "figure",
+        "asset_id": "public-001",
+        "alt": "Условие и исходные данные, страница 3",
+        "caption": "Оригинал, стр. 3."
+      }
+    ],
+    "parts": [
+      {
+        "id": "original-task",
+        "body": [
+          {
+            "type": "markdown",
+            "text": "Определить: число звёзд, видимых из окна камеры."
+          }
+        ],
+        "answer_ids": [
+          "answer",
+          "reasoning",
+          "measurements"
+        ]
+      }
+    ],
+    "answers": [
+      {
+        "id": "answer",
+        "kind": "text",
+        "label": "Ответ",
+        "unit": "",
+        "hint": "Запишите результаты с единицами, выводы и требуемые в условии ответы."
+      },
+      {
+        "id": "reasoning",
+        "kind": "text",
+        "label": "Ход решения",
+        "unit": "",
+        "hint": "Измерения, вычисления и обоснования. Формулы: $...$ или $$...$$."
+      },
+      {
+        "id": "measurements",
+        "kind": "points",
+        "label": "Измерения на рисунках",
+        "unit": "",
+        "hint": ""
+      }
+    ],
+    "tools": [
+      "image-zoom",
+      "image-ruler"
+    ],
+    "datasets": []
+  },
+  "private": {
+    "mode": "manual",
+    "criteria": [],
+    "answer_checks": []
+  }
+}
