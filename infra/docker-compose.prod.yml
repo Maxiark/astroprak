@@ -1,0 +1,25 @@
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - default
+      - default2
+    depends_on:
+      - web
+
+networks:
+  default2:
+    name: testprak_default
+    external: true
+
+volumes:
+  caddy_config:
+  caddy_data:

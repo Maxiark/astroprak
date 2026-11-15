@@ -1,0 +1,6 @@
+services:
+  web:
+    networks:
+      default:
+        aliases:
+          - web2
