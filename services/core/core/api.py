@@ -44,14 +44,21 @@ from pydantic import BaseModel
 from core.backup import (
     PRIMARY_BACKUP_DIR,
     append_live_submission_backup,
-    create_full_backup,
+    create_backup,
+    delete_backup_files,
     list_backups_info,
     periodic_backup_loop,
     restore_from_dump_bytes,
+    save_backup_settings,
+    send_file_to_telegram,
+    upload_file_to_gdrive,
 )
 from core.db import (
+    DATABASE_URL,
+    compact_database,
     finalize_attempt,
     get_db,
+    get_db_size_info,
     get_or_create_user,
     hash_key,
     init_db,
@@ -87,7 +94,6 @@ SECRET_DATA_KEYS = {
 
 
 def normalize_key(key: Optional[str]) -> Optional[str]:
-    """Удаляет пробелы по краям, приводит к нижнему регистру и проверяет 32 hex-символа."""
     if not key or not isinstance(key, str):
         return None
     cleaned = key.strip().lower()
@@ -95,7 +101,6 @@ def normalize_key(key: Optional[str]) -> Optional[str]:
 
 
 def strip_secret_task_data(task_obj: dict[str, Any]) -> dict[str, Any]:
-    """Удаляет эталонные параметры из словаря задачи перед отправкой клиенту."""
     if not isinstance(task_obj, dict):
         return task_obj
     cleaned = dict(task_obj)
@@ -105,6 +110,26 @@ def strip_secret_task_data(task_obj: dict[str, Any]) -> dict[str, Any]:
         }
     cleaned.pop("private", None)
     return cleaned
+
+
+def _generate_clean_task_payload(task_id: str, task_seed: int) -> dict[str, Any]:
+    """Генерирует публичные данные задачи на лету по (task_id, seed) без хранения мегабайт в БД."""
+    generator = registry.get_generator(task_id)
+    manifest = registry.get_manifest(task_id)
+    if not manifest:
+        raise HTTPException(status_code=404, detail="Задача не найдена")
+    if generator and hasattr(generator, "generate"):
+        raw_task_data = generator.generate(task_seed)
+    else:
+        raw_task_data = {
+            "id": task_id,
+            "title": manifest.get("title", task_id),
+            "max_score": manifest.get("max_score", 0.0),
+            "entry_point": manifest.get("entry_point", "widget.html"),
+            "data": {},
+            "schema": {"fields": []},
+        }
+    return strip_secret_task_data(raw_task_data)
 
 
 # --- Инициализация приложения FastAPI ---
@@ -123,7 +148,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Astrosite V2 Core API", lifespan=lifespan)
 
-# CORS
 raw_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
 if raw_origins:
     app.add_middleware(
@@ -191,6 +215,28 @@ class TaskCategoryPayload(BaseModel):
     category_order: int = 100
 
 
+class BackupCreatePayload(BaseModel):
+    backup_type: str = "solutions"
+    sync_gdrive: bool = False
+
+
+class BackupDeletePayload(BaseModel):
+    filenames: List[str]
+
+
+class BackupSendTelegramPayload(BaseModel):
+    filename: Optional[str] = None
+    backup_type: str = "solutions"
+
+
+class BackupSyncGdrivePayload(BaseModel):
+    filename: Optional[str] = None
+
+
+class DbCompactPayload(BaseModel):
+    delete_short_attempts: bool = False
+
+
 # --- Вспомогательные функции авторизации и сессий ---
 def _is_secure_request(request: Request) -> bool:
     if os.getenv("COOKIE_SECURE", "0") == "1":
@@ -219,7 +265,6 @@ def get_current_user_or_create(
     astrosite_key: Optional[str] = Cookie(default=None),
     conn: psycopg.Connection = Depends(get_db),
 ) -> Tuple[int, str]:
-    """Получает пользователя по cookie или создаёт нового при её отсутствии."""
     user_id, raw_key = get_or_create_user(conn, astrosite_key)
     if astrosite_key != raw_key:
         _set_session_cookie(request, response, raw_key)
@@ -231,7 +276,6 @@ def require_current_user(
     astrosite_key: Optional[str] = Cookie(default=None),
     conn: psycopg.Connection = Depends(get_db),
 ) -> Tuple[int, str]:
-    """Строгая проверка сессии без тихой автогенерации нового пользователя (п. 2.4 ТЗ)."""
     clean_key = normalize_key(astrosite_key)
     if not clean_key:
         raise HTTPException(
@@ -339,7 +383,7 @@ def create_attempt(
     if not new and seed is None:
         existing = conn.execute(
             """
-            SELECT id, task_data, answers, submitted_at, score, grading, created_at
+            SELECT id, seed, answers, submitted_at, score, grading, created_at
             FROM attempts 
             WHERE user_id = %s AND task_id = %s
             ORDER BY (submitted_at IS NULL) DESC, created_at DESC 
@@ -350,54 +394,54 @@ def create_attempt(
 
         if existing:
             is_sub = existing["submitted_at"] is not None
+            ex_seed = existing["seed"] if existing["seed"] is not None else 42
+            try:
+                task_payload = _generate_clean_task_payload(task_id, ex_seed)
+            except Exception:
+                task_payload = {"id": task_id, "data": {}, "schema": {"fields": []}}
+
+            grading_payload = existing.get("grading") if is_sub else None
+            # Если попытка сдана, но из БД были очищены тяжелые картинки разбора, достраиваем их на лету
+            if is_sub and isinstance(grading_payload, dict) and "solution_steps" not in grading_payload:
+                gen_mod = registry.get_generator(task_id)
+                if gen_mod and hasattr(gen_mod, "grade"):
+                    try:
+                        full_gr = gen_mod.grade(ex_seed, existing["answers"] or {})
+                        if isinstance(full_gr, dict):
+                            grading_payload = full_gr
+                    except Exception:
+                        pass
+
             return {
                 "status": "ok",
                 "attempt_id": str(existing["id"]),
                 "recovery_code": recovery_code,
-                "task": strip_secret_task_data(existing["task_data"]),
+                "task": task_payload,
                 "answers": existing["answers"] or {},
                 "submitted": is_sub,
                 "score": existing.get("score"),
-                "grading": existing.get("grading") if is_sub else None,
+                "grading": grading_payload,
                 "created_at": existing["created_at"].isoformat() if existing.get("created_at") else None,
             }
 
-    generator = registry.get_generator(task_id)
-    manifest = registry.get_manifest(task_id)
-    if not manifest:
-        raise HTTPException(status_code=404, detail="Задача не найдена")
-
     task_seed = seed if seed is not None else random.randint(1000, 999999)
     try:
-        if generator and hasattr(generator, "generate"):
-            raw_task_data = generator.generate(task_seed)
-        else:
-            raw_task_data = {
-                "id": task_id,
-                "title": manifest.get("title", task_id),
-                "max_score": manifest.get("max_score", 0.0),
-                "entry_point": manifest.get("entry_point", "widget.html"),
-                "data": {},
-                "schema": {"fields": []},
-            }
-        task_data = strip_secret_task_data(raw_task_data)
+        task_data = _generate_clean_task_payload(task_id, task_seed)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Сбой генератора {task_id}: {e}")
         raise HTTPException(status_code=422, detail=f"Ошибка генератора задачи {task_id}")
 
+    # В БД сохраняем только пустой объект task_data='{}', чтобы не раздувать диск гигабайтами base64-картинок!
     row = conn.execute(
         """
         INSERT INTO attempts (user_id, task_id, seed, task_data)
-        VALUES (%s, %s, %s, %s)
+        VALUES (%s, %s, %s, '{}'::jsonb)
         RETURNING id, created_at
         """,
-        (user_id, task_id, task_seed, psycopg.types.json.Jsonb(task_data)),
+        (user_id, task_id, task_seed),
     ).fetchone()
-
-    conn.execute(
-        "INSERT INTO events (attempt_id, name, payload) VALUES (%s, %s, %s)",
-        (row["id"], "attempt.start", psycopg.types.json.Jsonb({"task_id": task_id, "seed": task_seed})),
-    )
     conn.commit()
 
     return {
@@ -437,7 +481,7 @@ def save_attempt_draft(
 
     prev_answers = attempt.get("answers") or {}
     conn.execute(
-        "UPDATE attempts SET answers = %s WHERE id = %s AND user_id = %s",
+        "UPDATE attempts SET answers = %s, updated_at = NOW() WHERE id = %s AND user_id = %s",
         (psycopg.types.json.Jsonb(payload.answers), attempt_id, user_id),
     )
     if payload.answers != prev_answers:
@@ -467,6 +511,7 @@ def save_events(
             "INSERT INTO events (attempt_id, name, payload) VALUES (%s, %s, %s)",
             (attempt_id, str(item.get("name", "unknown"))[:64], psycopg.types.json.Jsonb(item.get("payload", {}))),
         )
+    conn.execute("UPDATE attempts SET updated_at = NOW() WHERE id = %s", (attempt_id,))
     conn.commit()
     return {"status": "ok", "saved": len(events_to_save)}
 
@@ -479,7 +524,10 @@ def submit_attempt(
     conn: psycopg.Connection = Depends(get_db),
 ):
     user_id, recovery_code = user_info
-    attempt = conn.execute("SELECT * FROM attempts WHERE id = %s", (attempt_id,)).fetchone()
+    attempt = conn.execute(
+        "SELECT id, user_id, task_id, seed, answers, score, grading, submitted_at FROM attempts WHERE id = %s",
+        (attempt_id,),
+    ).fetchone()
     if not attempt:
         raise HTTPException(status_code=404, detail={"code": "ATTEMPT_NOT_FOUND", "message": "Попытка не найдена"})
 
@@ -489,30 +537,35 @@ def submit_attempt(
             detail={"code": "SESSION_MISMATCH", "message": "Попытка не принадлежит текущей сессии"},
         )
 
+    task_id = attempt["task_id"]
+    att_seed = attempt.get("seed", 42)
+
     if attempt["submitted_at"] is not None:
+        grading_out = attempt.get("grading")
+        if isinstance(grading_out, dict) and "solution_steps" not in grading_out:
+            gen_mod = registry.get_generator(task_id)
+            if gen_mod and hasattr(gen_mod, "grade"):
+                try:
+                    grading_out = gen_mod.grade(att_seed, attempt.get("answers") or {})
+                except Exception:
+                    pass
         return {
             "status": "ok",
             "attempt_id": str(attempt_id),
             "recovery_code": recovery_code,
             "submitted_at": attempt["submitted_at"].isoformat(),
             "score": attempt.get("score"),
-            "max_score": attempt.get("grading", {}).get("max_score", 10.0) if attempt.get("grading") else 10.0,
-            "grading": attempt.get("grading"),
+            "max_score": grading_out.get("max_score", 10.0) if isinstance(grading_out, dict) else 10.0,
+            "grading": grading_out,
         }
 
     score = None
     grading_details = None
-    task_id = attempt["task_id"]
 
     try:
-        tasks_dict = getattr(registry, "tasks", {})
-        task_pkg = tasks_dict.get(task_id)
-        mod = getattr(task_pkg, "generator_module", None) if task_pkg else None
-        if not mod and hasattr(registry, "get"):
-            mod = registry.get(task_id)
-
+        mod = registry.get_generator(task_id)
         if mod and hasattr(mod, "grade"):
-            res = mod.grade(attempt.get("seed", 42), payload.answers or {})
+            res = mod.grade(att_seed, payload.answers or {})
             if isinstance(res, dict):
                 score = res.get("score")
                 grading_details = res
@@ -545,7 +598,7 @@ def submit_attempt(
         user_id=user_id,
         student_key=recovery_code,
         task_id=task_id,
-        seed=attempt.get("seed"),
+        seed=att_seed,
         score=score,
         max_score=max_score_val,
         answers=payload.answers or {},
@@ -564,7 +617,7 @@ def submit_attempt(
     }
 
 
-# --- Междоменный перенос сессий (п. 3 ТЗ) ---
+# --- Междоменный перенос сессий ---
 
 @app.get("/api/auth/prepare-transfer")
 def prepare_session_transfer(
@@ -754,56 +807,65 @@ def admin_delete_task(task_id: str, admin: bool = Depends(verify_admin)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# --- Админ-панель: Сессии, пагинация, глобальный поиск и выгрузка логов ---
+# --- Админ-панель: Пагинация сессий, сквозной поиск и фильтр «Скрыть все < 5 с» ---
 
-def _build_sessions_filter_sql(
+def _build_attempts_where(
     q: Optional[str] = None,
     task_id: Optional[str] = None,
     status_filter: Optional[str] = None,
     exclude_short: bool = False,
-) -> tuple[str, str, list[Any]]:
-    """Формирует SQL-условия WHERE и HAVING для фильтрации сессий по всей базе данных."""
-    where_clauses: list[str] = []
+) -> tuple[str, list[Any]]:
+    """
+    Формирует быстрые условия фильтрации по таблице attempts + users.
+    При exclude_short=True скрывает ВСЕ попытки длительностью < 5 секунд независимо от их статуса (сдано или в процессе).
+    """
+    clauses: list[str] = []
     params: list[Any] = []
 
     if q and q.strip():
         clean_q = q.strip()
-        id_candidate = clean_q.lstrip("#")
+        id_cand = clean_q.lstrip("#")
         like_pat = f"%{clean_q}%"
-        where_clauses.append(
-            "(u.raw_key ILIKE %s OR a.task_id ILIKE %s OR CAST(a.id AS TEXT) = %s OR CAST(a.id AS TEXT) ILIKE %s)"
-        )
-        params.extend([like_pat, like_pat, id_candidate, like_pat])
+        if id_cand.isdigit():
+            clauses.append("(a.id = %s OR u.raw_key ILIKE %s OR a.task_id ILIKE %s)")
+            params.extend([int(id_cand), like_pat, like_pat])
+        else:
+            clauses.append("(u.raw_key ILIKE %s OR a.task_id ILIKE %s OR CAST(a.id AS TEXT) ILIKE %s)")
+            params.extend([like_pat, like_pat, like_pat])
 
     if task_id and task_id.strip():
-        where_clauses.append("a.task_id = %s")
+        clauses.append("a.task_id = %s")
         params.append(task_id.strip())
 
     if status_filter == "submitted":
-        where_clauses.append("a.submitted_at IS NOT NULL")
+        clauses.append("a.submitted_at IS NOT NULL")
     elif status_filter == "in_progress":
-        where_clauses.append("a.submitted_at IS NULL")
+        clauses.append("a.submitted_at IS NULL")
 
-    where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
-
-    having_sql = ""
     if exclude_short:
-        having_sql = """
-        HAVING (
-            a.submitted_at IS NOT NULL
-            OR GREATEST(
+        clauses.append(
+            """
+            GREATEST(
                 0,
                 EXTRACT(
                     EPOCH FROM (
-                        COALESCE(a.submitted_at, MAX(e.created_at), a.created_at)
-                        - LEAST(a.created_at, COALESCE(MIN(e.created_at), a.created_at))
+                        GREATEST(
+                            a.created_at,
+                            COALESCE(a.submitted_at, a.created_at),
+                            COALESCE(a.updated_at, a.created_at),
+                            COALESCE((SELECT MAX(e.created_at) FROM events e WHERE e.attempt_id = a.id), a.created_at)
+                        ) - LEAST(
+                            a.created_at,
+                            COALESCE((SELECT MIN(e.created_at) FROM events e WHERE e.attempt_id = a.id), a.created_at)
+                        )
                     )
                 )::int
             ) >= 5
+            """
         )
-        """
 
-    return where_sql, having_sql, params
+    where_sql = ("WHERE " + " AND ".join(clauses)) if clauses else ""
+    return where_sql, params
 
 
 @app.get("/api/admin/sessions")
@@ -817,11 +879,26 @@ def admin_list_sessions(
     admin: bool = Depends(verify_admin),
     conn: psycopg.Connection = Depends(get_db),
 ):
-    where_sql, having_sql, params = _build_sessions_filter_sql(q, task_id, status_filter, exclude_short)
+    where_sql, params = _build_attempts_where(q, task_id, status_filter, exclude_short)
 
-    base_grouped_cte = f"""
-        WITH filtered_attempts AS (
-            SELECT 
+    if not where_sql:
+        total_row = conn.execute("SELECT COUNT(*) AS total FROM attempts").fetchone()
+    else:
+        total_row = conn.execute(
+            f"""
+            SELECT COUNT(*) AS total
+            FROM attempts a
+            JOIN users u ON u.id = a.user_id
+            {where_sql}
+            """,
+            tuple(params),
+        ).fetchone()
+    total_count = int(total_row["total"]) if total_row else 0
+
+    rows = conn.execute(
+        f"""
+        WITH page_attempts AS (
+            SELECT
                 a.id AS attempt_id,
                 a.user_id,
                 u.raw_key AS user_key,
@@ -831,39 +908,43 @@ def admin_list_sessions(
                 a.score,
                 a.grading,
                 a.submitted_at,
-                a.created_at,
-                COUNT(e.id) AS events_count,
-                GREATEST(
-                    0,
-                    EXTRACT(
-                        EPOCH FROM (
-                            COALESCE(a.submitted_at, MAX(e.created_at), a.created_at)
-                            - LEAST(a.created_at, COALESCE(MIN(e.created_at), a.created_at))
-                        )
-                    )::int
-                ) AS duration_sec
+                a.updated_at,
+                a.created_at
             FROM attempts a
             JOIN users u ON u.id = a.user_id
-            LEFT JOIN events e ON e.attempt_id = a.id
             {where_sql}
-            GROUP BY a.id, u.raw_key, a.score, a.grading
-            {having_sql}
+            ORDER BY a.created_at DESC, a.id DESC
+            LIMIT %s OFFSET %s
         )
-    """
-
-    total_row = conn.execute(
-        f"{base_grouped_cte} SELECT COUNT(*) AS total FROM filtered_attempts",
-        tuple(params),
-    ).fetchone()
-    total_count = int(total_row["total"]) if total_row else 0
-
-    rows = conn.execute(
-        f"""
-        {base_grouped_cte}
-        SELECT *
-        FROM filtered_attempts
-        ORDER BY created_at DESC, attempt_id DESC
-        LIMIT %s OFFSET %s
+        SELECT
+            p.*,
+            COALESCE(ev.events_count, 0) AS events_count,
+            GREATEST(
+                0,
+                EXTRACT(
+                    EPOCH FROM (
+                        GREATEST(
+                            p.created_at,
+                            COALESCE(p.submitted_at, p.created_at),
+                            COALESCE(p.updated_at, p.created_at),
+                            COALESCE(ev.last_event, p.created_at)
+                        ) - LEAST(
+                            p.created_at,
+                            COALESCE(ev.first_event, p.created_at)
+                        )
+                    )
+                )::int
+            ) AS duration_sec
+        FROM page_attempts p
+        LEFT JOIN LATERAL (
+            SELECT
+                COUNT(*) AS events_count,
+                MIN(e.created_at) AS first_event,
+                MAX(e.created_at) AS last_event
+            FROM events e
+            WHERE e.attempt_id = p.attempt_id
+        ) ev ON TRUE
+        ORDER BY p.created_at DESC, p.attempt_id DESC
         """,
         tuple(params + [limit, offset]),
     ).fetchall()
@@ -882,14 +963,15 @@ def admin_list_sessions(
             "submitted": r["submitted_at"] is not None,
             "submitted_at": r["submitted_at"].strftime("%Y-%m-%d %H:%M") if r["submitted_at"] else None,
             "created_at": r["created_at"].strftime("%Y-%m-%d %H:%M"),
-            "events_count": r["events_count"],
-            "duration_sec": r["duration_sec"] or 0,
+            "events_count": int(r["events_count"] or 0),
+            "duration_sec": int(r["duration_sec"] or 0),
         })
     return {
         "sessions": result,
         "total": total_count,
         "limit": limit,
         "offset": offset,
+        "has_more": (offset + len(result)) < total_count,
     }
 
 
@@ -922,7 +1004,12 @@ def admin_export_attempt_json(
     conn: psycopg.Connection = Depends(get_db),
 ):
     attempt = conn.execute(
-        "SELECT a.*, u.raw_key FROM attempts a JOIN users u ON u.id = a.user_id WHERE a.id = %s",
+        """
+        SELECT a.id, a.user_id, u.raw_key, a.task_id, a.seed, a.score, a.grading, a.answers, a.submitted_at, a.created_at
+        FROM attempts a
+        JOIN users u ON u.id = a.user_id
+        WHERE a.id = %s
+        """,
         (attempt_id,),
     ).fetchone()
 
@@ -960,6 +1047,35 @@ def admin_export_attempt_json(
     )
 
 
+def _stream_postgres_copy_csv(select_query: str, params: tuple[Any, ...]) -> Any:
+    yield b"\xef\xbb\xbf"
+    with psycopg.connect(DATABASE_URL) as stream_conn:
+        if not params:
+            copy_stmt = f"COPY ({select_query}) TO STDOUT WITH (FORMAT CSV, HEADER, DELIMITER ';')"
+            with stream_conn.cursor() as cur:
+                with cur.copy(copy_stmt) as copy:
+                    for chunk in copy:
+                        yield bytes(chunk)
+        else:
+            with stream_conn.cursor() as cur:
+                cur.execute(select_query, params)
+                buf = io.StringIO()
+                writer = csv.writer(buf, delimiter=";")
+                if cur.description:
+                    writer.writerow([col.name for col in cur.description])
+                    yield buf.getvalue().encode("utf-8")
+                    buf.seek(0)
+                    buf.truncate(0)
+                while True:
+                    rows = cur.fetchmany(1000)
+                    if not rows:
+                        break
+                    writer.writerows(rows)
+                    yield buf.getvalue().encode("utf-8")
+                    buf.seek(0)
+                    buf.truncate(0)
+
+
 @app.get("/api/admin/sessions/export/csv")
 def admin_export_all_csv(
     q: Optional[str] = Query(None),
@@ -967,102 +1083,29 @@ def admin_export_all_csv(
     status_filter: Optional[str] = Query(None),
     exclude_short: bool = Query(False),
     admin: bool = Depends(verify_admin),
-    conn: psycopg.Connection = Depends(get_db),
 ):
-    where_sql, having_sql, params = _build_sessions_filter_sql(q, task_id, status_filter, exclude_short)
+    where_sql, params = _build_attempts_where(q, task_id, status_filter, exclude_short)
 
-    rows = conn.execute(
-        f"""
+    select_query = f"""
         SELECT 
-            a.id AS attempt_id,
-            u.raw_key AS student_key,
-            a.task_id,
-            a.seed,
-            a.score,
-            a.answers,
-            a.grading,
-            a.submitted_at,
-            a.created_at,
-            COUNT(e.id) AS events_count,
-            GREATEST(
-                0,
-                EXTRACT(
-                    EPOCH FROM (
-                        COALESCE(a.submitted_at, MAX(e.created_at), a.created_at)
-                        - LEAST(a.created_at, COALESCE(MIN(e.created_at), a.created_at))
-                    )
-                )::int
-            ) AS duration_sec
+            a.id AS "ID Попытки",
+            COALESCE(u.raw_key, '') AS "Код ученика",
+            a.task_id AS "Задача",
+            COALESCE(a.seed::text, '') AS "Seed",
+            COALESCE(a.score::text, '') AS "Балл",
+            CASE WHEN a.submitted_at IS NOT NULL THEN 'Да' ELSE 'Нет' END AS "Сдано",
+            COALESCE(to_char(a.submitted_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI'), '') AS "Дата сдачи",
+            to_char(a.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI') AS "Дата создания",
+            COALESCE(a.answers::text, '{{}}') AS "Ответы (JSON)"
         FROM attempts a
         JOIN users u ON u.id = a.user_id
-        LEFT JOIN events e ON e.attempt_id = a.id
         {where_sql}
-        GROUP BY a.id, u.raw_key, a.score, a.grading
-        {having_sql}
         ORDER BY a.created_at DESC, a.id DESC
-        """,
-        tuple(params),
-    ).fetchall()
+    """
 
-    # Выгружаем также события для включения лога действий по каждой попытке
-    attempt_ids = [r["attempt_id"] for r in rows]
-    events_by_attempt: Dict[int, list[dict[str, Any]]] = {}
-    if attempt_ids:
-        ev_rows = conn.execute(
-            """
-            SELECT attempt_id, name, payload, created_at
-            FROM events
-            WHERE attempt_id = ANY(%s)
-            ORDER BY created_at ASC, id ASC
-            """,
-            (attempt_ids,),
-        ).fetchall()
-        for ev in ev_rows:
-            events_by_attempt.setdefault(ev["attempt_id"], []).append({
-                "time": ev["created_at"].strftime("%H:%M:%S") if ev["created_at"] else "",
-                "name": ev["name"],
-                "payload": ev["payload"],
-            })
-
-    output = io.StringIO()
-    output.write("\ufeff")
-    writer = csv.writer(output, delimiter=";")
-    writer.writerow([
-        "ID Попытки",
-        "Код ученика",
-        "Задача",
-        "Seed",
-        "Балл",
-        "Сдано",
-        "Длительность (с)",
-        "Кол-во действий",
-        "Дата сдачи",
-        "Дата создания",
-        "Ответы (JSON)",
-        "Лог действий (JSON)",
-    ])
-
-    for r in rows:
-        att_events = events_by_attempt.get(r["attempt_id"], [])
-        writer.writerow([
-            r["attempt_id"],
-            r["student_key"] or "",
-            r["task_id"],
-            r["seed"] or "",
-            r["score"] if r["score"] is not None else "",
-            "Да" if r["submitted_at"] else "Нет",
-            r["duration_sec"] or 0,
-            len(att_events),
-            r["submitted_at"].strftime("%Y-%m-%d %H:%M") if r["submitted_at"] else "",
-            r["created_at"].strftime("%Y-%m-%d %H:%M"),
-            json.dumps(r["answers"], ensure_ascii=False),
-            json.dumps(att_events, ensure_ascii=False),
-        ])
-
-    output.seek(0)
     return StreamingResponse(
-        iter([output.getvalue()]),
-        media_type="text/csv",
+        _stream_postgres_copy_csv(select_query, tuple(params)),
+        media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": "attachment; filename=astrosite_sessions.csv"},
     )
 
@@ -1074,81 +1117,31 @@ def admin_export_all_events_csv(
     status_filter: Optional[str] = Query(None),
     exclude_short: bool = Query(False),
     admin: bool = Depends(verify_admin),
-    conn: psycopg.Connection = Depends(get_db),
 ):
-    """Выгружает сквозной хронологический лог действий по всем работам (или по текущему фильтру) в CSV."""
-    where_sql, having_sql, params = _build_sessions_filter_sql(q, task_id, status_filter, exclude_short)
+    where_sql, params = _build_attempts_where(q, task_id, status_filter, exclude_short)
 
-    rows = conn.execute(
-        f"""
-        WITH matched_attempts AS (
-            SELECT
-                a.id AS attempt_id,
-                u.raw_key AS student_key,
-                a.task_id,
-                a.seed,
-                a.score,
-                a.submitted_at,
-                a.created_at
-            FROM attempts a
-            JOIN users u ON u.id = a.user_id
-            LEFT JOIN events e ON e.attempt_id = a.id
-            {where_sql}
-            GROUP BY a.id, u.raw_key
-            {having_sql}
-        )
+    select_query = f"""
         SELECT
-            e.id AS event_id,
-            m.attempt_id,
-            m.student_key,
-            m.task_id,
-            m.seed,
-            m.score,
-            m.submitted_at,
-            e.name AS event_name,
-            e.payload AS event_payload,
-            e.created_at AS event_time
-        FROM matched_attempts m
-        JOIN events e ON e.attempt_id = m.attempt_id
-        ORDER BY m.attempt_id DESC, e.created_at ASC, e.id ASC
-        """,
-        tuple(params),
-    ).fetchall()
+            e.id AS "ID События",
+            a.id AS "ID Попытки",
+            COALESCE(u.raw_key, '') AS "Код ученика",
+            a.task_id AS "Задача",
+            COALESCE(a.seed::text, '') AS "Seed",
+            COALESCE(a.score::text, '') AS "Балл",
+            CASE WHEN a.submitted_at IS NOT NULL THEN 'Да' ELSE 'Нет' END AS "Сдано",
+            to_char(e.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS') AS "Время действия",
+            e.name AS "Тип действия",
+            COALESCE(e.payload::text, '{{}}') AS "Данные действия (JSON)"
+        FROM events e
+        JOIN attempts a ON a.id = e.attempt_id
+        JOIN users u ON u.id = a.user_id
+        {where_sql}
+        ORDER BY a.id DESC, e.created_at ASC, e.id ASC
+    """
 
-    output = io.StringIO()
-    output.write("\ufeff")
-    writer = csv.writer(output, delimiter=";")
-    writer.writerow([
-        "ID События",
-        "ID Попытки",
-        "Код ученика",
-        "Задача",
-        "Seed",
-        "Балл",
-        "Сдано",
-        "Время действия",
-        "Тип действия",
-        "Данные действия (JSON)",
-    ])
-
-    for r in rows:
-        writer.writerow([
-            r["event_id"],
-            r["attempt_id"],
-            r["student_key"] or "",
-            r["task_id"],
-            r["seed"] if r["seed"] is not None else "",
-            r["score"] if r["score"] is not None else "",
-            "Да" if r["submitted_at"] else "Нет",
-            r["event_time"].strftime("%Y-%m-%d %H:%M:%S") if r["event_time"] else "",
-            r["event_name"],
-            json.dumps(r["event_payload"] or {}, ensure_ascii=False),
-        ])
-
-    output.seek(0)
     return StreamingResponse(
-        iter([output.getvalue()]),
-        media_type="text/csv",
+        _stream_postgres_copy_csv(select_query, tuple(params)),
+        media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": "attachment; filename=astrosite_all_events_log.csv"},
     )
 
@@ -1158,12 +1151,11 @@ def admin_export_all_sessions_json(
     q: Optional[str] = Query(None),
     task_id: Optional[str] = Query(None),
     status_filter: Optional[str] = Query(None),
-    exclude_short: bool = Query(False),
+    exclude_short: bool = Query(True),
     admin: bool = Depends(verify_admin),
     conn: psycopg.Connection = Depends(get_db),
 ):
-    """Выгружает полный JSON всех работ вместе с подробными логами действий по каждой работе."""
-    where_sql, having_sql, params = _build_sessions_filter_sql(q, task_id, status_filter, exclude_short)
+    where_sql, params = _build_attempts_where(q, task_id, status_filter, exclude_short)
 
     rows = conn.execute(
         f"""
@@ -1177,23 +1169,12 @@ def admin_export_all_sessions_json(
             a.grading,
             a.answers,
             a.submitted_at,
-            a.created_at,
-            GREATEST(
-                0,
-                EXTRACT(
-                    EPOCH FROM (
-                        COALESCE(a.submitted_at, MAX(e.created_at), a.created_at)
-                        - LEAST(a.created_at, COALESCE(MIN(e.created_at), a.created_at))
-                    )
-                )::int
-            ) AS duration_sec
+            a.created_at
         FROM attempts a
         JOIN users u ON u.id = a.user_id
-        LEFT JOIN events e ON e.attempt_id = a.id
         {where_sql}
-        GROUP BY a.id, u.raw_key
-        {having_sql}
         ORDER BY a.created_at DESC, a.id DESC
+        LIMIT 5000
         """,
         tuple(params),
     ).fetchall()
@@ -1230,7 +1211,6 @@ def admin_export_all_sessions_json(
                 "score": r["score"],
                 "grading": r["grading"],
                 "answers": r["answers"],
-                "duration_sec": r["duration_sec"] or 0,
                 "submitted": r["submitted_at"] is not None,
                 "submitted_at": r["submitted_at"].isoformat() if r["submitted_at"] else None,
                 "created_at": r["created_at"].isoformat() if r["created_at"] else None,
@@ -1248,25 +1228,150 @@ def admin_export_all_sessions_json(
     )
 
 
-# --- Админ-панель: Управление регулярными бэкапами таблицы попыток ---
+# --- Админ-панель: Управление бэкапами, Google Диском, Telegram и сжатием БД ---
 
 @app.get("/api/admin/backups")
-def admin_get_backups(admin: bool = Depends(verify_admin)):
-    return list_backups_info()
+def admin_get_backups(
+    admin: bool = Depends(verify_admin),
+    conn: psycopg.Connection = Depends(get_db),
+):
+    info = list_backups_info()
+    info["db_size"] = get_db_size_info(conn)
+    return info
+
+
+@app.post("/api/admin/backups/settings")
+def admin_update_backup_settings(
+    payload: Dict[str, Any],
+    admin: bool = Depends(verify_admin),
+):
+    updated = save_backup_settings(payload)
+    return {
+        "status": "success",
+        "message": "Настройки резервного копирования сохранены!",
+        "settings": updated,
+        "state": list_backups_info(),
+    }
 
 
 @app.post("/api/admin/backups/create")
 def admin_trigger_backup(
+    payload: Optional[BackupCreatePayload] = None,
+    backup_type: str = Query("solutions"),
     admin: bool = Depends(verify_admin),
     conn: psycopg.Connection = Depends(get_db),
 ):
-    info = create_full_backup(conn=conn, reason="manual_admin")
+    btype = payload.backup_type if payload and payload.backup_type else backup_type
+    sync_gd = payload.sync_gdrive if payload else False
+    info = create_backup(conn=conn, backup_type=btype, reason="manual_admin", sync_gdrive=sync_gd)
     return {
         "status": "success",
-        "message": f"Резервная копия {info['filename']} успешно создана (попыток: {info['total_attempts']})",
+        "message": f"Резервная копия «{info['filename']}» создана (записей: {info['saved_attempts']})",
         "backup": info,
         "state": list_backups_info(),
     }
+
+
+@app.post("/api/admin/backups/delete")
+def admin_delete_backups(
+    payload: BackupDeletePayload,
+    admin: bool = Depends(verify_admin),
+):
+    res = delete_backup_files(payload.filenames or [])
+    return {
+        "status": "success",
+        "message": f"Удалено файлов резервных копий: {res['count']}",
+        "deleted": res["deleted"],
+        "state": list_backups_info(),
+    }
+
+
+@app.post("/api/admin/backups/send-telegram")
+def admin_send_backup_telegram(
+    payload: BackupSendTelegramPayload,
+    admin: bool = Depends(verify_admin),
+    conn: psycopg.Connection = Depends(get_db),
+):
+    try:
+        if payload.filename:
+            safe_name = Path(payload.filename).name
+            target = (PRIMARY_BACKUP_DIR / safe_name).resolve()
+            if not target.is_relative_to(PRIMARY_BACKUP_DIR.resolve()) or not target.is_file():
+                raise HTTPException(status_code=404, detail="Файл бэкапа не найден")
+            caption = f"📦 Бэкап Astrosite: {safe_name}"
+        else:
+            binfo = create_backup(conn=conn, backup_type=payload.backup_type or "solutions", reason="telegram_manual")
+            target = PRIMARY_BACKUP_DIR / binfo["filename"]
+            caption = (
+                f"📦 Бэкап Astrosite ({binfo['backup_type']})\n"
+                f"Файл: {binfo['filename']}\n"
+                f"Всего попыток: {binfo['total_attempts']} (сдано: {binfo['submitted_attempts']})"
+            )
+
+        tg_res = send_file_to_telegram(target, caption=caption)
+        return {
+            "status": "success",
+            "message": f"Файл «{target.name}» успешно отправлен в Telegram!",
+            "telegram": tg_res,
+            "state": list_backups_info(),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/admin/backups/sync-gdrive")
+def admin_sync_backup_gdrive(
+    payload: BackupSyncGdrivePayload,
+    admin: bool = Depends(verify_admin),
+    conn: psycopg.Connection = Depends(get_db),
+):
+    try:
+        if payload.filename:
+            safe_name = Path(payload.filename).name
+            target = (PRIMARY_BACKUP_DIR / safe_name).resolve()
+            if not target.is_relative_to(PRIMARY_BACKUP_DIR.resolve()) or not target.is_file():
+                raise HTTPException(status_code=404, detail="Файл бэкапа не найден")
+        else:
+            binfo = create_backup(conn=conn, backup_type="solutions", reason="gdrive_manual")
+            target = PRIMARY_BACKUP_DIR / binfo["filename"]
+
+        gd_res = upload_file_to_gdrive(target)
+        return {
+            "status": "success",
+            "message": (
+                f"Файл «{target.name}» загружен на Google Диск! "
+                f"Удалено старых копий сверх лимита: {gd_res['deleted_old']}."
+            ),
+            "gdrive": gd_res,
+            "state": list_backups_info(),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/admin/db/compact")
+def admin_compact_database(
+    payload: DbCompactPayload,
+    admin: bool = Depends(verify_admin),
+):
+    try:
+        res = compact_database(delete_short_attempts=payload.delete_short_attempts)
+        return {
+            "status": "success",
+            "message": (
+                f"База данных сжата: было {res['before_mb']} МБ → стало {res['after_mb']} МБ "
+                f"(освобождено {res['freed_mb']} МБ, очищено кэшей задач: {res['cleaned_bloat_rows']}, "
+                f"удалено коротких попыток <5с: {res['deleted_short_rows']})."
+            ),
+            "result": res,
+        }
+    except Exception as e:
+        logger.error("Ошибка сжатия БД: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Ошибка сжатия БД: {e}")
 
 
 @app.get("/api/admin/backups/download/{filename}")

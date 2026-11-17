@@ -30,17 +30,48 @@ interface UserSessionInfo {
 
 interface BackupFileInfo {
   filename: string;
+  backup_type?: string;
   size_kb: number;
   modified_at: string;
 }
 
-interface BackupStatusInfo {
+interface BackupSettings {
   interval_minutes: number;
+  auto_backup_type: string;
+  keep_count: number;
+  keep_daily_count: number;
+  gdrive_enabled: boolean;
+  gdrive_folder_id: string;
+  gdrive_keep_count: number;
+  gdrive_client_id: string;
+  gdrive_client_secret: string;
+  gdrive_refresh_token: string;
+  tg_bot_token: string;
+  tg_chat_id: string;
+  tg_topic_id: string;
+}
+
+interface DbSizeInfo {
+  db_mb: number;
+  attempts_mb: number;
+  events_mb: number;
+  total_attempts: number;
+  bloated_count: number;
+}
+
+interface BackupStatusInfo {
+  settings: BackupSettings;
   last_backup_at: string | null;
   last_backup_file: string | null;
+  last_backup_type: string | null;
+  last_gdrive_sync_at: string | null;
+  last_gdrive_status: string | null;
+  last_tg_send_at: string | null;
   last_error: string | null;
   total_attempts: number;
   submitted_attempts: number;
+  total_size_mb: number;
+  db_size?: DbSizeInfo;
   files: BackupFileInfo[];
 }
 
@@ -49,6 +80,22 @@ type SessionRowOrGroup =
   | { kind: 'short_group'; groupId: string; items: UserSessionInfo[] };
 
 const PAGE_SIZE = 100;
+
+const DEFAULT_BACKUP_SETTINGS: BackupSettings = {
+  interval_minutes: 360,
+  auto_backup_type: 'solutions',
+  keep_count: 10,
+  keep_daily_count: 7,
+  gdrive_enabled: false,
+  gdrive_folder_id: '',
+  gdrive_keep_count: 10,
+  gdrive_client_id: '',
+  gdrive_client_secret: '',
+  gdrive_refresh_token: '',
+  tg_bot_token: '',
+  tg_chat_id: '',
+  tg_topic_id: '',
+};
 
 export function AdminPanel({ onBack }: { onBack: () => void }) {
   const [token, setToken] = useState<string>(() => sessionStorage.getItem('admin_token') || '');
@@ -61,22 +108,27 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
   // Пагинация, глобальный поиск и фильтрация сессий
   const [sessions, setSessions] = useState<UserSessionInfo[]>([]);
   const [totalSessions, setTotalSessions] = useState<number>(0);
+  const [hasMoreServer, setHasMoreServer] = useState<boolean>(false);
   const [offset, setOffset] = useState<number>(0);
+  const [sessionsLoading, setSessionsLoading] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState('');
   const [appliedQuery, setAppliedQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const [excludeShortServer, setExcludeShortServer] = useState<boolean>(false);
 
-  // Группировка и сворачивание коротких сессий (< 5 с)
+  // Кнопка «Скрыть все < 5 с» (независимо от статуса) и группировка
+  const [hideAllShort, setHideAllShort] = useState<boolean>(false);
   const [collapseShort, setCollapseShort] = useState<boolean>(true);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   const [selectedEvents, setSelectedEvents] = useState<any[] | null>(null);
   const [activeAttemptId, setActiveAttemptId] = useState<number | null>(null);
 
-  // Резервные копии
+  // Резервные копии и настройки
   const [backupInfo, setBackupInfo] = useState<BackupStatusInfo | null>(null);
+  const [cfgForm, setCfgForm] = useState<BackupSettings>(DEFAULT_BACKUP_SETTINGS);
+  const [selectedBackupFiles, setSelectedBackupFiles] = useState<Set<string>>(new Set());
   const [restoreFile, setRestoreFile] = useState<File | null>(null);
+  const [showCloudSettings, setShowCloudSettings] = useState<boolean>(false);
 
   // Категории и drag-and-drop
   const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
@@ -85,6 +137,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
   const [msg, setMsg] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [exportBusy, setExportBusy] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
 
   async function checkAndLoad(testToken: string) {
@@ -144,7 +197,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
   }
 
   async function loadSessions(targetOffset = 0, append = false, queryOverride?: string) {
-    setBusy(true);
+    setSessionsLoading(true);
     try {
       const qVal = queryOverride !== undefined ? queryOverride : appliedQuery;
       const params = new URLSearchParams({
@@ -153,7 +206,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
       });
       if (qVal.trim()) params.set('q', qVal.trim());
       if (statusFilter) params.set('status_filter', statusFilter);
-      if (excludeShortServer) params.set('exclude_short', 'true');
+      if (hideAllShort) params.set('exclude_short', 'true');
 
       const res = await fetch(`/api/admin/sessions?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -161,7 +214,17 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
       if (res.ok) {
         const data = await res.json();
         const incoming: UserSessionInfo[] = Array.isArray(data.sessions) ? data.sessions : [];
-        setTotalSessions(typeof data.total === 'number' ? data.total : incoming.length);
+        const srvTotal = typeof data.total === 'number' ? data.total : null;
+        if (srvTotal !== null) {
+          setTotalSessions(srvTotal);
+          setHasMoreServer(Boolean(data.has_more) || (targetOffset + incoming.length < srvTotal));
+        } else {
+          // Если отвечает старый бэкенд без поля total — определяем наличие следующей страницы по полноте пачки (100 шт)
+          const more = incoming.length >= PAGE_SIZE;
+          setHasMoreServer(more);
+          setTotalSessions(targetOffset + incoming.length + (more ? PAGE_SIZE : 0));
+        }
+
         if (append) {
           setSessions((prev) => {
             const seen = new Set(prev.map((x) => x.attempt_id));
@@ -175,7 +238,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
     } catch (e) {
       console.error(e);
     } finally {
-      setBusy(false);
+      setSessionsLoading(false);
     }
   }
 
@@ -185,29 +248,167 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        const data = await res.json();
+        const data: BackupStatusInfo = await res.json();
         setBackupInfo(data);
+        if (data.settings) {
+          setCfgForm({ ...DEFAULT_BACKUP_SETTINGS, ...data.settings });
+        }
       }
     } catch (e) {
       console.error(e);
     }
   }
 
-  async function triggerManualBackup() {
+  async function handleSaveBackupSettings(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await fetch('/api/admin/backups/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(cfgForm)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Не удалось сохранить настройки бэкапов');
+      setMsg(data.message);
+      if (data.state) setBackupInfo((prev) => ({ ...prev, ...data.state, db_size: prev?.db_size }));
+      else await loadBackups();
+    } catch (err: any) {
+      setMsg(`Ошибка сохранения настроек: ${err.message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function triggerCreateBackup(backupType: 'solutions' | 'csv_only' | 'full', syncGdrive = false) {
     setBusy(true);
     setMsg(null);
     try {
       const res = await fetch('/api/admin/backups/create', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ backup_type: backupType, sync_gdrive: syncGdrive })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Ошибка создания бэкапа');
       setMsg(data.message);
-      if (data.state) setBackupInfo(data.state);
-      else await loadBackups();
+      await loadBackups();
     } catch (e: any) {
       setMsg(`Ошибка бэкапа: ${e.message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function triggerSendTelegram(filename?: string, backupType: 'solutions' | 'csv_only' | 'full' = 'solutions') {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await fetch('/api/admin/backups/send-telegram', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ filename: filename || null, backup_type: backupType })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Ошибка отправки в Telegram');
+      setMsg(data.message);
+      await loadBackups();
+    } catch (e: any) {
+      setMsg(`Ошибка Telegram: ${e.message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function triggerSyncGdrive(filename?: string) {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await fetch('/api/admin/backups/sync-gdrive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ filename: filename || null })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Ошибка выгрузки на Google Диск');
+      setMsg(data.message);
+      await loadBackups();
+    } catch (e: any) {
+      setMsg(`Ошибка Google Диска: ${e.message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteSelectedBackups(filenamesToDelete: string[]) {
+    if (filenamesToDelete.length === 0) return;
+    const ok = window.confirm(`Удалить выбранные файлы резервных копий (${filenamesToDelete.length} шт.) с диска?`);
+    if (!ok) return;
+
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await fetch('/api/admin/backups/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ filenames: filenamesToDelete })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Ошибка удаления файлов');
+      setMsg(data.message);
+      setSelectedBackupFiles((prev) => {
+        const next = new Set(prev);
+        filenamesToDelete.forEach((f) => next.delete(f));
+        return next;
+      });
+      await loadBackups();
+    } catch (e: any) {
+      setMsg(`Ошибка удаления: ${e.message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleCompactDatabase(deleteShort: boolean) {
+    const promptText = deleteShort
+      ? 'Очистить базу от дублирующихся кэшей картинок, удалить все попытки короче 5 секунд и выполнить физическое сжатие тома (VACUUM FULL)?'
+      : 'Очистить базу от тяжёлых кэшей картинок (без удаления попыток учеников) и физически сжать дисковый том PostgreSQL (VACUUM FULL)?';
+    if (!window.confirm(promptText)) return;
+
+    setBusy(true);
+    setMsg('⏳ Выполняется очистка и VACUUM FULL базы данных (может занять 10–30 секунд)...');
+    try {
+      const res = await fetch('/api/admin/db/compact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ delete_short_attempts: deleteShort })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Ошибка сжатия БД');
+      setMsg(data.message);
+      await loadBackups();
+      if (tab === 'sessions') await loadSessions(0, false);
+    } catch (e: any) {
+      setMsg(`Ошибка сжатия БД: ${e.message}`);
     } finally {
       setBusy(false);
     }
@@ -367,18 +568,22 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
     }
   }
 
-  function buildExportQueryString(): string {
+  function buildExportQueryString(overrideStatus?: string): string {
     const params = new URLSearchParams();
     if (appliedQuery.trim()) params.set('q', appliedQuery.trim());
-    if (statusFilter) params.set('status_filter', statusFilter);
-    if (excludeShortServer) params.set('exclude_short', 'true');
+    const st = overrideStatus !== undefined ? overrideStatus : statusFilter;
+    if (st) params.set('status_filter', st);
+    if (hideAllShort) params.set('exclude_short', 'true');
     const qs = params.toString();
     return qs ? `?${qs}` : '';
   }
 
-  async function downloadAllCsv() {
+  async function downloadCsv(onlySubmitted = false) {
+    const label = onlySubmitted ? 'submitted_csv' : 'all_csv';
+    setExportBusy(label);
     try {
-      const res = await fetch(`/api/admin/sessions/export/csv${buildExportQueryString()}`, {
+      const qs = buildExportQueryString(onlySubmitted ? 'submitted' : undefined);
+      const res = await fetch(`/api/admin/sessions/export/csv${qs}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Не удалось скачать CSV');
@@ -386,15 +591,18 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `astrosite_sessions_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `astrosite_${onlySubmitted ? 'submitted' : 'sessions'}_${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (e: any) {
       alert(e.message);
+    } finally {
+      setExportBusy(null);
     }
   }
 
   async function downloadAllEventsCsv() {
+    setExportBusy('events_csv');
     try {
       const res = await fetch(`/api/admin/sessions/export/events-csv${buildExportQueryString()}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -409,10 +617,13 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
       window.URL.revokeObjectURL(url);
     } catch (e: any) {
       alert(e.message);
+    } finally {
+      setExportBusy(null);
     }
   }
 
   async function downloadFullSessionsJson() {
+    setExportBusy('full_json');
     try {
       const res = await fetch(`/api/admin/sessions/export/full-json${buildExportQueryString()}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -422,11 +633,13 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `astrosite_all_sessions_with_logs_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `astrosite_sessions_with_logs_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (e: any) {
       alert(e.message);
+    } finally {
+      setExportBusy(null);
     }
   }
 
@@ -436,7 +649,6 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
     }
   }, []);
 
-  // Debounce серверного поиска по всем работам
   useEffect(() => {
     const timer = setTimeout(() => {
       setAppliedQuery(searchInput);
@@ -452,7 +664,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
     if (isAuthenticated && tab === 'backups') {
       void loadBackups();
     }
-  }, [tab, isAuthenticated, appliedQuery, statusFilter, excludeShortServer]);
+  }, [tab, isAuthenticated, appliedQuery, statusFilter, hideAllShort]);
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -536,10 +748,17 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
     void saveCategoryOrder(list);
   };
 
-  // Группировка подряд идущих коротких (< 5 с, несданных) сессий
+  // При включённой кнопке «Скрыть все < 5 с» дополнительно фильтруем и на клиенте все записи < 5 с независимо от статуса
+  const visibleSessions = useMemo(() => {
+    const list = sessions || [];
+    if (!hideAllShort) return list;
+    return list.filter((s) => (s.duration_sec || 0) >= 5);
+  }, [sessions, hideAllShort]);
+
+  // Группировка подряд идущих коротких (< 5 с) сессий (если они не скрыты полностью)
   const groupedDisplayRows = useMemo<SessionRowOrGroup[]>(() => {
-    if (!collapseShort) {
-      return (sessions || []).map((s) => ({ kind: 'single', session: s }));
+    if (!collapseShort || hideAllShort) {
+      return visibleSessions.map((s) => ({ kind: 'single', session: s }));
     }
     const out: SessionRowOrGroup[] = [];
     let buffer: UserSessionInfo[] = [];
@@ -555,9 +774,9 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
       buffer = [];
     };
 
-    for (const s of sessions || []) {
-      const isShortNoise = !s.submitted && (s.duration_sec || 0) < 5;
-      if (isShortNoise) {
+    for (const s of visibleSessions) {
+      const isShort = (s.duration_sec || 0) < 5;
+      if (isShort) {
         buffer.push(s);
       } else {
         flushBuffer();
@@ -566,10 +785,10 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
     }
     flushBuffer();
     return out;
-  }, [sessions, collapseShort]);
+  }, [visibleSessions, collapseShort, hideAllShort]);
 
   const shortSessionsCountOnPage = useMemo(
-    () => (sessions || []).filter((s) => !s.submitted && (s.duration_sec || 0) < 5).length,
+    () => (sessions || []).filter((s) => (s.duration_sec || 0) < 5).length,
     [sessions]
   );
 
@@ -605,7 +824,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
         style={{
           borderBottom: '1px solid #e2e8f0',
           background: isNested ? '#fcfdfe' : '#fff',
-          opacity: !s.submitted && s.duration_sec < 5 ? 0.82 : 1
+          opacity: s.duration_sec < 5 ? 0.82 : 1
         }}
       >
         <td style={{ padding: 8, fontWeight: 600 }}>#{s.attempt_id}</td>
@@ -672,9 +891,12 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
   }
 
   const hasPrevPage = offset > 0;
-  const hasNextPage = offset + sessions.length < totalSessions;
+  const hasNextPage = hasMoreServer || (totalSessions > offset + sessions.length) || (sessions.length >= PAGE_SIZE);
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
-  const totalPages = Math.max(1, Math.ceil(totalSessions / PAGE_SIZE));
+  const totalPages = Math.max(currentPage + (hasNextPage ? 1 : 0), Math.ceil(totalSessions / PAGE_SIZE));
+
+  const allFilesList = backupInfo?.files || [];
+  const allFilesSelected = allFilesList.length > 0 && allFilesList.every((f) => selectedBackupFiles.has(f.filename));
 
   return (
     <div style={{ maxWidth: 1280, margin: '0 auto', padding: 20 }}>
@@ -690,7 +912,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
       </datalist>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h2>Администрирование Astrosite v2.0</h2>
+        <h2>Администрирование Astrosite v2.2</h2>
         <button onClick={onBack} style={{ padding: '8px 16px', background: '#718096', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
           В каталог
         </button>
@@ -713,7 +935,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
           onClick={() => setTab('backups')}
           style={{ padding: '10px 20px', border: 'none', background: tab === 'backups' ? '#edf2f7' : 'none', fontWeight: tab === 'backups' ? 700 : 400, borderBottom: tab === 'backups' ? '3px solid #3182ce' : 'none', cursor: 'pointer' }}
         >
-          Резервные копии ({backupInfo?.files?.length ?? 0})
+          Резервные копии и диск БД ({allFilesList.length})
         </button>
       </div>
 
@@ -887,36 +1109,46 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
       {/* ВКЛАДКА 2: АНАЛИТИКА СЕССИЙ */}
       {tab === 'sessions' && (
         <div>
-          {/* Плашка статуса автобэкапа */}
+          {/* Плашка статуса автобэкапа и объёма БД */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 12, padding: '8px 12px', background: '#f0fff4', border: '1px solid #9ae6b4', borderRadius: 6, fontSize: 12, color: '#22543d' }}>
             <div>
-              <strong>🛡 Регулярный автобэкап попыток:</strong> каждые {backupInfo?.interval_minutes ?? 30} мин + мгновенная запись при каждой сдаче
-              {backupInfo?.last_backup_at && <span> · Последний снимок: <code>{backupInfo.last_backup_at}</code></span>}
+              <strong>🛡 Бэкап:</strong> каждые {backupInfo?.settings?.interval_minutes ?? 360} мин (тип: <code>{backupInfo?.settings?.auto_backup_type ?? 'solutions'}</code>)
+              {backupInfo?.db_size && (
+                <span>
+                  {' '}· <strong>Объём БД: {backupInfo.db_size.db_mb} МБ</strong>
+                  {backupInfo.db_size.bloated_count > 0 && (
+                    <span style={{ color: '#c53030', fontWeight: 700 }}>
+                      {' '}(есть {backupInfo.db_size.bloated_count} неочищенных записей с кэшем картинок — сожмите БД во вкладке «Резервные копии»!)
+                    </span>
+                  )}
+                </span>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button
-                onClick={triggerManualBackup}
+                onClick={() => void triggerCreateBackup('solutions', false)}
                 disabled={busy}
                 style={{ padding: '4px 10px', background: '#2f855a', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
               >
-                ⚡ Сделать бэкап сейчас
+                ⚡ Бэкап решений
               </button>
               <button
-                onClick={() => downloadBackupFile('latest_backup.zip')}
-                style={{ padding: '4px 10px', background: '#fff', color: '#22543d', border: '1px solid #68d391', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                onClick={() => void triggerSendTelegram(undefined, 'solutions')}
+                disabled={busy}
+                style={{ padding: '4px 10px', background: '#0284c7', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
               >
-                📦 Скачать latest_backup.zip
+                ✈️ Выгрузить в ТГ
               </button>
             </div>
           </div>
 
           {/* Панель глобального поиска, фильтров и общей выгрузки */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16, background: '#f7fafc', padding: 14, borderRadius: 6, border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 14, background: '#f7fafc', padding: 14, borderRadius: 6, border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '1 1 360px', maxWidth: 540 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '1 1 340px', maxWidth: 500 }}>
                 <input
                   type="text"
-                  placeholder="Поиск по всем работам (код участника, #ID попытки или задача)..."
+                  placeholder="Поиск по всем работам в базе (код участника, #ID попытки или задача)..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -939,37 +1171,48 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
 
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button
-                  onClick={downloadAllCsv}
-                  style={{ padding: '7px 12px', background: '#2f855a', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}
-                  title="Выгрузить сводную таблицу всех попыток с ответами и логами"
+                  onClick={() => void downloadCsv(true)}
+                  disabled={!!exportBusy}
+                  style={{ padding: '7px 12px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}
+                  title="Быстрая выгрузка только сданных работ с баллами (компактный Excel CSV)"
                 >
-                  📥 Ведомость попыток (CSV)
+                  {exportBusy === 'submitted_csv' ? '⏳ Выгрузка...' : '📥 Сданные работы (CSV)'}
+                </button>
+                <button
+                  onClick={() => void downloadCsv(false)}
+                  disabled={!!exportBusy}
+                  style={{ padding: '7px 12px', background: '#2f855a', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}
+                  title="Выгрузить все попытки по текущему фильтру в CSV"
+                >
+                  {exportBusy === 'all_csv' ? '⏳ Выгрузка...' : '📥 Все попытки (CSV)'}
                 </button>
                 <button
                   onClick={downloadAllEventsCsv}
+                  disabled={!!exportBusy}
                   style={{ padding: '7px 12px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}
                   title="Выгрузить сквозной хронологический лог всех действий по всем работам в CSV"
                 >
-                  📋 Лог действий по всем работам (CSV)
+                  {exportBusy === 'events_csv' ? '⏳ Выгрузка...' : '📋 Лог действий всех работ (CSV)'}
                 </button>
                 <button
                   onClick={downloadFullSessionsJson}
+                  disabled={!!exportBusy}
                   style={{ padding: '7px 12px', background: '#4a5568', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}
-                  title="Выгрузить все работы с подробным журналом действий в JSON"
+                  title="Выгрузить содержательные работы с журналом действий в JSON"
                 >
-                  🗂 Все работы + логи (JSON)
+                  {exportBusy === 'full_json' ? '⏳ Выгрузка...' : '🗂 Работы + логи (JSON)'}
                 </button>
               </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, fontSize: 13 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>Статус:</span>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid #cbd5e0', fontSize: 12 }}
+                    style={{ padding: '5px 8px', borderRadius: 4, border: '1px solid #cbd5e0', fontSize: 12 }}
                   >
                     <option value="">Все попытки</option>
                     <option value="submitted">Только сданные</option>
@@ -977,48 +1220,66 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
                   </select>
                 </label>
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', userSelect: 'none' }}>
-                  <input
-                    type="checkbox"
-                    checked={collapseShort}
-                    onChange={(e) => setCollapseShort(e.target.checked)}
-                  />
-                  <span>Группировать и сворачивать короткие (&lt; 5 с) ({shortSessionsCountOnPage} на стр.)</span>
-                </label>
+                {/* Кнопка «Скрыть все < 5 с» (независимо от статуса) */}
+                <button
+                  type="button"
+                  onClick={() => setHideAllShort((v) => !v)}
+                  style={{
+                    padding: '6px 12px',
+                    background: hideAllShort ? '#dc2626' : '#fff',
+                    color: hideAllShort ? '#fff' : '#2d3748',
+                    border: `1px solid ${hideAllShort ? '#dc2626' : '#cbd5e0'}`,
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: 700
+                  }}
+                  title="Полностью скрыть все попытки длительностью менее 5 секунд независимо от того, сданы они или нет"
+                >
+                  {hideAllShort ? '✓ Скрыты все < 5 с (нажмите, чтобы показать)' : `🚫 Скрыть все < 5 с (${shortSessionsCountOnPage} на стр.)`}
+                </button>
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', userSelect: 'none' }}>
-                  <input
-                    type="checkbox"
-                    checked={excludeShortServer}
-                    onChange={(e) => setExcludeShortServer(e.target.checked)}
-                  />
-                  <span>Скрыть &lt; 5 с при загрузке с сервера</span>
-                </label>
+                {!hideAllShort && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', userSelect: 'none' }}>
+                    <input
+                      type="checkbox"
+                      checked={collapseShort}
+                      onChange={(e) => setCollapseShort(e.target.checked)}
+                    />
+                    <span>Сворачивать &lt; 5 с в группы</span>
+                  </label>
+                )}
               </div>
 
-              {/* Пагинация */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ color: '#4a5568', fontSize: 12 }}>
-                  Всего в базе: <strong>{totalSessions}</strong>
-                  {sessions.length > 0 && ` (показаны ${offset + 1}–${offset + sessions.length}, стр. ${currentPage}/${totalPages})`}
+              {/* Верхняя панель пагинации («Предыдущие 100» / «Следующие 100») */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', padding: '6px 10px', borderRadius: 6, border: '1px solid #cbd5e0' }}>
+                <span style={{ color: '#2d3748', fontSize: 12 }}>
+                  Всего: <strong>{totalSessions}</strong>
+                  {sessions.length > 0 && ` · Показаны ${offset + 1}–${offset + sessions.length} (стр. ${currentPage}/${totalPages})`}
                 </span>
                 <button
-                  disabled={busy || !hasPrevPage}
+                  disabled={sessionsLoading || !hasPrevPage}
                   onClick={() => void loadSessions(Math.max(0, offset - PAGE_SIZE), false)}
-                  style={{ padding: '4px 10px', background: hasPrevPage ? '#edf2f7' : '#f7fafc', color: hasPrevPage ? '#2d3748' : '#a0aec0', border: '1px solid #cbd5e0', borderRadius: 4, cursor: hasPrevPage ? 'pointer' : 'not-allowed', fontSize: 12 }}
+                  style={{ padding: '5px 12px', background: hasPrevPage ? '#edf2f7' : '#f7fafc', color: hasPrevPage ? '#2d3748' : '#a0aec0', border: '1px solid #cbd5e0', borderRadius: 4, cursor: hasPrevPage ? 'pointer' : 'not-allowed', fontSize: 12, fontWeight: 600 }}
                 >
-                  ← Пред. 100
+                  ← Предыдущие 100
                 </button>
                 <button
-                  disabled={busy || !hasNextPage}
+                  disabled={sessionsLoading || !hasNextPage}
                   onClick={() => void loadSessions(offset + PAGE_SIZE, false)}
-                  style={{ padding: '4px 10px', background: hasNextPage ? '#edf2f7' : '#f7fafc', color: hasNextPage ? '#2d3748' : '#a0aec0', border: '1px solid #cbd5e0', borderRadius: 4, cursor: hasNextPage ? 'pointer' : 'not-allowed', fontSize: 12 }}
+                  style={{ padding: '5px 12px', background: hasNextPage ? '#3182ce' : '#f7fafc', color: hasNextPage ? '#fff' : '#a0aec0', border: 'none', borderRadius: 4, cursor: hasNextPage ? 'pointer' : 'not-allowed', fontSize: 12, fontWeight: 600 }}
                 >
-                  След. 100 →
+                  Следующие 100 →
                 </button>
               </div>
             </div>
           </div>
+
+          {sessionsLoading && (
+            <div style={{ padding: '14px 16px', marginBottom: 14, background: '#ebf8ff', color: '#2b6cb0', border: '1px solid #90cdf4', borderRadius: 6, fontWeight: 600, fontSize: 13 }}>
+              ⏳ Загрузка записей попыток с сервера...
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: 20 }}>
             <div style={{ flex: selectedEvents ? '1 1 60%' : '1 1 100%' }}>
@@ -1075,7 +1336,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
                       </React.Fragment>
                     );
                   })}
-                  {groupedDisplayRows.length === 0 && (
+                  {!sessionsLoading && groupedDisplayRows.length === 0 && (
                     <tr>
                       <td colSpan={7} style={{ padding: 20, textAlign: 'center', color: '#718096' }}>
                         Попыток не найдено.
@@ -1085,43 +1346,35 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
                 </tbody>
               </table>
 
-              {/* Нижняя панель догрузки следующей сотни */}
-              {sessions.length > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, padding: '10px 12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6 }}>
-                  <span style={{ fontSize: 12, color: '#4a5568' }}>
-                    Загружено в таблицу: <strong>{sessions.length}</strong> из <strong>{totalSessions}</strong>
-                  </span>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {hasPrevPage && (
-                      <button
-                        disabled={busy}
-                        onClick={() => void loadSessions(Math.max(0, offset - PAGE_SIZE), false)}
-                        style={{ padding: '6px 12px', background: '#edf2f7', border: '1px solid #cbd5e0', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
-                      >
-                        ← Предыдущие 100
-                      </button>
-                    )}
-                    {hasNextPage && (
-                      <>
-                        <button
-                          disabled={busy}
-                          onClick={() => void loadSessions(offset + sessions.length, true)}
-                          style={{ padding: '6px 14px', background: '#ebf8ff', color: '#2b6cb0', border: '1px solid #90cdf4', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
-                        >
-                          + Догрузить ещё 100 в этот список
-                        </button>
-                        <button
-                          disabled={busy}
-                          onClick={() => void loadSessions(offset + PAGE_SIZE, false)}
-                          style={{ padding: '6px 14px', background: '#3182ce', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
-                        >
-                          Перейти к следующей сотне →
-                        </button>
-                      </>
-                    )}
-                  </div>
+              {/* Нижняя панель навигации по сотням работ */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginTop: 14, padding: '12px 14px', background: '#f8fafc', border: '1px solid #cbd5e0', borderRadius: 6 }}>
+                <span style={{ fontSize: 13, color: '#2d3748' }}>
+                  Страница <strong>{currentPage}</strong> из <strong>{totalPages}</strong> · Отображено <strong>{visibleSessions.length}</strong> записей (всего по фильтру: <strong>{totalSessions}</strong>)
+                </span>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    disabled={sessionsLoading || !hasPrevPage}
+                    onClick={() => void loadSessions(Math.max(0, offset - PAGE_SIZE), false)}
+                    style={{ padding: '7px 14px', background: hasPrevPage ? '#edf2f7' : '#f7fafc', color: hasPrevPage ? '#2d3748' : '#a0aec0', border: '1px solid #cbd5e0', borderRadius: 4, cursor: hasPrevPage ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600 }}
+                  >
+                    ← Предыдущие 100
+                  </button>
+                  <button
+                    disabled={sessionsLoading || !hasNextPage}
+                    onClick={() => void loadSessions(offset + sessions.length, true)}
+                    style={{ padding: '7px 14px', background: hasNextPage ? '#ebf8ff' : '#f7fafc', color: hasNextPage ? '#2b6cb0' : '#a0aec0', border: '1px solid #90cdf4', borderRadius: 4, cursor: hasNextPage ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600 }}
+                  >
+                    + Догрузить ещё 100 в таблицу
+                  </button>
+                  <button
+                    disabled={sessionsLoading || !hasNextPage}
+                    onClick={() => void loadSessions(offset + PAGE_SIZE, false)}
+                    style={{ padding: '7px 16px', background: hasNextPage ? '#3182ce' : '#cbd5e0', color: '#fff', border: 'none', borderRadius: 4, cursor: hasNextPage ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 700 }}
+                  >
+                    Следующие 100 →
+                  </button>
                 </div>
-              )}
+              </div>
             </div>
 
             {selectedEvents && (
@@ -1153,44 +1406,481 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      {/* ВКЛАДКА 3: РЕЗЕРВНЫЕ КОПИИ ТАБЛИЦЫ ПОПЫТОК */}
+      {/* ВКЛАДКА 3: РЕЗЕРВНЫЕ КОПИИ, СЖАТИЕ БД И ОБЛАЧНАЯ ВЫГРУЗКА */}
       {tab === 'backups' && (
-        <div>
-          <div style={{ background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #cbd5e0', marginBottom: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* 1. Управление объёмом БД PostgreSQL (исправление проблемы 12 ГБ) */}
+          <div style={{ background: '#fff5f5', padding: 16, borderRadius: 8, border: '1px solid #feb2b2' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
               <div>
-                <h4 style={{ margin: '0 0 6px 0' }}>Регулярное резервное копирование таблицы попыток</h4>
-                <p style={{ margin: 0, fontSize: 13, color: '#4a5568' }}>
-                  Автоматический снимок всей базы попыток (с кодами участников, ответами, оценками и логами действий) выполняется каждые{' '}
-                  <strong>{backupInfo?.interval_minutes ?? 30} минут</strong>, а также мгновенно дописывается в журнал{' '}
-                  <code>submitted_live_log.csv</code> при каждой сдаче работы.
+                <h4 style={{ margin: '0 0 6px 0', color: '#9b2c2c' }}>
+                  💾 Дисковый объём базы данных PostgreSQL: {backupInfo?.db_size?.db_mb ?? '—'} МБ
+                </h4>
+                <p style={{ margin: 0, fontSize: 13, color: '#742a2a' }}>
+                  Таблица попыток (<code>attempts</code>): <strong>{backupInfo?.db_size?.attempts_mb ?? '—'} МБ</strong> · Таблица логов (<code>events</code>): <strong>{backupInfo?.db_size?.events_mb ?? '—'} МБ</strong> · Записей со старым base64-кэшем картинок: <strong>{backupInfo?.db_size?.bloated_count ?? 0}</strong>.
                 </p>
-                {backupInfo?.last_backup_at && (
-                  <p style={{ margin: '6px 0 0 0', fontSize: 12, color: '#2f855a', fontWeight: 600 }}>
-                    Последний полный бэкап: {backupInfo.last_backup_at} ({backupInfo.last_backup_file}) · Всего попыток в снимке: {backupInfo.total_attempts} (сдано: {backupInfo.submitted_attempts})
-                  </p>
-                )}
-                {backupInfo?.last_error && (
-                  <p style={{ margin: '6px 0 0 0', fontSize: 12, color: '#e53e3e' }}>
-                    Ошибка последнего бэкапа: {backupInfo.last_error}
-                  </p>
-                )}
+                <p style={{ margin: '4px 0 0 0', fontSize: 12, color: '#9b2c2c' }}>
+                  Нажмите кнопку справа, чтобы очистить дублирующиеся 500 КБ base64-картинки из старых строк и выполнить <code>VACUUM FULL</code> (уменьшает том с ~12 ГБ до ~20 МБ без потери ответов и баллов).
+                </p>
               </div>
-
-              <button
-                onClick={triggerManualBackup}
-                disabled={busy}
-                style={{ padding: '8px 16px', background: '#2f855a', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}
-              >
-                ⚡ Создать полный бэкап сейчас
-              </button>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => void handleCompactDatabase(false)}
+                  disabled={busy}
+                  style={{ padding: '8px 14px', background: '#c53030', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}
+                >
+                  🧹 Сжать БД (очистить кэш картинок + VACUUM FULL)
+                </button>
+                <button
+                  onClick={() => void handleCompactDatabase(true)}
+                  disabled={busy}
+                  style={{ padding: '8px 14px', background: '#742a2a', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600, fontSize: 12 }}
+                >
+                  🗑 Удалить все попытки &lt; 5 с + Сжать БД
+                </button>
+              </div>
             </div>
           </div>
 
-          <div style={{ background: '#f7fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0', marginBottom: 24 }}>
+          {/* 2. Три типа резервных копий и выгрузка по команде */}
+          <div style={{ background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #cbd5e0' }}>
+            <h4 style={{ margin: '0 0 12px 0' }}>Создание резервных копий по типам и отправка в Telegram</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>
+              {/* Тип 1: Компактный бэкап решений */}
+              <div style={{ background: '#fff', padding: 14, borderRadius: 6, border: '2px solid #68d391', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: '#22543d', marginBottom: 4 }}>
+                    1. Компактный бэкап решений (Рекомендуется)
+                  </div>
+                  <p style={{ fontSize: 12, color: '#4a5568', margin: '0 0 12px 0' }}>
+                    Включает <strong>только сданные работы и попытки с непустыми ответами</strong> (коды участников, баллы, ответы, протоколы проверки). Содержит CSV для Excel + JSON для полного восстановления решений. Весит десятки КБ.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => void triggerCreateBackup('solutions', false)}
+                    disabled={busy}
+                    style={{ padding: '6px 12px', background: '#2f855a', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                  >
+                    ⚡ Создать на диске
+                  </button>
+                  <button
+                    onClick={() => void triggerSendTelegram(undefined, 'solutions')}
+                    disabled={busy}
+                    style={{ padding: '6px 12px', background: '#0284c7', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                  >
+                    ✈️ Создать и отправить в ТГ
+                  </button>
+                </div>
+              </div>
+
+              {/* Тип 2: Ведомость CSV */}
+              <div style={{ background: '#fff', padding: 14, borderRadius: 6, border: '1px solid #cbd5e0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: '#2d3748', marginBottom: 4 }}>
+                    2. Сводная ведомость всех попыток (CSV)
+                  </div>
+                  <p style={{ fontSize: 12, color: '#4a5568', margin: '0 0 12px 0' }}>
+                    Один плоский файл <code>.csv</code> (UTF-8 для Excel) со всеми попытками, кодами участников, баллами, датами и ответами без логов кликов и системных дампов.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => void triggerCreateBackup('csv_only', false)}
+                    disabled={busy}
+                    style={{ padding: '6px 12px', background: '#3182ce', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                  >
+                    📄 Создать таблицу CSV
+                  </button>
+                  <button
+                    onClick={() => void triggerSendTelegram(undefined, 'csv_only')}
+                    disabled={busy}
+                    style={{ padding: '6px 12px', background: '#0284c7', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                  >
+                    ✈️ Отправить CSV в ТГ
+                  </button>
+                </div>
+              </div>
+
+              {/* Тип 3: Полный системный архив */}
+              <div style={{ background: '#fff', padding: 14, borderRadius: 6, border: '1px solid #cbd5e0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: '#2d3748', marginBottom: 4 }}>
+                    3. Полный системный дамп (ZIP)
+                  </div>
+                  <p style={{ fontSize: 12, color: '#4a5568', margin: '0 0 12px 0' }}>
+                    Полный архив всей базы (все попытки + полный журнал всех действий <code>events_log.csv</code> + дамп восстановления <code>full_restore_dump.json</code>).
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => void triggerCreateBackup('full', false)}
+                    disabled={busy}
+                    style={{ padding: '6px 12px', background: '#4a5568', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                  >
+                    📦 Создать полный ZIP
+                  </button>
+                  <button
+                    onClick={() => void triggerSendTelegram(undefined, 'full')}
+                    disabled={busy}
+                    style={{ padding: '6px 12px', background: '#0284c7', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                  >
+                    ✈️ Отправить полный в ТГ
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Настройки интервалов, Google Диска и Telegram */}
+          <form onSubmit={handleSaveBackupSettings} style={{ background: '#f8fafc', padding: 16, borderRadius: 8, border: '1px solid #cbd5e0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h4 style={{ margin: 0 }}>⚙ Настройки расписания, лимитов хранения, Google Диска и Telegram</h4>
+              <button
+                type="button"
+                onClick={() => setShowCloudSettings((v) => !v)}
+                style={{ padding: '4px 10px', background: '#edf2f7', border: '1px solid #cbd5e0', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
+              >
+                {showCloudSettings ? '▲ Скрыть ключи Google Диска / Telegram' : '▼ Настроить ключи Google Диска и Telegram'}
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, marginBottom: 12 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+                  Интервал автобэкапа (минут, 0 = выкл):
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={cfgForm.interval_minutes}
+                  onChange={(e) => setCfgForm({ ...cfgForm, interval_minutes: parseInt(e.target.value, 10) || 0 })}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+                  Тип регулярного автобэкапа:
+                </label>
+                <select
+                  value={cfgForm.auto_backup_type}
+                  onChange={(e) => setCfgForm({ ...cfgForm, auto_backup_type: e.target.value })}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                >
+                  <option value="solutions">1. Компактный бэкап решений (рекомендуется)</option>
+                  <option value="csv_only">2. Только таблица CSV</option>
+                  <option value="full">3. Полный системный дамп ZIP</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+                  Хранить периодических копий на сервере:
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={200}
+                  value={cfgForm.keep_count}
+                  onChange={(e) => setCfgForm({ ...cfgForm, keep_count: parseInt(e.target.value, 10) || 1 })}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+                  Хранить ежедневных копий на сервере:
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={90}
+                  value={cfgForm.keep_daily_count}
+                  onChange={(e) => setCfgForm({ ...cfgForm, keep_daily_count: parseInt(e.target.value, 10) || 1 })}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            {showCloudSettings && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, padding: 12, background: '#fff', borderRadius: 6, border: '1px solid #e2e8f0', marginBottom: 12 }}>
+                {/* Google Drive */}
+                <div>
+                  <h5 style={{ margin: '0 0 8px 0', color: '#2b6cb0' }}>☁️ Регулярная автовыгрузка на Google Диск (с автоудалением старых)</h5>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, marginBottom: 8, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={cfgForm.gdrive_enabled}
+                      onChange={(e) => setCfgForm({ ...cfgForm, gdrive_enabled: e.target.checked })}
+                    />
+                    <strong>Автоматически отправлять регулярные бэкапы на Google Диск</strong>
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8, marginBottom: 8 }}>
+                    <div>
+                      <label style={{ fontSize: 11, color: '#4a5568' }}>ID папки на Google Диске (Folder ID):</label>
+                      <input
+                        type="text"
+                        placeholder="Напр. 1A2B3C4D5E6F..."
+                        value={cfgForm.gdrive_folder_id}
+                        onChange={(e) => setCfgForm({ ...cfgForm, gdrive_folder_id: e.target.value })}
+                        style={{ width: '100%', padding: '5px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, color: '#4a5568' }}>Хранить копий на Диске:</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={cfgForm.gdrive_keep_count}
+                        onChange={(e) => setCfgForm({ ...cfgForm, gdrive_keep_count: parseInt(e.target.value, 10) || 10 })}
+                        style={{ width: '100%', padding: '5px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <input
+                      type="text"
+                      placeholder="OAuth2 Client ID (из Google Cloud Console)"
+                      value={cfgForm.gdrive_client_id}
+                      onChange={(e) => setCfgForm({ ...cfgForm, gdrive_client_id: e.target.value })}
+                      style={{ width: '100%', padding: '5px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      type="password"
+                      placeholder="OAuth2 Client Secret"
+                      value={cfgForm.gdrive_client_secret}
+                      onChange={(e) => setCfgForm({ ...cfgForm, gdrive_client_secret: e.target.value })}
+                      style={{ width: '100%', padding: '5px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      type="password"
+                      placeholder="OAuth2 Refresh Token (с правом drive.file)"
+                      value={cfgForm.gdrive_refresh_token}
+                      onChange={(e) => setCfgForm({ ...cfgForm, gdrive_refresh_token: e.target.value })}
+                      style={{ width: '100%', padding: '5px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                  {backupInfo?.last_gdrive_status && (
+                    <div style={{ fontSize: 11, color: '#2b6cb0', marginTop: 6 }}>
+                      Статус Google Диска: {backupInfo.last_gdrive_status} ({backupInfo.last_gdrive_sync_at})
+                    </div>
+                  )}
+                </div>
+
+                {/* Telegram */}
+                <div>
+                  <h5 style={{ margin: '0 0 8px 0', color: '#0284c7' }}>✈️ Выгрузка бэкапов в Telegram по команде</h5>
+                  <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 8px 0' }}>
+                    Укажите токен бота и ID чата/супергруппы. При нажатии «✈️ В Telegram» выбранный архив придёт документом в чат.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <input
+                      type="password"
+                      placeholder="Telegram Bot Token (напр. 123456:ABC-DEF...)"
+                      value={cfgForm.tg_bot_token}
+                      onChange={(e) => setCfgForm({ ...cfgForm, tg_bot_token: e.target.value })}
+                      style={{ width: '100%', padding: '5px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                    />
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 8 }}>
+                      <input
+                        type="text"
+                        placeholder="Chat ID (напр. -1001234567890)"
+                        value={cfgForm.tg_chat_id}
+                        onChange={(e) => setCfgForm({ ...cfgForm, tg_chat_id: e.target.value })}
+                        style={{ width: '100%', padding: '5px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Topic ID (необяз.)"
+                        value={cfgForm.tg_topic_id}
+                        onChange={(e) => setCfgForm({ ...cfgForm, tg_topic_id: e.target.value })}
+                        style={{ width: '100%', padding: '5px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #cbd5e0', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                  </div>
+                  {backupInfo?.last_tg_send_at && (
+                    <div style={{ fontSize: 11, color: '#0284c7', marginTop: 6 }}>
+                      Последняя отправка в ТГ: {backupInfo.last_tg_send_at}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: '#64748b' }}>
+                Всего файлов бэкапов на сервере: <strong>{allFilesList.length}</strong> (общий размер: <strong>{backupInfo?.total_size_mb ?? 0} МБ</strong>)
+              </span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {cfgForm.gdrive_folder_id && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void triggerSyncGdrive()}
+                    style={{ padding: '6px 14px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                  >
+                    ☁️ Проверить выгрузку на Google Диск сейчас
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  disabled={busy}
+                  style={{ padding: '6px 16px', background: '#2f855a', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 700 }}
+                >
+                  💾 Сохранить настройки бэкапов
+                </button>
+              </div>
+            </div>
+          </form>
+
+          {/* 4. Таблица файлов бэкапов с множественным выделением и удалением */}
+          <div style={{ background: '#fff', borderRadius: 8, border: '1px solid #cbd5e0', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, padding: '10px 14px', background: '#f8fafc', borderBottom: '1px solid #cbd5e0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <strong style={{ fontSize: 13 }}>Файлы резервных копий на сервере ({allFilesList.length})</strong>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nonLatest = allFilesList
+                      .map((f) => f.filename)
+                      .filter((name) => !['latest_backup.zip', 'attempts_latest.csv', 'submitted_live_log.csv', 'submitted_live_log.jsonl'].includes(name));
+                    setSelectedBackupFiles(new Set(nonLatest));
+                  }}
+                  style={{ padding: '3px 8px', background: '#edf2f7', border: '1px solid #cbd5e0', borderRadius: 4, cursor: 'pointer', fontSize: 11 }}
+                >
+                  Выделить все архивные снимки (кроме latest/live)
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {selectedBackupFiles.size > 0 && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void deleteSelectedBackups(Array.from(selectedBackupFiles))}
+                    style={{ padding: '5px 12px', background: '#e53e3e', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12, fontWeight: 700 }}
+                  >
+                    🗑 Удалить выбранные ({selectedBackupFiles.size})
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: '#edf2f7', borderBottom: '2px solid #cbd5e0' }}>
+                  <th style={{ padding: 10, width: 36, textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={allFilesSelected}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedBackupFiles(new Set(allFilesList.map((f) => f.filename)));
+                        } else {
+                          setSelectedBackupFiles(new Set());
+                        }
+                      }}
+                    />
+                  </th>
+                  <th style={{ padding: 10 }}>Файл</th>
+                  <th style={{ padding: 10 }}>Тип / Описание</th>
+                  <th style={{ padding: 10 }}>Размер</th>
+                  <th style={{ padding: 10 }}>Обновлён</th>
+                  <th style={{ padding: 10, textAlign: 'right' }}>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allFilesList.map((f) => {
+                  const isChecked = selectedBackupFiles.has(f.filename);
+                  let desc = 'Полный системный архив (ZIP)';
+                  if (f.filename === 'latest_backup.zip') desc = 'Актуальный архив для быстрого восстановления';
+                  else if (f.filename.startsWith('solutions_')) desc = 'Компактный бэкап решений (сданные + черновики)';
+                  else if (f.filename === 'attempts_latest.csv' || f.filename.startsWith('attempts_table_')) desc = 'Сводная таблица всех попыток (Excel CSV)';
+                  else if (f.filename === 'submitted_live_log.csv') desc = 'Непрерывный live-журнал сданных работ (Excel CSV)';
+                  else if (f.filename === 'submitted_live_log.jsonl') desc = 'Непрерывный live-журнал сданных работ (JSONL)';
+                  else if (f.filename.startsWith('backup_daily_')) desc = 'Ежедневный архивный снимок';
+
+                  return (
+                    <tr
+                      key={f.filename}
+                      style={{
+                        borderBottom: '1px solid #e2e8f0',
+                        background: isChecked ? '#fff5f5' : f.filename === 'latest_backup.zip' ? '#f0fff4' : '#fff'
+                      }}
+                    >
+                      <td style={{ padding: 10, textAlign: 'center' }}>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            setSelectedBackupFiles((prev) => {
+                              const next = new Set(prev);
+                              if (e.target.checked) next.add(f.filename);
+                              else next.delete(f.filename);
+                              return next;
+                            });
+                          }}
+                        />
+                      </td>
+                      <td style={{ padding: 10, fontFamily: 'monospace', fontWeight: 600 }}>{f.filename}</td>
+                      <td style={{ padding: 10, color: '#4a5568', fontSize: 12 }}>{desc}</td>
+                      <td style={{ padding: 10 }}>{f.size_kb} КБ</td>
+                      <td style={{ padding: 10, fontSize: 12 }}>{f.modified_at}</td>
+                      <td style={{ padding: 10, textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: 6 }}>
+                          <button
+                            onClick={() => void downloadBackupFile(f.filename)}
+                            style={{ padding: '4px 10px', background: '#3182ce', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
+                          >
+                            ⬇ Скачать
+                          </button>
+                          <button
+                            onClick={() => void triggerSendTelegram(f.filename)}
+                            disabled={busy}
+                            style={{ padding: '4px 10px', background: '#0284c7', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
+                            title="Отправить этот файл в Telegram"
+                          >
+                            ✈️ В ТГ
+                          </button>
+                          <button
+                            onClick={() => void triggerSyncGdrive(f.filename)}
+                            disabled={busy}
+                            style={{ padding: '4px 10px', background: '#edf2f7', color: '#2d3748', border: '1px solid #cbd5e0', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
+                            title="Выгрузить этот файл на Google Диск"
+                          >
+                            ☁️ Диск
+                          </button>
+                          <button
+                            onClick={() => void deleteSelectedBackups([f.filename])}
+                            disabled={busy}
+                            style={{ padding: '4px 8px', background: '#fff5f5', color: '#e53e3e', border: '1px solid #fed7d7', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
+                            title="Удалить файл с сервера"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {allFilesList.length === 0 && (
+                  <tr>
+                    <td colSpan={6} style={{ padding: 20, textAlign: 'center', color: '#718096' }}>
+                      Файлов резервных копий пока нет.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* 5. Восстановление из бэкапа */}
+          <div style={{ background: '#f7fafc', padding: 16, borderRadius: 8, border: '1px solid #e2e8f0' }}>
             <h4 style={{ margin: '0 0 8px 0' }}>Восстановление базы попыток из архива бэкапа (.zip или .json)</h4>
             <p style={{ margin: '0 0 10px 0', fontSize: 12, color: '#718096' }}>
-              При переносе сервера или сбое БД загрузите файл <code>latest_backup.zip</code>, <code>backup_*.zip</code> или <code>full_restore_dump.json</code>. Все коды участников, решения, баллы и логи будут безопасно восстановлены.
+              Загрузите архив <code>solutions_*.zip</code>, <code>latest_backup.zip</code>, <code>backup_*.zip</code> или <code>full_restore_dump.json</code> для идемпотентного восстановления всех кодов участников, ответов и оценок.
             </p>
             <form onSubmit={handleRestoreBackup} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <input type="file" accept=".zip,.json" onChange={(e) => setRestoreFile(e.target.files?.[0] || null)} />
@@ -1203,52 +1893,6 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
               </button>
             </form>
           </div>
-
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
-            <thead>
-              <tr style={{ background: '#edf2f7', borderBottom: '2px solid #cbd5e0' }}>
-                <th style={{ padding: 10 }}>Файл резервной копии</th>
-                <th style={{ padding: 10 }}>Назначение</th>
-                <th style={{ padding: 10 }}>Размер</th>
-                <th style={{ padding: 10 }}>Обновлён</th>
-                <th style={{ padding: 10, textAlign: 'right' }}>Действие</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(backupInfo?.files || []).map((f) => {
-                let desc = 'Периодический архив (CSV + JSON дамп)';
-                if (f.filename === 'latest_backup.zip') desc = 'Актуальный полный архив (попытки + логи + дамп восстановления)';
-                else if (f.filename === 'attempts_latest.csv') desc = 'Актуальная таблица всех попыток с кодами участников (Excel CSV)';
-                else if (f.filename === 'submitted_live_log.csv') desc = 'Непрерывный live-журнал всех сданных работ (Excel CSV)';
-                else if (f.filename === 'submitted_live_log.jsonl') desc = 'Непрерывный live-журнал всех сданных работ (JSONL)';
-                else if (f.filename.startsWith('backup_daily_')) desc = 'Ежедневный архивный снимок';
-
-                return (
-                  <tr key={f.filename} style={{ borderBottom: '1px solid #e2e8f0', background: f.filename === 'latest_backup.zip' ? '#f0fff4' : '#fff' }}>
-                    <td style={{ padding: 10, fontFamily: 'monospace', fontWeight: 600 }}>{f.filename}</td>
-                    <td style={{ padding: 10, color: '#4a5568' }}>{desc}</td>
-                    <td style={{ padding: 10 }}>{f.size_kb} КБ</td>
-                    <td style={{ padding: 10 }}>{f.modified_at}</td>
-                    <td style={{ padding: 10, textAlign: 'right' }}>
-                      <button
-                        onClick={() => downloadBackupFile(f.filename)}
-                        style={{ padding: '4px 12px', background: '#3182ce', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
-                      >
-                        ⬇ Скачать
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-              {(!backupInfo?.files || backupInfo.files.length === 0) && (
-                <tr>
-                  <td colSpan={5} style={{ padding: 20, textAlign: 'center', color: '#718096' }}>
-                    Резервные копии ещё не созданы. Нажмите «Создать полный бэкап сейчас».
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
         </div>
       )}
     </div>
