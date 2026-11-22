@@ -26,6 +26,9 @@ export function Workbench({
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [iframeHeight, setIframeHeight] = useState<number>(860);
 
+  const submissionConflictRef = useRef(false);
+  const [submissionConflict, setSubmissionConflict] = useState(false);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -33,12 +36,13 @@ export function Workbench({
   const draftStorageKey = `draft_${confirmedCode}_${attempt.attempt_id}`;
 
   const scheduleDraftSave = (nextValues: Record<string, any>) => {
-    if (isSubmitted) return;
+    if (isSubmitted || submissionConflictRef.current) return;
     setSaveStatus('saving');
     localStorage.setItem(draftStorageKey, JSON.stringify(nextValues));
 
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(async () => {
+      if (submissionConflictRef.current) return;
       try {
         const res = await fetch(`/api/attempts/${attempt.attempt_id}/answers`, {
           method: 'PATCH',
@@ -47,11 +51,16 @@ export function Workbench({
         });
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
-          if (errData?.detail?.code === 'SESSION_MISMATCH') {
+          if (errData?.detail?.code === 'ATTEMPT_ALREADY_SUBMITTED') {
+            submissionConflictRef.current = true;
+            setSubmissionConflict(true);
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+            setError('Работа уже сдана. Обновите страницу, чтобы увидеть принятый результат');
+          } else if (!submissionConflictRef.current && errData?.detail?.code === 'SESSION_MISMATCH') {
             setError('Сессия в браузере была переключена. Сохранение в чужую попытку заблокировано.');
           }
           setSaveStatus('error');
-        } else {
+        } else if (!submissionConflictRef.current) {
           setSaveStatus('saved');
         }
       } catch {
@@ -61,7 +70,7 @@ export function Workbench({
   };
 
   async function submitAttempt(finalAnswers?: Record<string, any>) {
-    if (isSubmitted || busy) return;
+    if (isSubmitted || busy || submissionConflictRef.current) return;
     setBusy(true);
     setError(null);
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
@@ -71,8 +80,9 @@ export function Workbench({
     try {
       await events.flush();
       const res = await api.submit(attempt.attempt_id, answersToSend);
+      if (submissionConflictRef.current) return;
       setIsSubmitted(true);
-      setValues(answersToSend);
+      setValues(res.answers);
       setSaveStatus('saved');
 
       // Передаём подтверждённый сервером recovery_code
@@ -87,6 +97,7 @@ export function Workbench({
         }, window.location.origin);
       }
     } catch (e: any) {
+      if (submissionConflictRef.current) return;
       const msg = e.message || 'Ошибка сдачи работы';
       setError(msg);
       if (iframeRef.current?.contentWindow) {
@@ -120,7 +131,7 @@ export function Workbench({
       }
 
       if (event.data.type === 'ASTROSITE_ANSWER_CHANGE') {
-        if (isSubmitted) return;
+        if (isSubmitted || submissionConflictRef.current) return;
         const incoming = event.data.answers;
         if (incoming && typeof incoming === 'object') {
           setValues((prev) => {
@@ -162,7 +173,7 @@ export function Workbench({
         <div>
           <h2>{task.title ?? 'Интерактивная задача'}</h2>
           <p className="muted">
-            ID: {task.id} | Сессия: <code>{confirmedCode.slice(0, 8)}…</code> | Статус: {isSubmitted ? 'Сдано' : 'В процессе'}
+            ID: {task.id} | Сессия: <code>{confirmedCode.slice(0, 8)}…</code> | Статус: {submissionConflict ? 'Требуется обновление страницы' : isSubmitted ? 'Сдано' : 'В процессе'}
             {saveStatus === 'saving' && ' · Сохранение...'}
             {saveStatus === 'saved' && !isSubmitted && ' · Черновик сохранён'}
             {saveStatus === 'error' && ' · Ошибка сохранения'}
@@ -177,7 +188,7 @@ export function Workbench({
 
       {error && <p className="error" role="alert" style={{ background: '#fef2f2', color: '#dc2626', padding: 10, borderRadius: 4 }}>{error}</p>}
 
-      <TaskErrorBoundary>
+      {!submissionConflict && <TaskErrorBoundary>
         <iframe
           ref={iframeRef}
           src={`/static/tasks/${task.id}/${task.entry_point || 'widget.html'}`}
@@ -187,7 +198,7 @@ export function Workbench({
           style={{ width: '100%', height: `${iframeHeight}px`, border: 'none', borderRadius: 8, background: '#fff' }}
           title={task.title}
         />
-      </TaskErrorBoundary>
+      </TaskErrorBoundary>}
     </main>
   );
 }
