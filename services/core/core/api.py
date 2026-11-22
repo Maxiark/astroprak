@@ -64,6 +64,7 @@ from core.db import (
     init_db,
 )
 from core.task_loader import TASKS_DIR, registry
+from core.progress import get_progress
 
 logger = logging.getLogger(__name__)
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN") or "dev-admin"
@@ -179,6 +180,8 @@ async def security_and_static_guard(request: Request, call_next):
             return RawResponse(status_code=404, content="Not Found")
 
     response = await call_next(request)
+    if path_lower == "/api/me/progress":
+        response.headers["Cache-Control"] = "no-store"
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
@@ -333,6 +336,14 @@ def get_me(
     user_id, raw_key = get_current_user_or_create(request, response, astrosite_key, conn)
     response.headers["Cache-Control"] = "no-store"
     return {"user_id": user_id, "recovery_code": raw_key}
+
+
+@app.get("/api/me/progress")
+def get_my_progress(
+    user_info: Tuple[int, str] = Depends(require_current_user),
+    conn: psycopg.Connection = Depends(get_db),
+):
+    return get_progress(conn, user_info[0], registry.get_all_manifests(include_hidden=False))
 
 
 @app.post("/api/restore")
