@@ -1,0 +1,61 @@
+:root {
+  color-scheme: light;
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  --color-text: #172033;
+  --color-text-muted: #526176;
+  --color-border: #94a3b8;
+  --color-link: #0066cc;
+  --color-primary: #2563b8;
+  --color-on-primary: #ffffff;
+  --color-input-bg: #ffffff;
+  --color-focus: #0066cc;
+  --color-success-bg: #ecfdf5;
+  --color-success-text: #047857;
+  --color-error-bg: #fef2f2;
+  --color-error-text: #b91c1c;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #101722;
+  --color-surface: #182231;
+  --color-surface-muted: #202e40;
+  --color-text: #e6edf6;
+  --color-text-muted: #acbbce;
+  --color-border: #54667e;
+  --color-link: #8fc5ff;
+  --color-primary: #93c5fd;
+  --color-on-primary: #10243d;
+  --color-input-bg: #131d2b;
+  --color-focus: #b5d8ff;
+  --color-success-bg: #14382e;
+  --color-success-text: #8ee0bb;
+  --color-error-bg: #41242c;
+  --color-error-text: #ffb4bc;
+}
+body { background: var(--color-bg); color: var(--color-text); }
+/* Admin keeps its existing light palette, including the page canvas. */
+:root:has(.admin-surface), :root[data-admin='true'] { color-scheme: light; }
+body:has(.admin-surface), html[data-admin='true'] body { background: #fff; color: #000; }
+.admin-surface { color-scheme: light; background: #fff; color: #000; min-height: 100vh; }
+.app-shell button, .app-shell input, .app-shell select { color: inherit; }
+.app-shell input, .app-shell select { background: var(--color-input-bg); }
+.app-shell input::placeholder { color: var(--color-text-muted); opacity: 1; }
+.app-shell .muted { color: var(--color-text-muted); }
+.app-shell a { color: var(--color-link); }
+.app-shell :is(button, input, select, summary):focus-visible {
+  outline: 3px solid var(--color-focus); outline-offset: 3px;
+}
+.app-shell :is(button, summary):hover { filter: brightness(0.92); }
+.app-shell button:disabled { opacity: 0.6; cursor: not-allowed; }
+.app-shell iframe { color-scheme: inherit; background: var(--color-surface); }
+.theme-select { display: flex; gap: 6px; align-items: center; font-size: 13px; }
+.theme-select select { padding: 5px 6px; border: 1px solid var(--color-border); border-radius: 4px; }
+.shell-nav, .shell-actions, .catalogue-filters, .workbench-header { flex-wrap: wrap; gap: 12px; }
+.app-shell .key-panel { box-sizing: border-box; max-width: calc(100vw - 56px); }
+@media (max-width: 600px) {
+  .app-shell .key-panel { position: fixed !important; left: 28px; right: 28px !important; top: 150px !important; width: auto !important; }
+  .app-shell .catalogue-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  .catalogue-filters > input { min-width: 0 !important; width: 100%; box-sizing: border-box; }
+}

@@ -2,6 +2,8 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { api, type Attempt, type TaskManifest } from './api';
 import { Workbench } from './components/Workbench';
+import { useFrameTheme } from './frameTheme';
+import { ThemeSelect } from './theme';
 import { AdminPanel } from './components/Admin';
 
 type SessionStatus = 'loading' | 'ready' | 'switching' | 'expired' | 'error';
@@ -30,7 +32,14 @@ export function App() {
   const [viewAdmin, setViewAdmin] = useState(location.pathname === '/admin');
   const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
 
+  const theoryFrameRef = useRef<HTMLIFrameElement>(null);
+  useFrameTheme(theoryFrameRef, activeTheory?.id ?? null);
+
   const channelRef = useRef<BroadcastChannel | null>(null);
+
+  useEffect(() => {
+    document.documentElement.dataset.admin = String(viewAdmin);
+  }, [viewAdmin]);
 
   // 1. Инициализация сессии и BroadcastChannel
   useEffect(() => {
@@ -241,72 +250,75 @@ export function App() {
 
   if (sessionStatus === 'loading' || sessionStatus === 'switching') {
     return (
-      <div style={{ maxWidth: 600, margin: '120px auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
+      <div className="app-shell" style={{ maxWidth: 600, margin: '120px auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
         <h2>Синхронизация сессии...</h2>
-        <p style={{ color: '#64748b' }}>Проверяем ключ доступа и настройки попыток</p>
+        <p style={{ color: 'var(--color-text-muted)' }}>Проверяем ключ доступа и настройки попыток</p>
       </div>
     );
   }
 
   if (viewAdmin) {
-    return <AdminPanel onBack={backToCatalogue} />;
+    return <div className="admin-surface"><AdminPanel onBack={backToCatalogue} /></div>;
   }
 
   return (
-    <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-        <button onClick={backToCatalogue} style={{ background: 'none', border: 'none', color: '#0066cc', cursor: 'pointer', fontSize: '16px', fontWeight: 600 }}>
+    <div className="app-shell" style={{ maxWidth: '1240px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
+      <nav className="shell-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--color-border)', paddingBottom: '10px' }}>
+        <button onClick={backToCatalogue} style={{ background: 'none', border: 'none', color: 'var(--color-link)', cursor: 'pointer', fontSize: '16px', fontWeight: 600 }}>
           {attempt || activeTheory ? '← Вернуться в каталог' : '⭐ Astrosite Каталог'}
         </button>
 
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <button onClick={() => { setViewAdmin(true); history.pushState(null, '', '/admin'); }} style={{ padding: '6px 12px', background: '#f7fafc', border: '1px solid #cbd5e0', borderRadius: 4, cursor: 'pointer', fontSize: '13px' }}>
+        <div className="shell-actions" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <ThemeSelect />
+          <button onClick={() => { setViewAdmin(true); history.pushState(null, '', '/admin'); }} style={{ padding: '6px 12px', background: 'var(--color-surface-muted)', border: '1px solid var(--color-border)', borderRadius: 4, cursor: 'pointer', fontSize: '13px' }}>
             ⚙ Админка
           </button>
 
           <div style={{ position: 'relative' }}>
-            <button onClick={() => setKeyPanelOpen(!keyPanelOpen)} style={{ padding: '6px 12px', background: '#edf2f7', border: '1px solid #cbd5e0', borderRadius: 4, cursor: 'pointer', fontSize: '13px' }}>
+            <button onClick={() => setKeyPanelOpen(!keyPanelOpen)} style={{ padding: '6px 12px', background: 'var(--color-surface-muted)', border: '1px solid var(--color-border)', borderRadius: 4, cursor: 'pointer', fontSize: '13px' }}>
               Ключ: <code>{recoveryCode ? `${recoveryCode.slice(0, 8)}…` : '—'}</code>
             </button>
 
             {keyPanelOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 35, width: 340, background: '#fff', border: '1px solid #cbd5e0', borderRadius: 6, padding: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 100 }}>
+              <div className="key-panel" style={{ position: 'absolute', right: 0, top: 35, width: 340, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 6, padding: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 100 }}>
                 <h4 style={{ margin: '0 0 6px 0' }}>Ваш ключ сессии:</h4>
-                <div style={{ background: '#f7fafc', padding: 8, borderRadius: 4, fontFamily: 'monospace', fontSize: '12px', wordBreak: 'break-all', border: '1px dashed #a0aec0', marginBottom: 12 }}>
+                <div style={{ background: 'var(--color-surface-muted)', padding: 8, borderRadius: 4, fontFamily: 'monospace', fontSize: '12px', wordBreak: 'break-all', border: '1px dashed var(--color-border)', marginBottom: 12 }}>
                   {recoveryCode}
                 </div>
                 <form onSubmit={handleRestoreKey}>
                   <input
                     type="text"
+                    aria-label="Ключ восстановления сессии"
                     placeholder="Вставьте 32-значный hex-код"
                     value={restoreInput}
                     onChange={(e) => setRestoreInput(e.target.value)}
-                    style={{ width: '100%', padding: '6px 8px', boxSizing: 'border-box', marginBottom: 8, borderRadius: 4, border: '1px solid #ccc' }}
+                    style={{ width: '100%', padding: '6px 8px', boxSizing: 'border-box', marginBottom: 8, borderRadius: 4, border: '1px solid var(--color-border)' }}
                   />
-                  <button type="submit" style={{ width: '100%', padding: '6px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+                  <button type="submit" style={{ width: '100%', padding: '6px', background: 'var(--color-primary)', color: 'var(--color-on-primary)', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
                     Восстановить сессию
                   </button>
                 </form>
-                {restoreMsg && <p style={{ fontSize: 12, marginTop: 8, color: '#2b6cb0' }}>{restoreMsg}</p>}
+                {restoreMsg && <p role="status" style={{ fontSize: 12, marginTop: 8, color: restoreMsg.startsWith('Ключ восстановлен') ? 'var(--color-success-text)' : 'var(--color-error-text)' }}>{restoreMsg}</p>}
               </div>
             )}
           </div>
         </div>
       </nav>
 
-      {error && <div style={{ padding: '12px', background: '#ffe6e6', color: '#cc0000', borderRadius: '4px', marginBottom: '16px' }}>{error}</div>}
+      {error && <div role="alert" style={{ padding: '12px', background: 'var(--color-error-bg)', color: 'var(--color-error-text)', borderRadius: '4px', marginBottom: '16px' }}>{error}</div>}
 
       {/* Режим Теории */}
       {activeTheory && (
-        <main style={{ background: '#fff', borderRadius: 8, border: '1px solid #e2e8f0', padding: 20 }}>
+        <main style={{ background: 'var(--color-surface)', borderRadius: 8, border: '1px solid var(--color-border)', padding: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div>
-              <span style={{ fontSize: 12, background: '#ecfdf5', color: '#047857', padding: '3px 8px', borderRadius: 4, fontWeight: 700 }}>Теория</span>
+              <span style={{ fontSize: 12, background: 'var(--color-success-bg)', color: 'var(--color-success-text)', padding: '3px 8px', borderRadius: 4, fontWeight: 700 }}>Теория</span>
               <h2 style={{ margin: '6px 0 2px 0' }}>{activeTheory.title}</h2>
             </div>
-            <button onClick={backToCatalogue} style={{ padding: '6px 14px', background: '#3182ce', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>В каталог</button>
+            <button onClick={backToCatalogue} style={{ padding: '6px 14px', background: 'var(--color-primary)', color: 'var(--color-on-primary)', border: 'none', borderRadius: 4, cursor: 'pointer' }}>В каталог</button>
           </div>
           <iframe
+            ref={theoryFrameRef}
             src={`/static/tasks/${activeTheory.id}/${activeTheory.entry_point || 'widget.html'}`}
             sandbox="allow-scripts allow-same-origin"
             style={{ width: '100%', height: 'calc(100vh - 210px)', border: 'none' }}
@@ -329,34 +341,35 @@ export function App() {
       {/* Режим Каталога */}
       {!activeTheory && !attempt && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 20 }}>
+          <div className="catalogue-filters" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 20 }}>
             <input
               type="text"
+              aria-label="Поиск заданий"
               placeholder="Поиск заданий..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid #cbd5e0', minWidth: 260 }}
+              style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--color-border)', minWidth: 260 }}
             />
-            <div style={{ display: 'flex', border: '1px solid #cbd5e0', borderRadius: 6, overflow: 'hidden' }}>
-              <button onClick={() => setSelectedClass(null)} style={{ padding: '7px 12px', border: 'none', background: selectedClass === null ? '#3182ce' : '#fff', color: selectedClass === null ? '#fff' : '#000', cursor: 'pointer' }}>Все</button>
+            <div style={{ display: 'flex', border: '1px solid var(--color-border)', borderRadius: 6, overflow: 'hidden' }}>
+              <button aria-pressed={selectedClass === null} onClick={() => setSelectedClass(null)} style={{ padding: '7px 12px', border: 'none', background: selectedClass === null ? 'var(--color-primary)' : 'var(--color-surface)', color: selectedClass === null ? 'var(--color-on-primary)' : 'var(--color-text)', cursor: 'pointer' }}>Все</button>
               {[9, 10, 11].map((cls) => (
-                <button key={cls} onClick={() => setSelectedClass(selectedClass === cls ? null : cls)} style={{ padding: '7px 12px', border: 'none', background: selectedClass === cls ? '#3182ce' : '#fff', color: selectedClass === cls ? '#fff' : '#000', cursor: 'pointer' }}>{cls} кл.</button>
+                <button key={cls} aria-pressed={selectedClass === cls} onClick={() => setSelectedClass(selectedClass === cls ? null : cls)} style={{ padding: '7px 12px', border: 'none', background: selectedClass === cls ? 'var(--color-primary)' : 'var(--color-surface)', color: selectedClass === cls ? 'var(--color-on-primary)' : 'var(--color-text)', cursor: 'pointer' }}>{cls} кл.</button>
               ))}
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {groupedCategories.map(([catName, items]) => (
-              <details key={catName} open style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                <summary style={{ padding: '14px 18px', background: '#f8fafc', cursor: 'pointer', fontWeight: 700 }}>{catName} ({items.length})</summary>
-                <div style={{ padding: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+              <details key={catName} open style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 8 }}>
+                <summary style={{ padding: '14px 18px', background: 'var(--color-surface-muted)', cursor: 'pointer', fontWeight: 700 }}>{catName} ({items.length})</summary>
+                <div className="catalogue-grid" style={{ padding: 16, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
                   {items.map((t) => (
-                    <div key={t.id} style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div key={t.id} style={{ border: '1px solid var(--color-border)', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                       <div>
                         <h3 style={{ margin: '0 0 6px 0', fontSize: 16 }}>{t.title}</h3>
-                        <p style={{ fontSize: 12, color: '#718096', margin: 0 }}>ID: {t.id}</p>
+                        <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: 0 }}>ID: {t.id}</p>
                       </div>
-                      <button onClick={() => void openTaskOrTheory(t.id)} style={{ marginTop: 12, padding: '8px', background: '#3182ce', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+                      <button onClick={() => void openTaskOrTheory(t.id)} style={{ marginTop: 12, padding: '8px', background: 'var(--color-primary)', color: 'var(--color-on-primary)', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
                         {t.kind === 'theory' ? 'Читать справку' : 'Решать →'}
                       </button>
                     </div>

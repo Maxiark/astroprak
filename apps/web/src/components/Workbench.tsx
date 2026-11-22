@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { api, type Attempt } from '../api';
 import { TaskErrorBoundary } from './TaskErrorBoundary';
+import { useFrameTheme } from '../frameTheme';
 import { EventQueue } from '../events';
 
 export function Workbench({ 
@@ -30,6 +31,7 @@ export function Workbench({
   const [submissionConflict, setSubmissionConflict] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  useFrameTheme(iframeRef, task.id);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Изоляция драфта в localStorage по ключу сессии и попытки
@@ -180,13 +182,13 @@ export function Workbench({
           </p>
         </div>
         {isSubmitted && (
-          <button onClick={() => onNew(task.id)} style={{ padding: '6px 12px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
+          <button onClick={() => onNew(task.id)} style={{ padding: '6px 12px', background: 'var(--color-primary)', color: 'var(--color-on-primary)', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
             Новый вариант
           </button>
         )}
       </header>
 
-      {error && <p className="error" role="alert" style={{ background: '#fef2f2', color: '#dc2626', padding: 10, borderRadius: 4 }}>{error}</p>}
+      {error && <p className="error" role="alert" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error-text)', padding: 10, borderRadius: 4 }}>{error}</p>}
 
       {!submissionConflict && <TaskErrorBoundary>
         <iframe
@@ -195,7 +197,7 @@ export function Workbench({
           sandbox="allow-scripts allow-same-origin"
           className="task-iframe"
           onLoad={handleIframeLoad}
-          style={{ width: '100%', height: `${iframeHeight}px`, border: 'none', borderRadius: 8, background: '#fff' }}
+          style={{ width: '100%', height: `${iframeHeight}px`, border: 'none', borderRadius: 8, background: 'var(--color-surface)' }}
           title={task.title}
         />
       </TaskErrorBoundary>}
