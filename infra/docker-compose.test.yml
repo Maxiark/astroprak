@@ -1,4 +1,6 @@
 services:
+  core:
+    user: "1000:1000"
   web:
     networks:
       default:
