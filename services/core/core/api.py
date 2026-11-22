@@ -476,14 +476,17 @@ def save_attempt_draft(
             detail={"code": "SESSION_MISMATCH", "message": "Попытка не принадлежит текущей сессии"},
         )
 
-    if attempt["submitted_at"] is not None:
-        return {"status": "ok", "message": "Попытка уже зафиксирована"}
-
     prev_answers = attempt.get("answers") or {}
-    conn.execute(
-        "UPDATE attempts SET answers = %s, updated_at = NOW() WHERE id = %s AND user_id = %s",
+    saved = conn.execute(
+        "UPDATE attempts SET answers = %s, updated_at = NOW() "
+        "WHERE id = %s AND user_id = %s AND submitted_at IS NULL RETURNING id",
         (psycopg.types.json.Jsonb(payload.answers), attempt_id, user_id),
-    )
+    ).fetchone()
+    if saved is None:
+        raise HTTPException(
+            status_code=409,
+            detail={"code": "ATTEMPT_ALREADY_SUBMITTED", "message": "Работа уже сдана"},
+        )
     if payload.answers != prev_answers:
         conn.execute(
             "INSERT INTO events (attempt_id, name, payload) VALUES (%s, %s, %s)",
@@ -540,24 +543,21 @@ def submit_attempt(
     task_id = attempt["task_id"]
     att_seed = attempt.get("seed", 42)
 
-    if attempt["submitted_at"] is not None:
-        grading_out = attempt.get("grading")
-        if isinstance(grading_out, dict) and "solution_steps" not in grading_out:
-            gen_mod = registry.get_generator(task_id)
-            if gen_mod and hasattr(gen_mod, "grade"):
-                try:
-                    grading_out = gen_mod.grade(att_seed, attempt.get("answers") or {})
-                except Exception:
-                    pass
+    def accepted_response(row):
+        grading = row.get("grading")
         return {
             "status": "ok",
             "attempt_id": str(attempt_id),
             "recovery_code": recovery_code,
-            "submitted_at": attempt["submitted_at"].isoformat(),
-            "score": attempt.get("score"),
-            "max_score": grading_out.get("max_score", 10.0) if isinstance(grading_out, dict) else 10.0,
-            "grading": grading_out,
+            "submitted_at": row["submitted_at"].isoformat(),
+            "answers": row["answers"],
+            "score": row.get("score"),
+            "max_score": grading.get("max_score", 10.0) if isinstance(grading, dict) else 10.0,
+            "grading": grading,
         }
+
+    if attempt["submitted_at"] is not None:
+        return accepted_response(attempt)
 
     score = None
     grading_details = None
@@ -572,19 +572,7 @@ def submit_attempt(
     except Exception as e:
         logger.error(f"Ошибка проверки решения {task_id}: {e}")
 
-    max_score_val = grading_details.get("max_score", 10.0) if grading_details else 10.0
-    submitted_iso = datetime.now(timezone.utc).isoformat()
-
-    conn.execute(
-        "INSERT INTO events (attempt_id, name, payload) VALUES (%s, %s, %s)",
-        (
-            attempt_id,
-            "attempt.submit",
-            psycopg.types.json.Jsonb({"score": score, "max_score": max_score_val, "answers": payload.answers or {}}),
-        ),
-    )
-
-    finalize_attempt(
+    accepted = finalize_attempt(
         conn=conn,
         attempt_id=attempt_id,
         user_id=user_id,
@@ -592,6 +580,26 @@ def submit_attempt(
         score=score,
         grading=grading_details,
     )
+    if accepted is None:
+        accepted = conn.execute(
+            "SELECT answers, score, grading, submitted_at FROM attempts WHERE id = %s AND user_id = %s",
+            (attempt_id, user_id),
+        ).fetchone()
+        return accepted_response(accepted)
+
+    response = accepted_response(accepted)
+    conn.execute(
+        "INSERT INTO events (attempt_id, name, payload) VALUES (%s, %s, %s)",
+        (
+            attempt_id,
+            "attempt.submit",
+            psycopg.types.json.Jsonb({
+                "score": response["score"], "max_score": response["max_score"],
+                "answers": accepted["answers"],
+            }),
+        ),
+    )
+    conn.commit()
 
     append_live_submission_backup(
         attempt_id=attempt_id,
@@ -599,22 +607,13 @@ def submit_attempt(
         student_key=recovery_code,
         task_id=task_id,
         seed=att_seed,
-        score=score,
-        max_score=max_score_val,
-        answers=payload.answers or {},
-        grading=grading_details,
-        submitted_at=submitted_iso,
+        score=accepted["score"],
+        max_score=response["max_score"],
+        answers=accepted["answers"],
+        grading=accepted["grading"],
+        submitted_at=response["submitted_at"],
     )
-
-    return {
-        "status": "ok",
-        "attempt_id": str(attempt_id),
-        "recovery_code": recovery_code,
-        "submitted_at": submitted_iso,
-        "score": score,
-        "max_score": max_score_val,
-        "grading": grading_details,
-    }
+    return response
 
 
 # --- Междоменный перенос сессий ---

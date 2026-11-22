@@ -246,8 +246,8 @@ def finalize_attempt(
     answers: Dict[str, Any],
     score: Optional[float],
     grading: Optional[Dict[str, Any]],
-) -> bool:
-    """Идемпотентная фиксация сдачи попытки с проверкой владельца (без сохранения тяжёлых картинок в БД)."""
+) -> Optional[Dict[str, Any]]:
+    """Return the accepted row, or None if already submitted; caller commits."""
     light_grading = strip_heavy_grading_fields(grading)
     row = conn.execute(
         """
@@ -256,9 +256,9 @@ def finalize_attempt(
             score = %s,
             grading = %s,
             updated_at = NOW(),
-            submitted_at = COALESCE(submitted_at, NOW())
-        WHERE id = %s AND user_id = %s
-        RETURNING id, submitted_at
+            submitted_at = NOW()
+        WHERE id = %s AND user_id = %s AND submitted_at IS NULL
+        RETURNING id, answers, score, grading, submitted_at
         """,
         (
             psycopg.types.json.Jsonb(answers),
@@ -268,5 +268,4 @@ def finalize_attempt(
             user_id,
         ),
     ).fetchone()
-    conn.commit()
-    return bool(row)
+    return row
