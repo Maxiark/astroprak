@@ -482,6 +482,7 @@
   let centerDelta = -72.19;
   let isInitializedFromHost = false;
   let isSubmittedState = false;
+  let isSubmitting = false;
   let isRestoring = false;
 
   let lastSentHeight = 0;
@@ -632,8 +633,7 @@
       userCounts: userCounts,
       selectedModel: selectedModel,
       rcParam: rcParam,
-      n0Param: n0Param,
-      isSubmitted: isSubmittedState || document.getElementById('btn-final-submit').disabled
+      n0Param: n0Param
     };
 
     try {
@@ -1153,7 +1153,9 @@
   };
 
   document.getElementById('btn-final-submit').onclick = () => {
-    if (isSubmittedState) return;
+    if (isSubmittedState || isSubmitting) return;
+    isSubmitting = true;
+    document.getElementById('submit-error').textContent = '';
     const activeObj = MODELS.find(m => m.id === selectedModel);
     const submitBtn = document.getElementById('btn-final-submit');
     submitBtn.disabled = true;
@@ -1176,8 +1178,15 @@
     saveLocal();
   };
 
+  const submitError = document.createElement('p');
+  submitError.id = 'submit-error';
+  submitError.setAttribute('role', 'alert');
+  document.getElementById('btn-final-submit').after(submitError);
+
   function lockSubmittedUI(gradingInfo) {
     isSubmittedState = true;
+    isSubmitting = false;
+    document.getElementById('submit-error').textContent = '';
     rcInp.disabled = true;
     n0Inp.disabled = true;
     const submitBtn = document.getElementById('btn-final-submit');
@@ -1273,12 +1282,12 @@
     setTimeout(() => { btn.textContent = 'Скопировать код'; }, 2000);
   };
 
-  function restoreState(draft) {
+  function restoreState(draft, accepted = false) {
     let targetStep = 0;
     let s = null;
     try {
       const raw = localStorage.getItem(getStorageKey());
-      if (raw) s = JSON.parse(raw);
+      if (raw && !accepted) s = JSON.parse(raw);
     } catch (e) {}
 
     // Восстанавливаем сохранённые значения из localStorage как резерв, затем приоритетно из серверного draft
@@ -1318,7 +1327,7 @@
     const localCounts = (s && Array.isArray(s.userCounts)) ? s.userCounts : null;
     const draftHasValues = draftCounts && draftCounts.some(v => Number(v) > 0);
     const localHasValues = localCounts && localCounts.some(v => Number(v) > 0);
-    const countsSource = draftHasValues ? draftCounts : (localHasValues ? localCounts : (draftCounts || localCounts));
+    const countsSource = accepted ? draftCounts : draftHasValues ? draftCounts : (localHasValues ? localCounts : (draftCounts || localCounts));
     if (Array.isArray(countsSource)) {
       countsSource.forEach((val, i) => {
         const el = document.getElementById(`ring-user-${i}`);
@@ -1334,10 +1343,7 @@
     else if (targetStep === 2) verifyCounts();
     else if (targetStep === 3) goToStep3();
     else if (targetStep === 4) lockBinsToStep4();
-    else if (targetStep === 5) {
-      goToStep5();
-      if (!isSubmittedState && s && s.isSubmitted) lockSubmittedUI();
-    }
+    else if (targetStep === 5) goToStep5();
   }
 
   function init(data, sessionCode, draft, fromHost = false, isSubmittedFromHost = false) {
@@ -1381,14 +1387,14 @@
 
     isRestoring = true;
     try {
-      restoreState(draft);
+      restoreState(draft, isSubmittedState);
     } finally {
       isRestoring = false;
     }
   }
 
   window.addEventListener('message', (e) => {
-    if (!e.data) return;
+    if (e.source !== window.parent || e.origin !== window.location.origin || !e.data) return;
 
     if (e.data.type === 'ASTROSITE_INIT_DATA') {
       init(e.data.data, e.data.session_code, e.data.draft, true, Boolean(e.data.is_submitted));
@@ -1400,13 +1406,17 @@
     if (e.data.type === 'ASTROSITE_SUBMIT_SUCCESS') {
       if (e.data.recovery_code) userSessionCode = e.data.recovery_code;
       const grading = e.data.grading || (e.data.score !== undefined ? { score: e.data.score, max_score: e.data.max_score } : null);
+      isRestoring = true;
+      try { restoreState(e.data.answers, true); goToStep5(); }
+      finally { isRestoring = false; }
       lockSubmittedUI(grading);
     }
 
     if (e.data.type === 'ASTROSITE_SUBMIT_ERROR') {
-      isSubmittedState = false;
+      isSubmitting = false;
+      document.getElementById('submit-error').textContent = e.data.error || 'Ошибка сдачи работы';
       const submitBtn = document.getElementById('btn-final-submit');
-      if (submitBtn) {
+      if (submitBtn && !isSubmittedState) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Зафиксировать параметры и сдать решение';
       }

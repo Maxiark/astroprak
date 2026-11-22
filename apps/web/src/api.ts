@@ -69,15 +69,27 @@ export const api = {
   },
 
   async submit(attemptId: string, answers: Record<string, any>): Promise<any> {
-    const res = await fetch(`/api/attempts/${encodeURIComponent(attemptId)}/submit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(err.detail || 'Ошибка сдачи решения');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const res = await fetch(`/api/attempts/${encodeURIComponent(attemptId)}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers }),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(typeof err.detail === 'string' ? err.detail : 'Ошибка сдачи решения');
+      }
+      return await res.json();
+    } catch (error) {
+      if (controller.signal.aborted || error instanceof TypeError) {
+        throw new Error('Не удалось получить подтверждение сдачи. Работа могла сохраниться. Повторите отправку — принятый результат не изменится.');
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
     }
-    return res.json();
   },
 };

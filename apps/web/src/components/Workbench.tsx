@@ -21,7 +21,8 @@ export function Workbench({
   useEffect(() => () => { void events.flush(); }, [events]);
 
   const [values, setValues] = useState<Record<string, any>>(attempt.answers ?? {});
-  const [busy, setBusy] = useState(false);
+  const submittingRef = useRef(false);
+  const [grading, setGrading] = useState(attempt.grading || null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(attempt.submitted || false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -72,18 +73,33 @@ export function Workbench({
   };
 
   async function submitAttempt(finalAnswers?: Record<string, any>) {
-    if (isSubmitted || busy || submissionConflictRef.current) return;
-    setBusy(true);
+    const reportError = (message: string) => {
+      setError(message);
+      iframeRef.current?.contentWindow?.postMessage({
+        type: 'ASTROSITE_SUBMIT_ERROR', error: message
+      }, window.location.origin);
+    };
+    if (submissionConflictRef.current) {
+      reportError('Работа уже сдана. Обновите страницу, чтобы увидеть принятый результат');
+      return;
+    }
+    // Duplicate messages share the active operation and its broadcast result.
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setError(null);
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
     const answersToSend = finalAnswers ? { ...values, ...finalAnswers } : values;
 
     try {
-      await events.flush();
+      void events.flush();
       const res = await api.submit(attempt.attempt_id, answersToSend);
-      if (submissionConflictRef.current) return;
+      if (submissionConflictRef.current) {
+        reportError('Работа уже сдана. Обновите страницу, чтобы увидеть принятый результат');
+        return;
+      }
       setIsSubmitted(true);
+      setGrading(res.grading || { score: res.score, max_score: res.max_score });
       setValues(res.answers);
       setSaveStatus('saved');
 
@@ -93,23 +109,18 @@ export function Workbench({
           type: 'ASTROSITE_SUBMIT_SUCCESS',
           attempt_id: res?.attempt_id,
           recovery_code: res?.recovery_code || confirmedCode,
+          answers: res.answers,
           score: res?.score,
           max_score: res?.max_score,
           grading: res?.grading || (res?.score !== undefined ? { score: res.score, max_score: res.max_score } : null)
         }, window.location.origin);
       }
     } catch (e: any) {
-      if (submissionConflictRef.current) return;
-      const msg = e.message || 'Ошибка сдачи работы';
-      setError(msg);
-      if (iframeRef.current?.contentWindow) {
-        iframeRef.current.contentWindow.postMessage({
-          type: 'ASTROSITE_SUBMIT_ERROR',
-          error: msg
-        }, window.location.origin);
-      }
+      reportError(submissionConflictRef.current
+        ? 'Работа уже сдана. Обновите страницу, чтобы увидеть принятый результат'
+        : e.message || 'Ошибка сдачи работы');
     } finally {
-      setBusy(false);
+      submittingRef.current = false;
     }
   }
 
@@ -164,7 +175,7 @@ export function Workbench({
       session_code: confirmedCode,
       session_version: sessionVersion,
       is_submitted: isSubmitted,
-      grading: attempt.grading || null,
+      grading,
       created_at: attempt.created_at || null
     }, window.location.origin);
   };
