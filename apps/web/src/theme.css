@@ -13,6 +13,8 @@
   --color-focus: #0066cc;
   --color-success-bg: #ecfdf5;
   --color-success-text: #047857;
+  --color-warning-bg: #fffbdb;
+  --color-warning-text: #765300;
   --color-error-bg: #fef2f2;
   --color-error-text: #b91c1c;
 }
@@ -31,10 +33,20 @@
   --color-focus: #b5d8ff;
   --color-success-bg: #14382e;
   --color-success-text: #8ee0bb;
+  --color-warning-bg: #403519;
+  --color-warning-text: #f5d778;
   --color-error-bg: #41242c;
   --color-error-text: #ffb4bc;
 }
 body { background: var(--color-bg); color: var(--color-text); }
+.progress-summary { padding: 14px 18px; margin-bottom: 20px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); }
+.progress-summary h2 { margin: 0; font-size: 18px; }
+.progress-summary p { margin: 8px 0 0; }
+.progress-summary .muted { font-size: 13px; }
+.progress-summary button { background: var(--color-surface-muted); border: 1px solid var(--color-border); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+.progress-badge { margin: 0 0 12px; padding: 9px 10px; border-radius: 5px; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.progress-solved { background: var(--color-success-bg); color: var(--color-success-text); }
+.progress-submitted_ungraded { background: var(--color-warning-bg); color: var(--color-warning-text); }
 /* Admin keeps its existing light palette, including the page canvas. */
 :root:has(.admin-surface), :root[data-admin='true'] { color-scheme: light; }
 body:has(.admin-surface), html[data-admin='true'] body { background: #fff; color: #000; }

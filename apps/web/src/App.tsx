@@ -5,6 +5,7 @@ import { Workbench } from './components/Workbench';
 import { useFrameTheme } from './frameTheme';
 import { ThemeSelect } from './theme';
 import { AdminPanel } from './components/Admin';
+import { ProgressBadge, ProgressSummary, useCatalogueProgress, type ProgressSession } from './progress';
 
 type SessionStatus = 'loading' | 'ready' | 'switching' | 'expired' | 'error';
 
@@ -36,6 +37,18 @@ export function App() {
   useFrameTheme(theoryFrameRef, activeTheory?.id ?? null);
 
   const channelRef = useRef<BroadcastChannel | null>(null);
+  const sessionRequest = useRef(0);
+  const restoringSession = useRef(false);
+  const confirmedCode = useRef<string | null>(null);
+  const [progressSession, setProgressSession] = useState<ProgressSession | null>(null);
+  const [catalogueRefresh, setCatalogueRefresh] = useState(0);
+  const progress = useCatalogueProgress(progressSession,
+    sessionStatus === 'ready' && !viewAdmin && !attempt && !activeTheory, catalogueRefresh);
+
+  function invalidateSession() {
+    sessionRequest.current += 1;
+    setProgressSession(null);
+  }
 
   useEffect(() => {
     document.documentElement.dataset.admin = String(viewAdmin);
@@ -54,24 +67,11 @@ export function App() {
       };
     }
 
-    async function bootstrap() {
-      try {
-        const res = await fetch('/api/me', { cache: 'no-store' });
-        if (!res.ok) throw new Error('Не удалось получить сессию');
-        const data = await res.json();
-        setRecoveryCode(data.recovery_code);
-        setSessionStatus('ready');
-      } catch (err: any) {
-        setSessionStatus('error');
-        setError(err.message || 'Ошибка инициализации сессии');
-      }
-    }
-
-    void bootstrap();
+    void reloadSession(false);
 
     const onFocus = () => {
-      if (document.visibilityState === 'visible') {
-        void checkSessionDrift();
+      if (document.visibilityState === 'visible' && !restoringSession.current) {
+        void reloadSession(false);
       }
     };
     window.addEventListener('focus', onFocus);
@@ -81,6 +81,7 @@ export function App() {
       window.removeEventListener('focus', onFocus);
       window.removeEventListener('visibilitychange', onFocus);
       if (channelRef.current) channelRef.current.close();
+      sessionRequest.current += 1;
     };
   }, []);
 
@@ -112,39 +113,35 @@ export function App() {
     } else {
       void loadCatalogue();
     }
-  }, [sessionStatus, viewAdmin]);
-
-  async function checkSessionDrift() {
-    try {
-      const res = await fetch('/api/me', { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        if (recoveryCode && data.recovery_code !== recoveryCode) {
-          setSessionStatus('switching');
-          void reloadSession(false);
-        }
-      }
-    } catch {}
-  }
+  }, [sessionStatus, viewAdmin, recoveryCode]);
 
   async function reloadSession(broadcast = true) {
+    invalidateSession();
+    const request = sessionRequest.current;
     try {
       const res = await fetch('/api/me', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Не удалось получить сессию');
       const data = await res.json();
+      if (request !== sessionRequest.current) return;
+      const changed = confirmedCode.current !== null && confirmedCode.current !== data.recovery_code;
+      confirmedCode.current = data.recovery_code;
+      setError(previous => previous === 'Не удалось подтвердить сессию' ? null : previous);
       setRecoveryCode(data.recovery_code);
-      setSessionVersion((v) => v + 1);
+      setProgressSession({ userId: data.user_id, revision: request });
+      if (changed) setSessionVersion((v) => v + 1);
       setSessionStatus('ready');
       if (broadcast && channelRef.current) {
         channelRef.current.postMessage({ type: 'SESSION_CHANGED' });
       }
-      const directId = taskIdFromPath();
-      if (directId) {
-        void openTaskOrTheory(directId, false);
-      } else {
-        void loadCatalogue();
+      if (changed) {
+        // Let the existing route loader reopen the task for the confirmed session.
+        setAttempt(null);
+        setActiveTheory(null);
       }
     } catch {
+      if (request !== sessionRequest.current) return;
       setSessionStatus('error');
+      setError('Не удалось подтвердить сессию');
     }
   }
 
@@ -193,6 +190,8 @@ export function App() {
       return;
     }
 
+    invalidateSession();
+    restoringSession.current = true;
     setSessionStatus('switching');
     try {
       const res = await fetch('/api/restore', {
@@ -208,12 +207,15 @@ export function App() {
       setKeyPanelOpen(false);
       await reloadSession(true);
     } catch (err: any) {
-      setSessionStatus('ready');
+      await reloadSession(false);
       setRestoreMsg(`Ошибка: ${err.message}`);
+    } finally {
+      restoringSession.current = false;
     }
   }
 
   function backToCatalogue() {
+    setCatalogueRefresh(n => n + 1);
     setAttempt(null);
     setActiveTheory(null);
     setViewAdmin(false);
@@ -341,6 +343,9 @@ export function App() {
       {/* Режим Каталога */}
       {!activeTheory && !attempt && (
         <div>
+          <ProgressSummary progress={sessionStatus === 'error'
+            ? { ...progress, error: true, retry: () => void reloadSession(false) }
+            : progress} />
           <div className="catalogue-filters" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 20 }}>
             <input
               type="text"
@@ -366,6 +371,7 @@ export function App() {
                   {items.map((t) => (
                     <div key={t.id} style={{ border: '1px solid var(--color-border)', borderRadius: 8, padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                       <div>
+                        {t.kind !== 'theory' && t.kind !== 'material' && <ProgressBadge task={progress.data?.tasks[t.id]} />}
                         <h3 style={{ margin: '0 0 6px 0', fontSize: 16 }}>{t.title}</h3>
                         <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: 0 }}>ID: {t.id}</p>
                       </div>
